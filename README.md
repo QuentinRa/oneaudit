@@ -1,8 +1,6 @@
-# OneAudit
+![LOGO](.github/dalle_logo.png)
 
-...
-
-#### Leaks Processing
+WIP
 
 ```json!
 {
