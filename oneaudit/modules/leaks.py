@@ -1,6 +1,8 @@
 import argparse
 import cmd
 import json
+import os.path
+import time
 
 
 class LeaksProgramData:
@@ -8,6 +10,7 @@ class LeaksProgramData:
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
+        self.should_resume_process = args.resume_flag
 
 
 class LeaksCredentialProcessor(cmd.Cmd):
@@ -18,8 +21,20 @@ class LeaksCredentialProcessor(cmd.Cmd):
         super().__init__()
         self.credentials = args.data.get('credentials', [])
         self.index = -1
-        self.new_credentials = {}
         self.output_file = args.output_file
+        self.new_credentials = {}
+        if os.path.exists(self.output_file):
+            if args.should_resume_process:
+                    try:
+                        with open(self.output_file, 'r') as file_data:
+                            data = json.load(file_data)
+                            for entry in data['credentials']:
+                                self.new_credentials[entry['login']] = entry['passwords']
+                            self.index = int(data.get("index", 0))
+                    except json.JSONDecodeError:
+                        pass
+            else:
+                self.output_file += "." + str(time.time())
 
     def do_next(self, arg):
         if self.index < len(self.credentials):
@@ -84,6 +99,7 @@ class LeaksCredentialProcessor(cmd.Cmd):
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
     module_parser.add_argument('-f', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
     module_parser.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    module_parser.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
     args = parser.parse_args()
     return LeaksProgramData(args)
 
