@@ -16,6 +16,9 @@ def main():
     if module == 'ntlm':
         import oneaudit.modules.ntlm
         oneaudit.modules.ntlm.run(parser, ntlm_module)
+    elif module == 'leaks':
+        import oneaudit.modules.leaks
+        oneaudit.modules.leaks.run(parser, leaks_module)
     else:
         print(f"No such module: {module}.")
         sys.exit(2)
