@@ -17,22 +17,52 @@ class LeaksCredentialProcessor(cmd.Cmd):
     def __init__(self, args: LeaksProgramData):
         super().__init__()
         self.credentials = args.data.get('credentials', [])
-        self.index = 0
-        self.new_credentials = []
+        self.index = -1
+        self.new_credentials = {}
+        self.output_file = args.output_file
 
     def do_next(self, arg):
         if self.index < len(self.credentials):
+            self.index += 1
             credential = self.credentials[self.index]
             print(f"Processing {credential['login']}")
-            print(f"Passwords: {', '.join(credential['passwords'])}")
+            for i, password in enumerate(credential['passwords'], start=1):
+                print(f"{i}. {password}")
             print()
-            self.index += 1
         else:
             print("No more credentials to skip.")
 
     def do_exit(self, arg):
-        print("Exiting.")
+        credentials = [
+            {
+                "login": email,
+                "passwords": passwords
+            }
+            for email, passwords in self.new_credentials.items()
+        ]
+
+        with open(self.output_file, 'w') as output_file:
+            json.dump({
+                "version": 1.0,
+                "index": self.index,
+                "credentials": credentials
+            }, output_file, indent=4)
+
         return True
+
+    def _keep_password(self, index):
+        if 0 <= self.index < len(self.credentials):
+            credential = self.credentials[self.index]
+            index = index - 1
+            if index < len(credential['passwords']):
+                key = credential['login']
+                if key not in self.new_credentials:
+                    self.new_credentials[key] = []
+                self.new_credentials[key].append(credential['passwords'][index])
+                print("Kept:", self.new_credentials[key])
+                return
+
+        print("Invalid index")
 
     def default(self, line):
         aliases = {
@@ -45,6 +75,8 @@ class LeaksCredentialProcessor(cmd.Cmd):
         command = aliases.get(line.lower())
         if command:
             return self.onecmd(command)
+        elif line.isnumeric():
+            return self._keep_password(int(line))
         else:
             print(f"Unknown command or alias: {line}")
 
