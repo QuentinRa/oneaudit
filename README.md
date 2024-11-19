@@ -10,6 +10,8 @@
 
 WIP
 
+* Use given cache folder or temporary as default
+
 ```json!
 {
     "version": 1.0,
