@@ -41,6 +41,7 @@ def _rocketreach_fetch_records(args: OSINTLinkedInProgramData):
     s = rr.person.search().filter(current_employer=f'\"{args.company_name}\"')
 
     page = 0
+    lookup_disabled = False
     try:
         while True:
             cached_result_key = "rocketreach_" + args.company_name + "_" + str(page)
@@ -52,6 +53,12 @@ def _rocketreach_fetch_records(args: OSINTLinkedInProgramData):
                     data = result.response.json()
                     oneaudit.modules.set_cached_result(cached_result_key, data)
                 else:
+                    if result.response.status_code == 429:
+                        wait = int(result.response.headers["retry-after"] if "retry-after" in result.response.headers else 2)
+                        print(f"Waiting for {wait} seconds.")
+                        time.sleep(wait)
+                        continue
+                    print(result.response.status_code)
                     print(result.response.headers)
                     print(result.response.text)
                     raise Exception(f'Error: {result.message}!', True)
@@ -66,7 +73,11 @@ def _rocketreach_fetch_records(args: OSINTLinkedInProgramData):
                     '_status': profile['status'],
                     '_count': len(target_emails),
                 })
-
+                if not lookup_disabled and profile['status'] == "not queued":
+                    try:
+                        rr.person.lookup(linkedin_url=profile["linkedin_url"], block=False)
+                    except rocketreach.RocketReachException:
+                        lookup_disabled = True
             pagination = data['pagination']
             if pagination['next'] > pagination['total']:
                 break

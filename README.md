@@ -26,12 +26,12 @@ WIP
 
 ## SocOSINT
 
-#### LinkedIn OSINT
+### LinkedIn OSINT
 
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain.
 
 ```bash
-$ oneaudit socosint linkedin -d example.com --config config.json -o linkedin.json
+$ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 ```
 
 ```json
@@ -56,7 +56,7 @@ $ oneaudit socosint linkedin -d example.com --config config.json -o linkedin.jso
 }
 ```
 
-#### API Configuration
+## API Configuration
 
 Create a JSON file called `config.json` or specify any file using `--config`. The expected format is:
 
@@ -68,7 +68,7 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
 
 The followed APIs are used by the plugin:
 
-| API Identifier                         | Pricing    | Usage                |
-|----------------------------------------|------------|----------------------|
-| [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. |
-|                                        |            |                      |
+| API Identifier                         | Pricing    | Usage                                          |
+|----------------------------------------|------------|------------------------------------------------|
+| [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
+|                                        |            |                                                |
