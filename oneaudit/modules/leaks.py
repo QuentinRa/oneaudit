@@ -5,7 +5,7 @@ import os.path
 import time
 
 
-class LeaksProgramData:
+class LeaksCleanProgramData:
     def __init__(self, args):
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
@@ -13,11 +13,15 @@ class LeaksProgramData:
         self.should_resume_process = args.resume_flag
 
 
+class LeaksDownloadProgramData:
+    def __init__(self, args):
+        pass
+
 class LeaksCredentialProcessor(cmd.Cmd):
     intro = "Welcome to the leaks credential processor. Type 'help' for a list of commands."
     prompt = "(leak) "
 
-    def __init__(self, args: LeaksProgramData):
+    def __init__(self, args: LeaksCleanProgramData):
         super().__init__()
         self.credentials = args.data.get('credentials', [])
         self.index = -1
@@ -97,14 +101,23 @@ class LeaksCredentialProcessor(cmd.Cmd):
 
 
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
-    module_parser.add_argument('-f', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
-    module_parser.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    module_parser.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
-    args = parser.parse_args()
-    return LeaksProgramData(args)
+    submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.')
+    cleaner_module_parser = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
+    cleaner_module_parser.add_argument('-f', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
+    cleaner_module_parser.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    cleaner_module_parser.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
+
+    download_leaks = submodule_parser.add_parser('download', description='Download leaks from configured APIs.')
+
+
+    return parser.parse_args()
 
 
 def run(parser, module_parser):
     args = parse_args(parser, module_parser)
-    processor = LeaksCredentialProcessor(args)
-    processor.cmdloop()
+    if args.action == 'clean':
+        processor = LeaksCredentialProcessor(LeaksCleanProgramData(args))
+        processor.cmdloop()
+    elif args.action == 'download':
+        args = LeaksDownloadProgramData(args)
+        print("Download", args)
