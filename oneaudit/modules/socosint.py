@@ -102,6 +102,30 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
     return results
 
 
+def _rocketreach_parse_records(args, input_file):
+    if args.file_format != 'rocketreach':
+        return []
+    results = []
+    entries = json.load(input_file)["records"]
+    for entry in entries:
+        emails = []
+        for email in entry['emails']:
+            if email['source'] == "predicted":
+                if email['format_probability'] and email['format_probability'] < 35:
+                    continue
+                if email['confidence'] < 50:
+                    continue
+            emails.append(email['email'].lower())
+
+        results.append({
+            "first_name": entry["first_name"],
+            "last_name": entry["last_name"],
+            "linkedin_url": entry["linkedin_url"],
+            'emails': emails,
+        })
+    return results
+
+
 def run(parser, module_parser):
     args = parse_args(parser, module_parser)
     if args.scope == 'linkedin':
@@ -113,25 +137,7 @@ def run(parser, module_parser):
             args = OSINTParseLinkedInProgramData(args)
             try:
                 with open(args.input_file, 'r') as input_file:
-                    # RocketReach JSON
-                    entries = json.load(input_file)["records"]
-                    for entry in entries:
-                        emails = []
-                        for email in entry['emails']:
-                            if email['source'] == "predicted":
-                                if email['format_probability'] and email['format_probability'] < 35:
-                                    continue
-                                if email['confidence'] < 50:
-                                    continue
-                            emails.append(email['email'].lower())
-
-                        results.append({
-                            "first_name": entry["first_name"],
-                            "last_name": entry["last_name"],
-                            "linkedin_url": entry["linkedin_url"],
-                            'emails': emails,
-                        })
-
+                    results.extend(_rocketreach_parse_records(args, input_file))
             except (FileNotFoundError, json.JSONDecodeError) as e:
                 print(f"[+] Failed to parse results: '{e}'.")
 

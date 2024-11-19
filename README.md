@@ -58,7 +58,7 @@ $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 
 After exporting the results (e.g., as JSON using webhooks for RocketReach), you can parse them with:
 
-```
+```bash
 $ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_emails.json
 ```
 
@@ -66,6 +66,14 @@ $ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -
 {
   "version": 1.0,
   "entries": [
+    {
+      "first_name": "John",
+      "last_name": "Doe",
+      "linkedin_url": "https://www.linkedin.com/in/johndoe",
+      "emails": [
+        "johndoe@example.com"
+      ]
+    }
   ]
 }
 ```
