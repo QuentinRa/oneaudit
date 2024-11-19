@@ -11,6 +11,7 @@
 WIP
 
 * Use given cache folder or temporary as default
+* Can generate a company email during "parsing"
 
 ```json!
 {
