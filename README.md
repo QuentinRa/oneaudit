@@ -23,3 +23,52 @@ WIP
     ]
 }
 ```
+
+## SocOSINT
+
+#### LinkedIn OSINT
+
+You can use this module to get a list of LinkedIn profiles still working in the target company from their domain.
+
+```bash
+$ oneaudit socosint linkedin -d example.com --config config.json -o linkedin.json
+```
+
+```json
+{
+  "version": 1.0,
+  "entries": [
+    {
+      "source": "rocketreach",
+      "date": 1732044168.2800202,
+      "version": 1.0,
+      "targets": [
+        {
+          "full_name": "Firstname Lastname",
+          "linkedin_url": "https://www.linkedin.com/in/john_doe",
+          "birth_year": null,
+          "_status": "complete",
+          "_count": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### API Configuration
+
+Create a JSON file called `config.json` or specify any file using `--config`. The expected format is:
+
+```json
+{
+  "api_identifier": "your_api_key"
+}
+```
+
+The followed APIs are used by the plugin:
+
+| API Identifier                         | Pricing    | Usage                |
+|----------------------------------------|------------|----------------------|
+| [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. |
+|                                        |            |                      |
