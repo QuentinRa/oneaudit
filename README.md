@@ -56,6 +56,20 @@ $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 }
 ```
 
+After exporting the results (e.g., as JSON using webhooks for RocketReach), you can parse them with:
+
+```
+$ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_emails.json
+```
+
+```json
+{
+  "version": 1.0,
+  "entries": [
+  ]
+}
+```
+
 ## API Configuration
 
 Create a JSON file called `config.json` or specify any file using `--config`. The expected format is:

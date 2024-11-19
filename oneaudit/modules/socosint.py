@@ -5,26 +5,41 @@ import rocketreach
 import oneaudit.modules
 
 
-class OSINTLinkedInProgramData:
+class OSINTScrapLinkedInProgramData:
     def __init__(self, args):
         oneaudit.modules.args_parse_api_config(self, args)
         self.company_name = args.company_domain
         self.output_file = args.output
 
 
+class OSINTParseLinkedInProgramData:
+    def __init__(self, args):
+        self.file_format = args.format
+        self.input_file = args.input
+        self.output_file = args.output
+
+
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
-    submodule_parser = module_parser.add_subparsers(dest='action', description='Target platform')
+    submodule_parser = module_parser.add_subparsers(dest='scope', description='Target platform')
 
     # LinkedIn
-    linkedin_module = submodule_parser.add_parser('linkedin', description='Scrap LinkedIn to fetch user profiles.')
-    linkedin_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
-    linkedin_module.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    oneaudit.modules.args_api_config(linkedin_module)
+    linkedin_module = submodule_parser.add_parser('linkedin')
+    linkedin_module_action = linkedin_module.add_subparsers(dest='action')
+
+    linkedin_scrapper_module = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
+    linkedin_scrapper_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
+    linkedin_scrapper_module.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    oneaudit.modules.args_api_config(linkedin_scrapper_module)
+
+    linkedin_parse_module = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
+    linkedin_parse_module.add_argument('-f', '--format', dest='format', choices=['rocketreach'], help="The input file format.")
+    linkedin_parse_module.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
+    linkedin_parse_module.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
 
     return parser.parse_args()
 
 
-def _rocketreach_fetch_records(args: OSINTLinkedInProgramData):
+def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
     results = {
         "source": "rocketreach",
         "date": time.time(),
@@ -89,11 +104,36 @@ def _rocketreach_fetch_records(args: OSINTLinkedInProgramData):
 
 def run(parser, module_parser):
     args = parse_args(parser, module_parser)
-    if args.action == 'linkedin':
-        args = OSINTLinkedInProgramData(args)
-
+    if args.scope == 'linkedin':
         results = []
-        results.append(_rocketreach_fetch_records(args))
+        if args.action == 'scrap':
+            args = OSINTScrapLinkedInProgramData(args)
+            results.extend(_rocketreach_fetch_records(args))
+        elif args.action == 'parse':
+            args = OSINTParseLinkedInProgramData(args)
+            try:
+                with open(args.input_file, 'r') as input_file:
+                    # RocketReach JSON
+                    entries = json.load(input_file)["records"]
+                    for entry in entries:
+                        emails = []
+                        for email in entry['emails']:
+                            if email['source'] == "predicted":
+                                if email['format_probability'] and email['format_probability'] < 35:
+                                    continue
+                                if email['confidence'] < 50:
+                                    continue
+                            emails.append(email['email'].lower())
+
+                        results.append({
+                            "first_name": entry["first_name"],
+                            "last_name": entry["last_name"],
+                            "linkedin_url": entry["linkedin_url"],
+                            'emails': emails,
+                        })
+
+            except (FileNotFoundError, json.JSONDecodeError) as e:
+                print(f"[+] Failed to parse results: '{e}'.")
 
         with open(args.output_file, 'w') as output_file:
             json.dump({
