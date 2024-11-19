@@ -11,6 +11,7 @@
 WIP
 
 * Use given cache folder or temporary as default
+* Support wildcard import for LinkedIn Parser
 * Can generate a company email during "parsing"
 
 ```json!
@@ -29,7 +30,7 @@ WIP
 
 ### LinkedIn OSINT
 
-You can use this module to get a list of LinkedIn profiles still working in the target company from their domain.
+You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
 ```bash
 $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
@@ -57,7 +58,7 @@ $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 }
 ```
 
-After exporting the results (e.g., as JSON using webhooks for RocketReach), you can parse them with:
+After exporting the results (e.g., as JSON using webhooks for RocketReach or after parsing the CSV to JSON), you can prepare them for use with the **leaks** module with:
 
 ```bash
 $ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_emails.json
