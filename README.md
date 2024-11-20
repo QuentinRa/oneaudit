@@ -12,7 +12,6 @@ WIP
 
 * Use given cache folder or temporary as default
 * Support wildcard import for LinkedIn Parser
-* Can generate a company email during "parsing"
 
 ```json!
 {
@@ -60,7 +59,7 @@ $ oneaudit socosint linkedin -d example.com -o osint.json
 }
 ```
 
-After exporting the results (must be done manually), you can prepare them for use with the **leaks** module with:
+After exporting the emails (must be done manually), you can prepare them for use with other module with:
 
 ```bash
 $ oneaudit socosint linkedin parse -s rocketreach -i rocketreach_export.json -o contacts.json

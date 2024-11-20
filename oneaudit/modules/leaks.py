@@ -5,6 +5,7 @@ import os
 import re
 import time
 import unidecode
+import oneaudit.api.leaks
 
 
 email_formats = {
@@ -154,9 +155,26 @@ def run(parser, module_parser):
     if args.action == 'clean':
         processor = LeaksCredentialProcessor(LeaksCleanProgramData(args))
         processor.cmdloop()
+        return
     elif args.action == 'download':
         args = LeaksDownloadProgramData(args)
-        print("Download", args)
+        provider = oneaudit.api.leaks.LeaksProviderManager()
+        results = {}
+        for credential in args.data['credentials']:
+            key = credential['login']
+            if key in results:
+                continue
+            results[key] = provider.get_base_data()
+            for email in credential['emails']:
+                results[key] = provider.append_data(email, results[key])
+
+        result = {
+            'version': 1.0,
+            'credentials': [
+                {'login': login} | data
+                for login, data in results.items()
+            ]
+        }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
         result = {
@@ -184,10 +202,10 @@ def run(parser, module_parser):
 
                 result["credentials"].append({
                     "login": email,
-                    "emails": [email
+                    "emails": [email.lower()
                         for email in set(target["emails"] if "emails" in target else [])
                         if not email.endswith(args.domain)
                     ]+[email]
                 })
-        with open(args.output_file, 'w') as output_file:
-            json.dump(result, output_file, indent=4)
+    with open(args.output_file, 'w') as output_file:
+        json.dump(result, output_file, indent=4)
