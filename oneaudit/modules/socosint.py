@@ -2,12 +2,12 @@ import argparse
 import json
 import time
 import rocketreach
-import oneaudit.modules
+import oneaudit.api
 
 
 class OSINTScrapLinkedInProgramData:
     def __init__(self, args):
-        oneaudit.modules.args_parse_api_config(self, args)
+        oneaudit.api.args_parse_api_config(self, args)
         self.company_name = args.company_domain
         self.output_file = args.output
 
@@ -29,7 +29,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     linkedin_scrapper = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
     linkedin_scrapper.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     linkedin_scrapper.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    oneaudit.modules.args_api_config(linkedin_scrapper)
+    oneaudit.api.args_api_config(linkedin_scrapper)
 
     linkedin_parse = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
     linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
@@ -60,13 +60,13 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
     try:
         while True:
             cached_result_key = "rocketreach_" + args.company_name + "_" + str(page)
-            data = oneaudit.modules.get_cached_result(cached_result_key)
+            data = oneaudit.api.get_cached_result(cached_result_key)
             if data is None:
                 s = s.params(start=page * 100 + 1, size=100)
                 result = s.execute()
                 if result.is_success:
                     data = result.response.json()
-                    oneaudit.modules.set_cached_result(cached_result_key, data)
+                    oneaudit.api.set_cached_result(cached_result_key, data)
                 else:
                     if result.response.status_code == 429:
                         wait = int(result.response.headers["retry-after"] if "retry-after" in result.response.headers else 2)
