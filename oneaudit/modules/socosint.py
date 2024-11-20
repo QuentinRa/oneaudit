@@ -115,9 +115,15 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
 
 
 def _rocketreach_parse_records(args, input_file):
+    results = {
+        "source": "rocketreach",
+        "date": time.time(),
+        "version": 1.0,
+        "targets": []
+    }
+
     if args.file_source != 'rocketreach':
-        return []
-    results = []
+        return results
     entries = json.load(input_file)["records"]
     for entry in entries:
         emails = []
@@ -129,7 +135,7 @@ def _rocketreach_parse_records(args, input_file):
                     continue
             emails.append(email['email'].lower())
 
-        results.append({
+        results["targets"].append({
             "first_name": entry["first_name"],
             "last_name": entry["last_name"],
             "linkedin_url": entry["linkedin_url"],
@@ -149,12 +155,12 @@ def run(parser, module_parser):
             args = OSINTParseLinkedInProgramData(args)
             try:
                 with open(args.input_file, 'r') as input_file:
-                    results.extend(_rocketreach_parse_records(args, input_file))
+                    results.append(_rocketreach_parse_records(args, input_file))
             except (FileNotFoundError, json.JSONDecodeError) as e:
                 print(f"[+] Failed to parse results: '{e}'.")
 
         with open(args.output_file, 'w') as output_file:
             json.dump({
-                "version": 1.0,
+                "version": 1.1,
                 "entries": results,
             }, output_file, indent=4)

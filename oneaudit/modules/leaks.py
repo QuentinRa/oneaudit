@@ -1,8 +1,11 @@
 import argparse
 import cmd
 import json
-import os.path
+import os
+import re
 import time
+import unidecode
+
 
 email_formats = {
     'first.last': '{firstname}.{lastname}@{domain}',
@@ -12,6 +15,7 @@ email_formats = {
     'f.last': '{firstname[0]}.{lastname}@{domain}',
     'flast': '{firstname[0]}{lastname}@{domain}',
 }
+
 
 class LeaksCleanProgramData:
     def __init__(self, args):
@@ -23,7 +27,20 @@ class LeaksCleanProgramData:
 
 class LeaksDownloadProgramData:
     def __init__(self, args):
-        pass
+        with open(args.input, 'r') as file_data:
+            self.data = json.load(file_data)
+        self.output_file = args.output
+
+
+class LeaksOSINTParseProgramData:
+    def __init__(self, args):
+        with open(args.input, 'r') as file_data:
+            self.data = json.load(file_data)
+        self.output_file = args.output
+        self.domain = args.company_domain
+        self.email_format = email_formats[args.email_format]
+        self.email_regex = re.compile(r'\b[A-Za-z0-9.-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+
 
 class LeaksCredentialProcessor(cmd.Cmd):
     intro = "Welcome to the leaks credential processor. Type 'help' for a list of commands."
@@ -112,21 +129,24 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     global email_formats
 
     submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.')
-    cleaner_module_parser = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
-    cleaner_module_parser.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
-    cleaner_module_parser.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    cleaner_module_parser.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
+
+    parse_osint = submodule_parser.add_parser('parse', description='Parse OSINT results into records when can download.')
+    parse_osint.add_argument('-i', metavar='input.json', dest='input', help='JSON contacts file from OSINT investigations.', required=True)
+    parse_osint.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    parse_osint.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
+    parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
+
+    clean_leaks = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
+    clean_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
+    clean_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    clean_leaks.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
 
     download_leaks = submodule_parser.add_parser('download', description='Download leaks from enabled APIs.')
     download_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with known data about targets.', required=True)
     download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
-    download_leaks.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys())
+    download_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
 
-    args = parser.parse_args()
-    if args.action == 'download' and args.email_format and not args.company_domain:
-        download_leaks.error("Argument -d/--domain must be provided when using -f/--format.")
-
-    return args
+    return parser.parse_args()
 
 
 def run(parser, module_parser):
@@ -137,3 +157,37 @@ def run(parser, module_parser):
     elif args.action == 'download':
         args = LeaksDownloadProgramData(args)
         print("Download", args)
+    elif args.action == 'parse':
+        args = LeaksOSINTParseProgramData(args)
+        result = {
+            'version': '1.0',
+            'credentials': []
+        }
+        for entry in args.data['entries']:
+            for target in entry['targets']:
+                firstname = target['first_name'] if 'first_name' in target else ""
+                lastname = target['last_name'] if 'last_name' in target else ""
+                if 'full_name' in target and ' ' in target['full_name']:
+                    words = target['full_name'].split()[0]
+                    firstname = words[0]
+                    lastname = ''.join(words[1:])
+
+                email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain)
+                email = unidecode.unidecode(email.lower().replace(" ", "").replace("-", ""))
+
+                email_valid = firstname and lastname and "." not in firstname+lastname
+                email_valid = email_valid and "_" not in firstname+lastname
+                email_valid = email_valid and args.email_regex.match(email) is not None
+                if not email_valid:
+                    print(f"Invalid Email: {email}")
+                    continue
+
+                result["credentials"].append({
+                    "login": email,
+                    "emails": [email
+                        for email in set(target["emails"] if "emails" in target else [])
+                        if not email.endswith(args.domain)
+                    ]+[email]
+                })
+        with open(args.output_file, 'w') as output_file:
+            json.dump(result, output_file, indent=4)
