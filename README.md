@@ -30,6 +30,8 @@ WIP
 
 ### LinkedIn OSINT
 
+✍️ Get name, birthdate, and other PII. Additionally, can lookup for emails.
+
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
 ```bash
@@ -58,7 +60,7 @@ $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 }
 ```
 
-After exporting the results (e.g., as JSON using webhooks for RocketReach or after parsing the CSV to JSON), you can prepare them for use with the **leaks** module with:
+After exporting the results (must be done manually), you can prepare them for use with the **leaks** module with:
 
 ```bash
 $ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_emails.json

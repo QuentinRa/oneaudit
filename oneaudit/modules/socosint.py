@@ -144,7 +144,7 @@ def run(parser, module_parser):
         results = []
         if args.action == 'scrap':
             args = OSINTScrapLinkedInProgramData(args)
-            results.extend(_rocketreach_fetch_records(args))
+            results.append(_rocketreach_fetch_records(args))
         elif args.action == 'parse':
             args = OSINTParseLinkedInProgramData(args)
             try:
