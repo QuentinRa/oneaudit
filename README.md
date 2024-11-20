@@ -63,7 +63,7 @@ $ oneaudit socosint linkedin -d example.com -o results/linkedin.json
 After exporting the results (must be done manually), you can prepare them for use with the **leaks** module with:
 
 ```bash
-$ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_emails.json
+$ oneaudit socosint linkedin parse -f "rocketreach" -i rocketreach_export.json -o linkedin_contacts.json
 ```
 
 ```json

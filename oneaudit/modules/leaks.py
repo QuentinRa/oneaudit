@@ -4,6 +4,14 @@ import json
 import os.path
 import time
 
+email_formats = {
+    'first.last': '{firstname}.{lastname}@{domain}',
+    'first_last': '{firstname}_{lastname}@{domain}',
+    'firstlast': '{firstname}{lastname}@{domain}',
+    'last.first': '{lastname}{firstname}@{domain}',
+    'f.last': '{firstname[0]}.{lastname}@{domain}',
+    'flast': '{firstname[0]}{lastname}@{domain}',
+}
 
 class LeaksCleanProgramData:
     def __init__(self, args):
@@ -101,16 +109,24 @@ class LeaksCredentialProcessor(cmd.Cmd):
 
 
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
+    global email_formats
+
     submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.')
     cleaner_module_parser = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
-    cleaner_module_parser.add_argument('-f', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
+    cleaner_module_parser.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
     cleaner_module_parser.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     cleaner_module_parser.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
 
-    download_leaks = submodule_parser.add_parser('download', description='Download leaks from configured APIs.')
+    download_leaks = submodule_parser.add_parser('download', description='Download leaks from enabled APIs.')
+    download_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with known data about targets.', required=True)
+    download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
+    download_leaks.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys())
 
+    args = parser.parse_args()
+    if args.action == 'download' and args.email_format and not args.company_domain:
+        download_leaks.error("Argument -d/--domain must be provided when using -f/--format.")
 
-    return parser.parse_args()
+    return args
 
 
 def run(parser, module_parser):
