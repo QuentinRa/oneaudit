@@ -35,7 +35,7 @@ WIP
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
 ```bash
-$ oneaudit socosint linkedin -d example.com -o results/linkedin.json
+$ oneaudit socosint linkedin -d example.com -o osint.json
 ```
 
 ```json
@@ -68,14 +68,47 @@ $ oneaudit socosint linkedin parse -s rocketreach -i rocketreach_export.json -o 
 
 ```json
 {
-  "version": 1.0,
+  "version": 1.1,
   "entries": [
     {
-      "first_name": "John",
-      "last_name": "Doe",
-      "linkedin_url": "https://www.linkedin.com/in/johndoe",
+      "source": "rocketreach",
+      "date": 1732044168.2800202,
+      "version": 1.0,
+      "targets": [
+        {
+          "first_name": "John",
+          "last_name": "Doe",
+          "linkedin_url": "https://www.linkedin.com/in/johndoe",
+          "emails": [
+            "johndoe@example.com"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Leaks
+
+#### From OSINT Results
+
+We can compute a list of targets from OSINT results.
+
+```bash
+$ oneaudit leaks parse -i osint.json -f flast -d example.com -o targets.json
+$ oneaudit leaks parse -i contacts.json -f flast -d example.com -o targets.json
+```
+
+```json
+{
+  "version": "1.0",
+  "credentials": [
+    {
+      "login": "johndoe@example.com",
       "emails": [
-        "johndoe@example.com"
+        "johndoe@example.com",
+        "johndoe@dev.example.com"
       ]
     }
   ]
