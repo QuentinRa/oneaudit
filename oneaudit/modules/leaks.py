@@ -28,6 +28,7 @@ class LeaksCleanProgramData:
 
 class LeaksDownloadProgramData:
     def __init__(self, args):
+        oneaudit.api.args_parse_api_config(self, args)
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
@@ -146,6 +147,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     download_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with known data about targets.', required=True)
     download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
     download_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    oneaudit.api.args_api_config(download_leaks)
 
     return parser.parse_args()
 
@@ -158,7 +160,7 @@ def run(parser, module_parser):
         return
     elif args.action == 'download':
         args = LeaksDownloadProgramData(args)
-        provider = oneaudit.api.leaks.LeaksProviderManager()
+        provider = oneaudit.api.leaks.LeaksProviderManager(args.api_keys)
         results = {}
         for credential in args.data['credentials']:
             key = credential['login']
@@ -168,12 +170,19 @@ def run(parser, module_parser):
             for email in credential['emails']:
                 results[key] = provider.append_data(email, results[key])
 
+        credentials = []
+        for login, data in results.items():
+            final_data = {'login': login}
+            for k, v in data.items():
+                if type(v) is list and len(v) > 0 and type(v[0]) is str:
+                    final_data[k] = sorted([e for e in set(v) if e])
+                else:
+                    final_data[k] = v
+            credentials.append(final_data)
+
         result = {
             'version': 1.0,
-            'credentials': [
-                {'login': login} | data
-                for login, data in results.items()
-            ]
+            'credentials':credentials
         }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)

@@ -2,12 +2,12 @@ import time
 
 
 class LeaksProviderManager:
-    def __init__(self):
+    def __init__(self, api_keys):
         import oneaudit.api.leaks.hudsonrocks
 
         self.last_called = {}
         self.providers = [
-            oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI()
+            oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys)
         ]
 
     def trigger(self, handler, wait_time):
@@ -28,7 +28,8 @@ class LeaksProviderManager:
     def get_base_data(self):
         return {
             'passwords': [],
-            'censored': [],
+            'censored_logins': [],
+            'censored_passwords': [],
             'hashes': [],
             'info_stealers': [],
         }
@@ -36,7 +37,8 @@ class LeaksProviderManager:
     def append_data(self, email, current):
         result = {
             'passwords': current['passwords'],
-            'censored': current['censored'],
+            'censored_logins': current['censored_logins'],
+            'censored_passwords': current['censored_passwords'],
             'hashes': current['hashes'],
             'info_stealers': current['info_stealers'],
         }
@@ -45,10 +47,8 @@ class LeaksProviderManager:
             cached, api_result = provider.fetch_results(email)
             if not cached:
                 self.trigger(provider.__class__.__name__, provider.get_rate())
-            for k, v in api_result:
+            for k, v in api_result.items():
                 result[k].extend(v)
-
-            print(cached, api_result)
 
         return result
 
