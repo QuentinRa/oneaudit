@@ -14,7 +14,7 @@ class OSINTScrapLinkedInProgramData:
 
 class OSINTParseLinkedInProgramData:
     def __init__(self, args):
-        self.file_format = args.format
+        self.file_source = args.source
         self.input_file = args.input
         self.output_file = args.output
 
@@ -26,15 +26,15 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     linkedin_module = submodule_parser.add_parser('linkedin')
     linkedin_module_action = linkedin_module.add_subparsers(dest='action')
 
-    linkedin_scrapper_module = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
-    linkedin_scrapper_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
-    linkedin_scrapper_module.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    oneaudit.modules.args_api_config(linkedin_scrapper_module)
+    linkedin_scrapper = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
+    linkedin_scrapper.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
+    linkedin_scrapper.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    oneaudit.modules.args_api_config(linkedin_scrapper)
 
-    linkedin_parse_module = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
-    linkedin_parse_module.add_argument('-f', '--format', dest='format', choices=['rocketreach'], help="The input file format.")
-    linkedin_parse_module.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
-    linkedin_parse_module.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    linkedin_parse = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
+    linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
+    linkedin_parse.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
+    linkedin_parse.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
 
     return parser.parse_args()
 
@@ -115,7 +115,7 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
 
 
 def _rocketreach_parse_records(args, input_file):
-    if args.file_format != 'rocketreach':
+    if args.file_source != 'rocketreach':
         return []
     results = []
     entries = json.load(input_file)["records"]
