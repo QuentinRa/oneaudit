@@ -32,7 +32,7 @@ class HudsonRocksAPI(LeaksProvider):
             result['censored_logins'].extend(stealer['top_logins'])
             result['censored_passwords'].extend(stealer['top_passwords'])
 
-        return cached, result
+        yield cached, result
 
     def handle_rate_limit(self, response):
         time.sleep(60)

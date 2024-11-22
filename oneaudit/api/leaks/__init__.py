@@ -79,7 +79,7 @@ class LeaksProvider:
         self.request_args = request_args
 
     def fetch_email_results(self, email):
-        return True, {}
+        yield True, {}
 
     def fetch_domain_results(self, domain):
         yield True, {}
