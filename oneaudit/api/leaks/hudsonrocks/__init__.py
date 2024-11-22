@@ -1,7 +1,6 @@
 from oneaudit.api.leaks import LeaksProvider
 
 import time
-import requests
 
 # https://cavalier.hudsonrock.com/docs
 class HudsonRocksAPI(LeaksProvider):
