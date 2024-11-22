@@ -1,4 +1,6 @@
 import time
+import requests
+import oneaudit.api
 
 
 class LeaksProviderManager:
@@ -54,8 +56,29 @@ class LeaksProviderManager:
 
 
 class LeaksProvider:
+    def __init__(self, unique_identifier, request_args):
+        self.unique_identifier = unique_identifier
+        self.request_args = request_args
+
     def fetch_results(self, email):
         return False, {}
+
+    def fetch_results_using_cache(self, email):
+        cached = True
+        cached_result_key = self.unique_identifier + email
+        data = oneaudit.api.get_cached_result(cached_result_key)
+        if data is None:
+            cached = False
+            response = requests.request(**self.request_args)
+            if response.status_code == 429:
+                self.handle_rate_limit(response)
+                return self.fetch_results(email)
+            data = response.json()
+            oneaudit.api.set_cached_result(cached_result_key, data)
+        return cached, data
+
+    def handle_rate_limit(self, response):
+        pass
 
     def get_rate(self):
         return 5
