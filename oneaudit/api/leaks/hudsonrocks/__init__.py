@@ -13,7 +13,7 @@ class HudsonRocksAPI(LeaksProvider):
             }
         )
 
-    def fetch_results(self, email):
+    def fetch_email_results(self, email):
         # Update parameters
         self.request_args['params'] = {'email': email}
         # Send the request

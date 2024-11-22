@@ -6,10 +6,12 @@ import oneaudit.api
 class LeaksProviderManager:
     def __init__(self, api_keys):
         import oneaudit.api.leaks.hudsonrocks
+        import oneaudit.api.leaks.whiteintel
 
         self.last_called = {}
         self.providers = [
-            oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys)
+            oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
+            oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ]
 
     def trigger(self, handler, wait_time):
@@ -46,11 +48,27 @@ class LeaksProviderManager:
         }
 
         for provider in self.providers:
-            cached, api_result = provider.fetch_results(email)
-            if not cached:
-                self.trigger(provider.__class__.__name__, provider.get_rate())
-            for k, v in api_result.items():
-                result[k].extend(v)
+            for cached, api_result in provider.fetch_email_results(email):
+                if not cached:
+                    self.trigger(provider.__class__.__name__, provider.get_rate())
+                for k, v in api_result.items():
+                    result[k].extend(v)
+
+        return result
+
+    def investigate_domain(self, domain):
+        result = {
+            'censored_credentials': [],
+            'leaked_urls': [],
+        }
+
+        if domain is not None:
+            for provider in self.providers:
+                for cached, api_result in provider.fetch_domain_results(domain):
+                    if not cached:
+                        self.trigger(provider.__class__.__name__, provider.get_rate())
+                    for k, v in api_result.items():
+                        result[k].extend(v)
 
         return result
 
@@ -60,19 +78,27 @@ class LeaksProvider:
         self.unique_identifier = unique_identifier
         self.request_args = request_args
 
-    def fetch_results(self, email):
-        return False, {}
+    def fetch_email_results(self, email):
+        return True, {}
 
-    def fetch_results_using_cache(self, email):
+    def fetch_domain_results(self, domain):
+        yield True, {}
+
+    def fetch_results_using_cache(self, variable_key):
         cached = True
-        cached_result_key = self.unique_identifier + email
+        cached_result_key = self.unique_identifier + variable_key
         data = oneaudit.api.get_cached_result(cached_result_key)
         if data is None:
             cached = False
             response = requests.request(**self.request_args)
             if response.status_code == 429:
                 self.handle_rate_limit(response)
-                return self.fetch_results(email)
+                return self.fetch_email_results(variable_key)
+            # todo: fixme
+            if response.status_code not in [200]:
+                print(response.text)
+                print(response.status_code)
+                raise Exception("This response code was not allowed/handled.")
             data = response.json()
             oneaudit.api.set_cached_result(cached_result_key, data)
         return cached, data

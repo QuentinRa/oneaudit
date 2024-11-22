@@ -32,6 +32,7 @@ class LeaksDownloadProgramData:
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
+        self.company_domain = args.company_domain
 
 
 class LeaksOSINTParseProgramData:
@@ -130,7 +131,7 @@ class LeaksCredentialProcessor(cmd.Cmd):
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
     global email_formats
 
-    submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.')
+    submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.', required=True)
 
     parse_osint = submodule_parser.add_parser('parse', description='Parse OSINT results into records when can download.')
     parse_osint.add_argument('-i', metavar='input.json', dest='input', help='JSON contacts file from OSINT investigations.', required=True)
@@ -162,6 +163,8 @@ def run(parser, module_parser):
         args = LeaksDownloadProgramData(args)
         provider = oneaudit.api.leaks.LeaksProviderManager(args.api_keys)
         results = {}
+        additional_data = provider.investigate_domain(args.company_domain)
+
         for credential in args.data['credentials']:
             key = credential['login']
             if key in results:
@@ -182,7 +185,8 @@ def run(parser, module_parser):
 
         result = {
             'version': 1.0,
-            'credentials':credentials
+            'credentials':credentials,
+            "additional": additional_data,
         }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
@@ -216,5 +220,6 @@ def run(parser, module_parser):
                         if not email.endswith(args.domain)
                     ]+[email]
                 })
+
     with open(args.output_file, 'w') as output_file:
         json.dump(result, output_file, indent=4)
