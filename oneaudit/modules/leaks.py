@@ -7,6 +7,7 @@ import time
 import unidecode
 import oneaudit.api.leaks
 import oneaudit.modules
+import oneaudit.utils
 
 email_formats = {
     'first.last': '{firstname}.{lastname}@{domain}',
@@ -20,6 +21,7 @@ email_formats = {
 
 class LeaksCleanProgramData:
     def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
@@ -28,6 +30,7 @@ class LeaksCleanProgramData:
 
 class LeaksDownloadProgramData:
     def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
         oneaudit.api.args_parse_api_config(self, args)
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
@@ -37,6 +40,7 @@ class LeaksDownloadProgramData:
 
 class LeaksOSINTParseProgramData:
     def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
@@ -138,17 +142,20 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     parse_osint.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     parse_osint.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
+    oneaudit.utils.args_verbose_config(parse_osint)
 
     clean_leaks = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
     clean_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
     clean_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     clean_leaks.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
+    oneaudit.utils.args_verbose_config(clean_leaks)
 
     download_leaks = submodule_parser.add_parser('download', description='Download leaks from enabled APIs.')
     download_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with known data about targets.', required=True)
     download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
     download_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     oneaudit.api.args_api_config(download_leaks)
+    oneaudit.utils.args_verbose_config(download_leaks)
 
     return parser.parse_args()
 

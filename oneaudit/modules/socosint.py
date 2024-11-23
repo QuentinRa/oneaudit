@@ -3,10 +3,12 @@ import json
 import time
 import rocketreach
 import oneaudit.api
+import oneaudit.utils
 
 
 class OSINTScrapLinkedInProgramData:
     def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
         oneaudit.api.args_parse_api_config(self, args)
         self.company_name = args.company_domain
         self.output_file = args.output
@@ -14,6 +16,7 @@ class OSINTScrapLinkedInProgramData:
 
 class OSINTParseLinkedInProgramData:
     def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
         self.file_source = args.source
         self.input_file = args.input
         self.output_file = args.output
@@ -30,11 +33,13 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     linkedin_scrapper.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     linkedin_scrapper.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     oneaudit.api.args_api_config(linkedin_scrapper)
+    oneaudit.utils.args_verbose_config(linkedin_scrapper)
 
     linkedin_parse = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
     linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
     linkedin_parse.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
     linkedin_parse.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    oneaudit.utils.args_verbose_config(linkedin_parse)
 
     return parser.parse_args()
 
