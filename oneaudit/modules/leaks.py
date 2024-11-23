@@ -1,6 +1,7 @@
 import argparse
 import cmd
 import json
+import logging
 import os
 import re
 import time
@@ -202,6 +203,7 @@ def run(parser, module_parser):
         }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
+        logger = logging.getLogger("oneaudit")
         result = {
             'version': '1.0',
             'credentials': []
@@ -222,15 +224,18 @@ def run(parser, module_parser):
                 email_valid = email_valid and "_" not in firstname+lastname
                 email_valid = email_valid and args.email_regex.match(email) is not None
                 if not email_valid:
-                    print(f"Invalid Email: {email}")
+                    logger.warning(f"Invalid Computed Login: {email}")
                     continue
+                else:
+                    emails = [email] + [email.lower()
+                        for email in set(target["emails"] if "emails" in target else [])
+                        if not email.endswith(args.domain)
+                    ]
+                    logger.debug(f"Using login: {email} and the following emails: {emails}")
 
                 result["credentials"].append({
                     "login": email,
-                    "emails": [email.lower()
-                        for email in set(target["emails"] if "emails" in target else [])
-                        if not email.endswith(args.domain)
-                    ]+[email]
+                    "emails": emails
                 })
 
     with open(args.output_file, 'w') as output_file:
