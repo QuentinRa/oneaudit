@@ -4,15 +4,18 @@ import dataclasses
 
 class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
     def __init__(self, api_keys):
+        import oneaudit.api.leaks.aura
         import oneaudit.api.leaks.hudsonrocks
         import oneaudit.api.leaks.whiteintel
         super().__init__([
+            oneaudit.api.leaks.aura.AuraAPI(api_keys),
             oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ])
 
     def get_base_data(self):
         return {
+            'logins': [],
             'passwords': [],
             'censored_logins': [],
             'censored_passwords': [],
@@ -22,6 +25,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
 
     def append_data(self, email, current):
         result = {
+            'logins': current['logins'],
             'passwords': current['passwords'],
             'censored_logins': current['censored_logins'],
             'censored_passwords': current['censored_passwords'],

@@ -25,8 +25,8 @@ def args_parse_api_config(obj, args):
             pass
 
 
-def set_cached_result(key, data):
-    url_hash = "../cache/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+def set_cached_result(api_name, key, data):
+    url_hash = f"../cache/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
     with open(url_hash, 'w') as f:
         json.dump({
             "timestamp": time.time(),
@@ -114,7 +114,7 @@ class DefaultProvider:
                 self.logger.error(f"[!] {self.__class__.__name__}: {response.text}")
                 return True, {}
 
-            if response.status_code not in [200]:
+            if response.status_code not in [200, 204]:
                 self.logger.error(self.__class__.__name__)
                 self.logger.error(response.text)
                 self.logger.error(response.status_code)
@@ -122,7 +122,8 @@ class DefaultProvider:
 
             data = response.json()
 
-            set_cached_result(cached_result_key, data)
+            set_cached_result(self.api_name, cached_result_key, data)
+
         return cached, data
 
     def handle_request(self):

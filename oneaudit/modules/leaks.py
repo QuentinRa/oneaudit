@@ -198,7 +198,7 @@ def run(parser, module_parser):
             credentials.append(final_data)
 
         result = {
-            'version': 1.1,
+            'version': 1.2,
             'credentials': credentials,
             "additional": additional_data,
         }

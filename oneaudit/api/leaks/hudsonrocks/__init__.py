@@ -1,8 +1,6 @@
-from faulthandler import is_enabled
-
 from oneaudit.api.leaks import LeaksProvider, InfoStealerLeakDataFormat
-
 import time
+
 
 # https://cavalier.hudsonrock.com/docs
 class HudsonRocksAPI(LeaksProvider):
