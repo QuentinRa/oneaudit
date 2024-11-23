@@ -1,7 +1,4 @@
-import time
-import requests
 import oneaudit.api
-import fake_useragent
 import dataclasses
 
 
@@ -32,16 +29,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'info_stealers': current['info_stealers'],
         }
 
-        for provider in self.providers:
-            if not provider.is_endpoint_enabled:
-                continue
-            for cached, api_result in provider.fetch_email_results(email):
-                if not cached:
-                    self.trigger(provider.__class__.__name__, provider.get_rate())
-                for k, v in api_result.items():
-                    result[k].extend(v)
-
-        return result
+        return self._call_method_on_each_provider(result, 'fetch_email_results', email)
 
     def investigate_domain(self, domain):
         result = {
@@ -49,20 +37,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'leaked_urls': [],
         }
 
-        if domain is not None:
-            for provider in self.providers:
-                if not provider.is_endpoint_enabled:
-                    continue
-                for cached, api_result in provider.fetch_domain_results(domain):
-                    if not cached:
-                        self.trigger(provider.__class__.__name__, provider.get_rate())
-                    for k, v in api_result.items():
-                        result[k].extend(v)
-
-        for k, v in result.items():
-            result[k] = sorted([e for e in set(v) if e])
-
-        return result
+        return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)
 
 
 class LeaksProvider(oneaudit.api.DefaultProvider):

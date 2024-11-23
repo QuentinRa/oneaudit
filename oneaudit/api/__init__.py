@@ -70,6 +70,21 @@ class DefaultProviderManager:
     def append_data(self, email, current):
         pass
 
+    def _call_method_on_each_provider(self, result, method_name, *args):
+        for provider in self.providers:
+            if not provider.is_endpoint_enabled:
+                continue
+            for cached, api_result in getattr(provider, method_name, None)(*args):
+                if not cached:
+                    self.trigger(provider.__class__.__name__, provider.get_rate())
+                for k, v in api_result.items():
+                    result[k].extend(v)
+
+        for k, v in result.items():
+            result[k] = sorted([e for e in set(v) if e])
+
+        return result
+
 class DefaultProvider:
     def __init__(self, unique_identifier, request_args, is_endpoint_enabled):
         self.unique_identifier = unique_identifier
