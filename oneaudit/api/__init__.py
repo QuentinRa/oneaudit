@@ -1,4 +1,5 @@
 import argparse
+import logging
 import fake_useragent
 import requests
 import hashlib
@@ -74,6 +75,7 @@ class DefaultProviderManager:
         for provider in self.providers:
             if not provider.is_endpoint_enabled:
                 continue
+            provider.logger.info(f"Querying leaks on {provider.api_name} (args={args})")
             for cached, api_result in getattr(provider, method_name, None)(*args):
                 if not cached:
                     self.trigger(provider.__class__.__name__, provider.get_rate())
@@ -86,13 +88,15 @@ class DefaultProviderManager:
         return result
 
 class DefaultProvider:
-    def __init__(self, unique_identifier, request_args, is_endpoint_enabled):
+    def __init__(self, unique_identifier, request_args, api_name, api_keys):
+        self.api_name = api_name
         self.unique_identifier = unique_identifier
         self.request_args = request_args
         if "headers" not in self.request_args:
             self.request_args["headers"] = {}
         self.request_args["headers"]['User-Agent'] = fake_useragent.UserAgent().random
-        self.is_endpoint_enabled = is_endpoint_enabled
+        self.is_endpoint_enabled = api_keys.get(api_name, None) is not None
+        self.logger = logging.getLogger('oneaudit')
 
     def fetch_results_using_cache(self, variable_key):
         cached = True
@@ -106,13 +110,13 @@ class DefaultProvider:
                 return self.fetch_results_using_cache(variable_key)
 
             if response.status_code == 401:
-                print(f"[!] {self.__class__.__name__}: {response.text}")
+                self.logger.error(f"[!] {self.__class__.__name__}: {response.text}")
                 return True, {}
 
             if response.status_code not in [200]:
-                print(self.__class__.__name__)
-                print(response.text)
-                print(response.status_code)
+                self.logger.error(self.__class__.__name__)
+                self.logger.error(response.text)
+                self.logger.error(response.status_code)
                 raise Exception("This response code was not allowed/handled.")
 
             data = response.json()

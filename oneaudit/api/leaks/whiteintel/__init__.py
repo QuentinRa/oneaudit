@@ -6,6 +6,7 @@ import time
 class WhiteIntelAPI(LeaksProvider):
     def __init__(self, api_keys):
         super().__init__(
+            api_name='whiteintel',
             unique_identifier='whiteintel_regular_',
             request_args={
                 'method': 'POST',
@@ -14,7 +15,7 @@ class WhiteIntelAPI(LeaksProvider):
                     'Authorization': f'Bearer {api_keys.get('whiteintel', None)}'
                 }
             },
-            is_endpoint_enabled=api_keys.get('whiteintel', None) is not None
+            api_keys=api_keys
         )
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
