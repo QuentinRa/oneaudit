@@ -163,6 +163,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
 
 def run(parser, module_parser):
     args = parse_args(parser, module_parser)
+    logger = logging.getLogger("oneaudit")
     if args.action == 'clean':
         processor = LeaksCredentialProcessor(LeaksCleanProgramData(args))
         processor.cmdloop()
@@ -186,7 +187,7 @@ def run(parser, module_parser):
             final_data = {'login': login}
             for k, v in data.items():
                 if type(v) is not list:
-                    print("Error:", f"k={k}", f"v={v}")
+                    logger.error("Unexpected type for:", f"k={k}", f"v={v}")
                     continue
 
                 if len(v) == 0:
@@ -203,7 +204,6 @@ def run(parser, module_parser):
         }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
-        logger = logging.getLogger("oneaudit")
         result = {
             'version': '1.0',
             'credentials': []

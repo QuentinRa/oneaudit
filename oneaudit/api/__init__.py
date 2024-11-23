@@ -68,12 +68,6 @@ class DefaultProviderManager:
 
         self.last_called[handler] = time.time()
 
-    def get_base_data(self):
-        return {}
-
-    def append_data(self, email, current):
-        pass
-
     def _call_method_on_each_provider(self, result, method_name, *args):
         for provider in self.providers:
             if not provider.is_endpoint_enabled:
