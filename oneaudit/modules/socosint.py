@@ -56,7 +56,6 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
     s = rr.person.search().filter(current_employer=f'\"{args.company_name}\"')
 
     page = 0
-    lookup_disabled = False
     try:
         while True:
             cached_result_key = "rocketreach_" + args.company_name + "_" + str(page)
@@ -88,23 +87,7 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
                     '_status': profile['status'],
                     '_count': len(target_emails),
                 })
-                # We could add more filters to reduce the number of looked profiles
-                if not lookup_disabled and profile['status'] == "not queued":
-                    try:
-                        rr.person.lookup(linkedin_url=profile["linkedin_url"], block=False)
-                    except rocketreach.RocketReachException:
-                        lookup_disabled = True
-            # It consumes "export" and "lookup" credits at once, we choose not to use it
-            # requests.post(
-            #     'https://api.rocketreach.co/api/v2/bulkLookup',
-            #     headers={
-            #         'Api-Key': api_key
-            #     },
-            #     json={
-            #         'webhook_id': args.webhook_id,
-            #         'queries': [{"linkedin_url": profile['linkedin_url']} for profile in data['profiles']]
-            #     }
-            # )
+
             pagination = data['pagination']
             if pagination['next'] > pagination['total']:
                 break

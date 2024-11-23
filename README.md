@@ -14,6 +14,7 @@ WIP
 * Divide cache folder in api folders
 * Support wildcard import for LinkedIn Parser
 * Adding verbose to see enabled libraries
+* Add the last route for WhiteIntel
 
 ```json!
 {
