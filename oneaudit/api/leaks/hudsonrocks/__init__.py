@@ -7,7 +7,6 @@ class HudsonRocksAPI(LeaksProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='hudsonrocks',
-            unique_identifier='hudsonrocks_free_',
             request_args={
                 'method': 'GET',
                 'url': 'https://cavalier.hudsonrock.com/api/json/v2/osint-tools/search-by-email',

@@ -8,7 +8,6 @@ class RocketReachAPI(OSINTProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='rocketreach',
-            unique_identifier='rocketreach_',
             request_args={},
             api_keys=api_keys
         )

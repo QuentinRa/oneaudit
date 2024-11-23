@@ -87,7 +87,7 @@ class DefaultProviderManager:
 class DefaultProvider:
     def __init__(self, unique_identifier, request_args, api_name, api_keys):
         self.api_name = api_name
-        self.unique_identifier = unique_identifier
+        self.unique_identifier = f'{api_name}_'
 
         self.request_args = request_args
         if "headers" not in self.request_args:

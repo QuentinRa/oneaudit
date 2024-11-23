@@ -7,7 +7,6 @@ class AuraAPI(LeaksProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='aura',
-            unique_identifier='aura_free_',
             request_args={
                 'url': 'https://scan.aura.com/results?_data=routes%2Fresults',
             },

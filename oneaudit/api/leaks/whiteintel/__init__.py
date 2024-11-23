@@ -7,7 +7,6 @@ class WhiteIntelAPI(LeaksProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='whiteintel',
-            unique_identifier='whiteintel_regular_',
             request_args={
                 'method': 'POST',
                 'json': {},
