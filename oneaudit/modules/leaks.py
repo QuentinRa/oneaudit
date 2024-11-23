@@ -6,7 +6,7 @@ import re
 import time
 import unidecode
 import oneaudit.api.leaks
-
+import oneaudit.modules
 
 email_formats = {
     'first.last': '{firstname}.{lastname}@{domain}',
@@ -177,15 +177,20 @@ def run(parser, module_parser):
         for login, data in results.items():
             final_data = {'login': login}
             for k, v in data.items():
-                if type(v) is list and len(v) > 0 and type(v[0]) is str:
-                    final_data[k] = sorted([e for e in set(v) if e])
-                else:
-                    final_data[k] = v
+                if type(v) is not list:
+                    print("Error:", f"k={k}", f"v={v}")
+                    continue
+
+                if len(v) == 0:
+                    continue
+
+                final_data[k] = [e for e in set(v) if e]
+
             credentials.append(final_data)
 
         result = {
-            'version': 1.0,
-            'credentials':credentials,
+            'version': 1.1,
+            'credentials': credentials,
             "additional": additional_data,
         }
     elif args.action == 'parse':
@@ -222,4 +227,4 @@ def run(parser, module_parser):
                 })
 
     with open(args.output_file, 'w') as output_file:
-        json.dump(result, output_file, indent=4)
+        json.dump(result, output_file, cls=oneaudit.modules.GenericObjectEncoder,  indent=4)

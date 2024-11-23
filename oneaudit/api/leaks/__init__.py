@@ -1,6 +1,7 @@
 import time
 import requests
 import oneaudit.api
+import fake_useragent
 
 
 class LeaksProviderManager:
@@ -58,7 +59,7 @@ class LeaksProviderManager:
 
     def investigate_domain(self, domain):
         result = {
-            'censored_credentials': [],
+            'censored_data': [],
             'leaked_urls': [],
         }
 
@@ -70,6 +71,9 @@ class LeaksProviderManager:
                     for k, v in api_result.items():
                         result[k].extend(v)
 
+        for k, v in result.items():
+            result[k] = sorted([e for e in set(v) if e])
+
         return result
 
 
@@ -77,6 +81,9 @@ class LeaksProvider:
     def __init__(self, unique_identifier, request_args):
         self.unique_identifier = unique_identifier
         self.request_args = request_args
+        if "headers" not in self.request_args:
+            self.request_args["headers"] = {}
+        self.request_args["headers"]['User-Agent'] = fake_useragent.UserAgent().random
 
     def fetch_email_results(self, email):
         yield True, {}
@@ -94,12 +101,19 @@ class LeaksProvider:
             if response.status_code == 429:
                 self.handle_rate_limit(response)
                 return self.fetch_email_results(variable_key)
-            # todo: fixme
+
+            if response.status_code == 401:
+                print(f"[!] {self.__class__.__name__}: {response.text}")
+                return True, {}
+
             if response.status_code not in [200]:
+                print(self.__class__.__name__)
                 print(response.text)
                 print(response.status_code)
                 raise Exception("This response code was not allowed/handled.")
+
             data = response.json()
+
             oneaudit.api.set_cached_result(cached_result_key, data)
         return cached, data
 
@@ -108,3 +122,35 @@ class LeaksProvider:
 
     def get_rate(self):
         return 5
+
+
+class InfoStealerLeakDataFormat:
+    def __init__(self, computer_name, operating_system, date_compromised):
+        self.computer_name = computer_name
+        self.operating_system = operating_system
+        self.date_compromised = date_compromised[:10]
+
+    def __eq__(self, other):
+        # Check equality based on attribute values
+        if isinstance(other, InfoStealerLeakDataFormat):
+            return (self.computer_name == other.computer_name and
+                    self.operating_system == other.operating_system and
+                    self.date_compromised == other.date_compromised)
+        return False
+
+    def to_dict(self):
+        # Convert the object to a dictionary
+        return {
+            "computer_name": self.computer_name,
+            "operating_system": self.operating_system,
+            "date_compromised": self.date_compromised
+        }
+
+    def __hash__(self):
+        # Create a hash based on the attributes
+        return hash((self.computer_name, self.operating_system, self.date_compromised))
+
+    def __repr__(self):
+        # Optional: to make it easier to visualize the object in the set
+        return (f"InfoStealerLeakDataFormat(ComputerName={self.computer_name},"
+                f" OperatingSystem={self.operating_system}, Date={self.date_compromised})")

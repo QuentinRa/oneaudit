@@ -1,4 +1,4 @@
-from oneaudit.api.leaks import LeaksProvider
+from oneaudit.api.leaks import LeaksProvider, InfoStealerLeakDataFormat
 
 import time
 
@@ -24,11 +24,11 @@ class HudsonRocksAPI(LeaksProvider):
             'censored_passwords': [],
         }
         for stealer in data['stealers']:
-            result['info_stealers'].append({
-                "computer_name": stealer['computer_name'],
-                "operating_system": stealer['operating_system'],
-                "date_compromised": stealer['date_compromised'],
-            })
+            result['info_stealers'].append(InfoStealerLeakDataFormat(
+                stealer['computer_name'],
+                stealer['operating_system'],
+                stealer['date_compromised'],
+            ))
             result['censored_logins'].extend(stealer['top_logins'])
             result['censored_passwords'].extend(stealer['top_passwords'])
 

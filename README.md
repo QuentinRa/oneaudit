@@ -129,4 +129,5 @@ The followed APIs are used by the plugin:
 | API Identifier                         | Pricing    | Usage                                          |
 |----------------------------------------|------------|------------------------------------------------|
 | [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
+| [whiteintel](https://whiteintel.io/)   | `FREEMIUM` | Access InfoStealer Regular API (censored).     |
 |                                        |            |                                                |
