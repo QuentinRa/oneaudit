@@ -39,7 +39,7 @@ class RocketReachAPI(OSINTProvider):
                     break
                 page += 1
         except Exception as e:
-            print(e)
+            self.logger.error(f"{self.api_name}: Error received: {e}")
 
     def self_handle_request(self):
         return self.search_handler.execute().response

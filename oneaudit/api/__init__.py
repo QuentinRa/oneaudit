@@ -52,19 +52,22 @@ class DefaultProviderManager:
     def __init__(self, providers):
         self.last_called = {}
         self.providers = providers
+        self.logger = logging.getLogger('oneaudit')
 
     def trigger(self, handler, wait_time):
         now = time.time()
         last_called = self.last_called.get(handler, now)
         time_waited = now - last_called
 
-        #print(f"Current time is {now}")
-        #print(f"Last call to {handler} was at {last_called}: {time_waited}")
+        self.logger.debug(f"Current time is {now}")
+        self.logger.debug(f"Last call to {handler} was at {last_called}: {time_waited}")
 
         if time_waited < wait_time:
             time_to_wait = wait_time - time_waited
-            print(f"We need to wait {time_to_wait}")
+            self.logger.debug(f"We need to wait {time_to_wait}")
             time.sleep(time_to_wait)
+        else:
+            self.logger.debug(f"We don't need to wait.")
 
         self.last_called[handler] = time.time()
 
@@ -85,7 +88,7 @@ class DefaultProviderManager:
         return result
 
 class DefaultProvider:
-    def __init__(self, unique_identifier, request_args, api_name, api_keys):
+    def __init__(self, api_name, request_args, api_keys):
         self.api_name = api_name
         self.unique_identifier = f'{api_name}_'
 

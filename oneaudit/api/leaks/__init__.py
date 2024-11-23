@@ -6,10 +6,12 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
     def __init__(self, api_keys):
         import oneaudit.api.leaks.aura
         import oneaudit.api.leaks.hudsonrocks
+        import oneaudit.api.leaks.leakcheck
         import oneaudit.api.leaks.whiteintel
         super().__init__([
             oneaudit.api.leaks.aura.AuraAPI(api_keys),
             oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
+            oneaudit.api.leaks.leakcheck.LeakCheckAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ])
 
@@ -21,6 +23,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'censored_passwords': [],
             'hashes': [],
             'info_stealers': [],
+            'breaches': [],
         }
 
     def append_data(self, email, current):
@@ -31,6 +34,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'censored_passwords': current['censored_passwords'],
             'hashes': current['hashes'],
             'info_stealers': current['info_stealers'],
+            'breaches': current['breaches'],
         }
 
         return self._call_method_on_each_provider(result, 'fetch_email_results', email)
@@ -79,4 +83,15 @@ class CensoredCredentialsLeakDataFormat:
         return {
             "censored_username": self.censored_username,
             "censored_password": self.censored_password,
+        }
+
+@dataclasses.dataclass(frozen=True, order=True)
+class BreachDataFormat:
+    name: str
+    source: str
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "source": self.source,
         }
