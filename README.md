@@ -11,7 +11,9 @@
 WIP
 
 * Use given cache folder or temporary as default
+* Divide cache folder in api folders
 * Support wildcard import for LinkedIn Parser
+* Adding verbose to see enabled libraries
 
 ```json!
 {
@@ -120,7 +122,12 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
 
 ```json
 {
-  "api_identifier": "your_api_key"
+  // This API is free, just leave the key empty
+  "hudsonrocks": "",
+  // This API is paid, an API key is required
+  "rocketreach": "your_api_key",
+  // This API is disabled (leading underscore)
+  "_whiteintel": "your_api_key",
 }
 ```
 
@@ -129,5 +136,6 @@ The followed APIs are used by the plugin:
 | API Identifier                         | Pricing    | Usage                                          |
 |----------------------------------------|------------|------------------------------------------------|
 | [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
-| [whiteintel](https://whiteintel.io/)   | `FREEMIUM` | Access InfoStealer Regular API (censored).     |
+| [hudsonrocks](https://www.hudsonrock.com/cavalier)  | `FREE`     | InfoStealer API (censored).     |
+| [whiteintel](https://whiteintel.io/)   | `FREEMIUM` | InfoStealer API (censored).     |
 |                                        |            |                                                |

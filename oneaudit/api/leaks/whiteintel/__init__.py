@@ -12,15 +12,12 @@ class WhiteIntelAPI(LeaksProvider):
                 'headers': {
                     'Authorization': f'Bearer {api_keys.get('whiteintel', None)}'
                 }
-            }
+            },
+            is_endpoint_enabled=api_keys.get('whiteintel', None) is not None
         )
-        self.is_endpoint_enabled = self.request_args['headers']['Authorization'] is not None
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
     def fetch_domain_results(self, domain):
-        if not self.is_endpoint_enabled:
-            yield super().fetch_domain_results(domain)
-
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
         self.request_args['json'] = {

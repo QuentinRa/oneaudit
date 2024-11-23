@@ -1,16 +1,19 @@
+from faulthandler import is_enabled
+
 from oneaudit.api.leaks import LeaksProvider, InfoStealerLeakDataFormat
 
 import time
 
 # https://cavalier.hudsonrock.com/docs
 class HudsonRocksAPI(LeaksProvider):
-    def __init__(self, _):
+    def __init__(self, api_keys):
         super().__init__(
             unique_identifier='hudsonrocks_free_',
             request_args={
                 'method': 'GET',
                 'url': 'https://cavalier.hudsonrock.com/api/json/v2/osint-tools/search-by-email',
-            }
+            },
+            is_endpoint_enabled=api_keys.get('hudsonrocks', None) is not None
         )
 
     def fetch_email_results(self, email):

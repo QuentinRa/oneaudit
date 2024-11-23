@@ -50,6 +50,8 @@ class LeaksProviderManager:
         }
 
         for provider in self.providers:
+            if not provider.is_endpoint_enabled:
+                continue
             for cached, api_result in provider.fetch_email_results(email):
                 if not cached:
                     self.trigger(provider.__class__.__name__, provider.get_rate())
@@ -66,6 +68,8 @@ class LeaksProviderManager:
 
         if domain is not None:
             for provider in self.providers:
+                if not provider.is_endpoint_enabled:
+                    continue
                 for cached, api_result in provider.fetch_domain_results(domain):
                     if not cached:
                         self.trigger(provider.__class__.__name__, provider.get_rate())
@@ -79,12 +83,13 @@ class LeaksProviderManager:
 
 
 class LeaksProvider:
-    def __init__(self, unique_identifier, request_args):
+    def __init__(self, unique_identifier, request_args, is_endpoint_enabled):
         self.unique_identifier = unique_identifier
         self.request_args = request_args
         if "headers" not in self.request_args:
             self.request_args["headers"] = {}
         self.request_args["headers"]['User-Agent'] = fake_useragent.UserAgent().random
+        self.is_endpoint_enabled = is_endpoint_enabled
 
     def fetch_email_results(self, email):
         yield True, {}
