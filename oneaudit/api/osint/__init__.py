@@ -1,5 +1,6 @@
 import logging
 import time
+import dataclasses
 import oneaudit.api
 
 class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
@@ -30,13 +31,18 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
         for provider in self.providers:
             result[provider.api_name] = []
         result = self._call_method_on_each_provider(result, 'fetch_targets_for_company', company_name)
-        print(result)
-        # {
-        #             "source": self.api_name,
-        #             "date": time.time(),
-        #             "version": self.api_version,
-        #             "targets": self._fetch_targets_for_company(company_name)
-        #         }
+        final_result = []
+        for provider in self.providers:
+            final_result.append(
+                {
+                    "source": provider.api_name,
+                    "date": time.time(),
+                    "version": provider.api_version,
+                    "targets": result[provider.api_name]
+                }
+            )
+
+        return final_result
 
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
@@ -49,3 +55,19 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
 
     def fetch_targets_for_company(self, company_name):
         return []
+
+
+@dataclasses.dataclass(frozen=True, order=True)
+class OSINTScrappedDataFormat:
+    full_name: str
+    linkedin_url: str
+    birth_year: str
+    count: int
+
+    def to_dict(self):
+        return {
+            "full_name": self.full_name,
+            "linkedin_url": self.linkedin_url,
+            "birth_year": self.birth_year,
+            "count": self.count,
+        }

@@ -67,4 +67,4 @@ def run(parser, module_parser):
             json.dump({
                 "version": 1.1,
                 "entries": results,
-            }, output_file, indent=4)
+            }, output_file, cls=oneaudit.modules.GenericObjectEncoder, indent=4)

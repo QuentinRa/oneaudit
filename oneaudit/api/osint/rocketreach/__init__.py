@@ -1,7 +1,6 @@
-import time
-
-from oneaudit.api.osint import OSINTProvider
+from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat
 import json
+import time
 import rocketreach
 
 
@@ -27,13 +26,12 @@ class RocketReachAPI(OSINTProvider):
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
-                    targets.append({
-                        "full_name": profile["name"],
-                        "linkedin_url": profile["linkedin_url"],
-                        'birth_year': profile['birth_year'],
-                        '_status': profile['status'],
-                        '_count': len(target_emails),
-                    })
+                    targets.append(OSINTScrappedDataFormat(
+                        profile["name"],
+                        profile["linkedin_url"],
+                        profile['birth_year'],
+                        len(target_emails),
+                    ))
 
                 yield cached, { self.api_name: targets }
 
@@ -77,45 +75,3 @@ class RocketReachAPI(OSINTProvider):
 
     def get_rate(self):
         return 5
-
-# def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):#
-#     page = 0
-#     try:
-#         while True:
-#             cached_result_key = "rocketreach_" + args.company_name + "_" + str(page)
-#             data = oneaudit.api.get_cached_result("rocketreach", cached_result_key)
-#             if data is None:
-#                 s = s.params(start=page * 100 + 1, size=100)
-#                 result = s.execute()
-#                 if result.is_success:
-#                     data = result.response.json()
-#                     oneaudit.api.set_cached_result(cached_result_key, data)
-#                 else:
-#                     if result.response.status_code == 429:
-#                         wait = int(result.response.headers["retry-after"] if "retry-after" in result.response.headers else 2)
-#                         print(f"Waiting for {wait} seconds.")
-#                         time.sleep(wait)
-#                         continue
-#                     print(result.response.status_code)
-#                     print(result.response.headers)
-#                     print(result.response.text)
-#                     raise Exception(f'Error: {result.message}!', True)
-#
-#             for profile in data["profiles"]:
-#                 target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
-#                 target_emails = list(set(target_emails))
-#                 results["targets"].append({
-#                     "full_name": profile["name"],
-#                     "linkedin_url": profile["linkedin_url"],
-#                     'birth_year': profile['birth_year'],
-#                     '_status': profile['status'],
-#                     '_count': len(target_emails),
-#                 })
-#
-#             pagination = data['pagination']
-#             if pagination['next'] > pagination['total']:
-#                 break
-#             page += 1
-#     except Exception as e:
-#         print(e)
-#     return results
