@@ -21,8 +21,8 @@ class LeaksProviderManager:
         last_called = self.last_called.get(handler, now)
         time_waited = now - last_called
 
-        print(f"Current time is {now}")
-        print(f"Last call to {handler} was at {last_called}: {time_waited}")
+        #print(f"Current time is {now}")
+        #print(f"Last call to {handler} was at {last_called}: {time_waited}")
 
         if time_waited < wait_time:
             time_to_wait = wait_time - time_waited

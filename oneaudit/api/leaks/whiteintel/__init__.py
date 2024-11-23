@@ -30,32 +30,36 @@ class WhiteIntelAPI(LeaksProvider):
         cached, data = self.fetch_results_using_cache(f"attack_surface_{domain}")
         yield cached, {'leaked_urls': [leak['url'] for leak in data['leak_urls_customer']]}
 
-        # Fetching Info Stealers
-        self.request_args['url'] = self.api_endpoint.format(endpoint='/stealer_exposure_handler_v2.php')
-        self.request_args['json'] = {
-            'query': domain,
-            'type': domain,
-            'page': 1, 'per_page': 25
-        }
-        cached, data = self.fetch_results_using_cache(f"stealer_exposure_{domain}")
-        yield cached, {}
-
-        for stealer in data['data']:
-            self.request_args['url'] = self.api_endpoint.format(endpoint='/breach_info_handler.php')
+        # Fetching Info Stealer And Comb Credentials
+        for endpoint_url, details_url in [
+            ('/stealer_exposure_handler_v2.php', '/breach_info_handler.php'),
+            ('/combolist_exposure_handler_v2.php', '/breach_info_combolists_handler.php'),
+        ]:
+            self.request_args['url'] = self.api_endpoint.format(endpoint=endpoint_url)
             self.request_args['json'] = {
-                'domain': domain,
-                'id': stealer['log_id']
+                'query': domain,
+                'type': domain,
+                'page': 1, 'per_page': 25
             }
+            cached, data = self.fetch_results_using_cache(f"{get_key(endpoint_url)}_{domain}_page1")
+            yield cached, {}
 
-            cached, data = self.fetch_results_using_cache(f"breach_info_{domain}")
+            for element in data['data']:
+                self.request_args['url'] = self.api_endpoint.format(endpoint=details_url)
+                self.request_args['json'] = {
+                    'domain': domain,
+                    'id': element['log_id']
+                }
 
-            yield cached, {
-                'leaked_urls': [leak['URL'] for leak in data['credentials']],
-                'censored_data': [CensoredCredentialsLeakDataFormat(
-                    leak['username'],
-                    leak['password'],
-                ) for leak in data['credentials']]
-            }
+                cached, data = self.fetch_results_using_cache(f"{get_key(details_url)}_{domain}_{element['log_id']}")
+
+                yield cached, {
+                    'leaked_urls': [format_url(leak['URL']) for leak in data['credentials']],
+                    'censored_data': [CensoredCredentialsLeakDataFormat(
+                        leak['username'],
+                        leak['password'],
+                    ) for leak in data['credentials']]
+                }
 
         yield cached, {}
 
@@ -64,3 +68,9 @@ class WhiteIntelAPI(LeaksProvider):
 
     def get_rate(self):
         return 1
+
+def format_url(URL):
+    return URL if "://" in URL else f"https://{URL}"
+
+def get_key(endpoint):
+    return '_'.join(endpoint[1:].split('_')[:2])
