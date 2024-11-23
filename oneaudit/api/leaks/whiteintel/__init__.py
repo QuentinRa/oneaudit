@@ -72,4 +72,4 @@ def format_url(URL):
     return URL if "://" in URL else f"https://{URL}"
 
 def get_key(endpoint):
-    return '_'.join(endpoint[1:].split('_')[:2])
+    return '_'.join(endpoint[1:].split('_')[:3])

@@ -34,8 +34,11 @@ def set_cached_result(key, data):
         }, f)
 
 
-def get_cached_result(key):
-    url_hash = "../cache/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+def get_cached_result(api_name, key):
+    url_hash = f"../cache/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+    url_hash_directory = os.path.dirname(url_hash)
+    if not os.path.exists(url_hash_directory):
+        os.mkdir(url_hash_directory)
     if os.path.exists(url_hash):
         with open(url_hash, 'r') as f:
             cached_data = json.load(f)
@@ -101,7 +104,7 @@ class DefaultProvider:
     def fetch_results_using_cache(self, variable_key):
         cached = True
         cached_result_key = self.unique_identifier + variable_key
-        data = get_cached_result(cached_result_key)
+        data = get_cached_result(self.api_name, cached_result_key)
         if data is None:
             cached = False
             response = requests.request(**self.request_args)

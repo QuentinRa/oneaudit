@@ -64,7 +64,7 @@ def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
     try:
         while True:
             cached_result_key = "rocketreach_" + args.company_name + "_" + str(page)
-            data = oneaudit.api.get_cached_result(cached_result_key)
+            data = oneaudit.api.get_cached_result("rocketreach", cached_result_key)
             if data is None:
                 s = s.params(start=page * 100 + 1, size=100)
                 result = s.execute()
