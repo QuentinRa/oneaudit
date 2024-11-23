@@ -134,9 +134,9 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
 
 The followed APIs are used by the plugin:
 
-| API Identifier                         | Pricing    | Usage                                          |
-|----------------------------------------|------------|------------------------------------------------|
-| [rocketreach](https://rocketreach.co/) | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
-| [hudsonrocks](https://www.hudsonrock.com/cavalier)  | `FREE`     | InfoStealer API (censored).     |
-| [whiteintel](https://whiteintel.io/)   | `FREEMIUM` | InfoStealer API (censored).     |
-|                                        |            |                                                |
+| API Identifier                                     | Pricing   | Usage                                          |
+|----------------------------------------------------|-----------|------------------------------------------------|
+| [rocketreach](https://rocketreach.co/)             | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
+| [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`    | InfoStealer API (censored).                    |
+| [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
+| [aura](https://scan.aura.com/)                     | `FREE` | Leaked Credentials API (censored).             |

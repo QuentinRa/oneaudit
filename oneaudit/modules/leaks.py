@@ -190,9 +190,6 @@ def run(parser, module_parser):
                     logger.error("Unexpected type for:", f"k={k}", f"v={v}")
                     continue
 
-                if len(v) == 0:
-                    continue
-
                 final_data[k] = [e for e in set(v) if e]
 
             credentials.append(final_data)
