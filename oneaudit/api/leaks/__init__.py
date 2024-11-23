@@ -4,8 +4,8 @@ import dataclasses
 
 class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
     def __init__(self, api_keys):
-        import hudsonrocks
-        import whiteintel
+        import oneaudit.api.leaks.hudsonrocks
+        import oneaudit.api.leaks.whiteintel
         super().__init__([
             oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)

@@ -1,19 +1,30 @@
+import logging
+import time
 import oneaudit.api
 
 class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
     def __init__(self, api_keys):
-        import rocketreach
+        import oneaudit.api.osint.rocketreach
         super().__init__([
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys)
         ])
 
-    def parse_records(self, args, input_file):
+    def parse_records(self, file_source, input_file):
         result = []
 
         for provider in self.providers:
-            result.append(provider.parse_records())
+            try:
+                result.append({
+                    "source": provider.api_name,
+                    "date": time.time(),
+                    "version": 1.0,
+                    "targets": provider.parse_records_from_file(file_source, input_file)
+                })
+            except Exception as e:
+                logging.error(f"Error during parsing of {input_file} by {provider.api_name}: {e}")
 
-        return [v for k, v in result.items()]
+        return result
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
-    pass
+    def parse_records_from_file(self, file_source, input_file):
+        return []

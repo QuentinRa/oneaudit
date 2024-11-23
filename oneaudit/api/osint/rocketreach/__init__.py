@@ -1,3 +1,5 @@
+import json
+
 from oneaudit.api.osint import OSINTProvider
 
 
@@ -9,6 +11,29 @@ class RocketReachAPI(OSINTProvider):
             request_args={},
             api_keys=api_keys
         )
+
+    def parse_records_from_file(self, file_source, input_file):
+        targets = []
+        if file_source != 'rocketreach':
+            return targets
+        entries = json.load(input_file)["records"]
+        for entry in entries:
+            emails = []
+            for email in entry['emails']:
+                if email['source'] == "predicted":
+                    if email['format_probability'] and email['format_probability'] < 35:
+                        continue
+                    if email['confidence'] < 50:
+                        continue
+                emails.append(email['email'].lower())
+
+            targets.append({
+                "first_name": entry["first_name"],
+                "last_name": entry["last_name"],
+                "linkedin_url": entry["linkedin_url"],
+                'emails': emails,
+            })
+        return targets
 
     def handle_rate_limit(self, response):
         self.logger.error(response.text)
@@ -73,34 +98,4 @@ class RocketReachAPI(OSINTProvider):
 #             page += 1
 #     except Exception as e:
 #         print(e)
-#     return results
-#
-#
-# def _rocketreach_parse_records(args, input_file):
-#     results = {
-#         "source": "rocketreach",
-#         "date": time.time(),
-#         "version": 1.0,
-#         "targets": []
-#     }
-#
-#     if args.file_source != 'rocketreach':
-#         return results
-#     entries = json.load(input_file)["records"]
-#     for entry in entries:
-#         emails = []
-#         for email in entry['emails']:
-#             if email['source'] == "predicted":
-#                 if email['format_probability'] and email['format_probability'] < 35:
-#                     continue
-#                 if email['confidence'] < 50:
-#                     continue
-#             emails.append(email['email'].lower())
-#
-#         results["targets"].append({
-#             "first_name": entry["first_name"],
-#             "last_name": entry["last_name"],
-#             "linkedin_url": entry["linkedin_url"],
-#             'emails': emails,
-#         })
 #     return results
