@@ -2,6 +2,7 @@ import time
 import requests
 import oneaudit.api
 import fake_useragent
+import dataclasses
 
 
 class LeaksProviderManager:
@@ -124,33 +125,31 @@ class LeaksProvider:
         return 5
 
 
+@dataclasses.dataclass(frozen=True, order=True)
 class InfoStealerLeakDataFormat:
-    def __init__(self, computer_name, operating_system, date_compromised):
-        self.computer_name = computer_name
-        self.operating_system = operating_system
-        self.date_compromised = date_compromised[:10]
+    computer_name: str
+    operating_system: str
+    date_compromised: str
 
-    def __eq__(self, other):
-        # Check equality based on attribute values
-        if isinstance(other, InfoStealerLeakDataFormat):
-            return (self.computer_name == other.computer_name and
-                    self.operating_system == other.operating_system and
-                    self.date_compromised == other.date_compromised)
-        return False
+    def __post_init__(self):
+        # Automatically called after the dataclass __init__ method.
+        object.__setattr__(self, 'date_compromised', self.date_compromised[:10])
 
     def to_dict(self):
-        # Convert the object to a dictionary
         return {
             "computer_name": self.computer_name,
             "operating_system": self.operating_system,
             "date_compromised": self.date_compromised
         }
 
-    def __hash__(self):
-        # Create a hash based on the attributes
-        return hash((self.computer_name, self.operating_system, self.date_compromised))
 
-    def __repr__(self):
-        # Optional: to make it easier to visualize the object in the set
-        return (f"InfoStealerLeakDataFormat(ComputerName={self.computer_name},"
-                f" OperatingSystem={self.operating_system}, Date={self.date_compromised})")
+@dataclasses.dataclass(frozen=True, order=True)
+class CensoredCredentialsLeakDataFormat:
+    censored_username: str
+    censored_password: str
+
+    def to_dict(self):
+        return {
+            "censored_username": self.censored_username,
+            "censored_password": self.censored_password,
+        }

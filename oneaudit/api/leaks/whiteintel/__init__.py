@@ -1,4 +1,5 @@
-from oneaudit.api.leaks import LeaksProvider
+from oneaudit.api.leaks import LeaksProvider, CensoredCredentialsLeakDataFormat
+
 
 # https://docs.whiteintel.io/whiteintel-api-doc
 class WhiteIntelAPI(LeaksProvider):
@@ -22,11 +23,41 @@ class WhiteIntelAPI(LeaksProvider):
 
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
-        self.request_args['json']['domain'] = domain
-        self.request_args['json']['page'] = 1
-        self.request_args['json']['per_page'] = 10
+        self.request_args['json'] = {
+            'domain': domain,
+            'page': 1, 'per_page': 25
+        }
         cached, data = self.fetch_results_using_cache(f"attack_surface_{domain}")
         yield cached, {'leaked_urls': [leak['url'] for leak in data['leak_urls_customer']]}
+
+        # Fetching Info Stealers
+        self.request_args['url'] = self.api_endpoint.format(endpoint='/stealer_exposure_handler_v2.php')
+        self.request_args['json'] = {
+            'query': domain,
+            'type': domain,
+            'page': 1, 'per_page': 25
+        }
+        cached, data = self.fetch_results_using_cache(f"stealer_exposure_{domain}")
+        yield cached, {}
+
+        for stealer in data['data']:
+            self.request_args['url'] = self.api_endpoint.format(endpoint='/breach_info_handler.php')
+            self.request_args['json'] = {
+                'domain': domain,
+                'id': stealer['log_id']
+            }
+
+            cached, data = self.fetch_results_using_cache(f"breach_info_{domain}")
+
+            yield cached, {
+                'leaked_urls': [leak['URL'] for leak in data['credentials']],
+                'censored_data': [CensoredCredentialsLeakDataFormat(
+                    leak['username'],
+                    leak['password'],
+                ) for leak in data['credentials']]
+            }
+
+        yield cached, {}
 
     def handle_rate_limit(self, response):
         pass
