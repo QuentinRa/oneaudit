@@ -1,4 +1,5 @@
 from oneaudit.api.leaks import LeaksProvider, CensoredCredentialsLeakDataFormat
+import time
 
 
 # https://docs.whiteintel.io/whiteintel-api-doc
@@ -61,7 +62,7 @@ class WhiteIntelAPI(LeaksProvider):
         yield cached, {}
 
     def handle_rate_limit(self, response):
-        pass
+        time.sleep(30)
 
     def get_rate(self):
         return 1

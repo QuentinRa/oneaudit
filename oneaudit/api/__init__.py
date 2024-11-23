@@ -1,7 +1,9 @@
 import argparse
+import fake_useragent
+import requests
+import hashlib
 import json
 import os
-import hashlib
 import time
 
 
@@ -40,3 +42,75 @@ def get_cached_result(key):
             if time.time() - timestamp < 7 * 24 * 60 * 60:
                 return cached_data['response']
     return None
+
+
+class DefaultProviderManager:
+    def __init__(self, providers):
+        self.last_called = {}
+        self.providers = providers
+
+    def trigger(self, handler, wait_time):
+        now = time.time()
+        last_called = self.last_called.get(handler, now)
+        time_waited = now - last_called
+
+        #print(f"Current time is {now}")
+        #print(f"Last call to {handler} was at {last_called}: {time_waited}")
+
+        if time_waited < wait_time:
+            time_to_wait = wait_time - time_waited
+            print(f"We need to wait {time_to_wait}")
+            time.sleep(time_to_wait)
+
+        self.last_called[handler] = time.time()
+
+    def get_base_data(self):
+        return {}
+
+    def append_data(self, email, current):
+        pass
+
+class DefaultProvider:
+    def __init__(self, unique_identifier, request_args, is_endpoint_enabled):
+        self.unique_identifier = unique_identifier
+        self.request_args = request_args
+        if "headers" not in self.request_args:
+            self.request_args["headers"] = {}
+        self.request_args["headers"]['User-Agent'] = fake_useragent.UserAgent().random
+        self.is_endpoint_enabled = is_endpoint_enabled
+
+    def fetch_results_using_cache(self, variable_key):
+        cached = True
+        cached_result_key = self.unique_identifier + variable_key
+        data = get_cached_result(cached_result_key)
+        if data is None:
+            cached = False
+            response = requests.request(**self.request_args)
+            if response.status_code == 429:
+                self.handle_rate_limit(response)
+                return self.fetch_results_using_cache(variable_key)
+
+            if response.status_code == 401:
+                print(f"[!] {self.__class__.__name__}: {response.text}")
+                return True, {}
+
+            if response.status_code not in [200]:
+                print(self.__class__.__name__)
+                print(response.text)
+                print(response.status_code)
+                raise Exception("This response code was not allowed/handled.")
+
+            data = response.json()
+
+            set_cached_result(cached_result_key, data)
+        return cached, data
+
+    def handle_rate_limit(self, response):
+        """
+        Some APIs are returning information about the time
+        to wait in their headers.
+        """
+        pass
+
+    def get_rate(self):
+        return 5
