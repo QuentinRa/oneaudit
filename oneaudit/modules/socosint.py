@@ -1,5 +1,7 @@
 import argparse
 import json
+import logging
+
 import oneaudit.api
 import oneaudit.api.osint
 import oneaudit.utils
@@ -26,7 +28,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
 
     # LinkedIn
     linkedin_module = submodule_parser.add_parser('linkedin')
-    linkedin_module_action = linkedin_module.add_subparsers(dest='action')
+    linkedin_module_action = linkedin_module.add_subparsers(dest='action', required=True)
 
     linkedin_scrapper = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
     linkedin_scrapper.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
@@ -45,19 +47,21 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
 
 def run(parser, module_parser):
     args = parse_args(parser, module_parser)
+    logger = logging.getLogger("oneaudit")
     if args.scope == 'linkedin':
-        results = []
         if args.action == 'scrap':
             args = OSINTScrapLinkedInProgramData(args)
-            #results.append(_rocketreach_fetch_records(args))
+            provider = oneaudit.api.osint.OSINTProviderManager(args.api_keys)
+            results = provider.fetch_records(args.company_name)
         elif args.action == 'parse':
             args = OSINTParseLinkedInProgramData(args)
             provider = oneaudit.api.osint.OSINTProviderManager({})
             try:
                 with open(args.input_file, 'r') as input_file:
-                    results.extend(provider.parse_records(args, input_file))
+                    results = provider.parse_records(args, input_file)
             except (FileNotFoundError, json.JSONDecodeError) as e:
-                print(f"[+] Failed to parse results: '{e}'.")
+                logger.error(f"[+] Failed to parse results: '{e}'.")
+                return
 
         with open(args.output_file, 'w') as output_file:
             json.dump({

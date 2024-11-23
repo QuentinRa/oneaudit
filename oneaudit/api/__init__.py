@@ -88,11 +88,15 @@ class DefaultProvider:
     def __init__(self, unique_identifier, request_args, api_name, api_keys):
         self.api_name = api_name
         self.unique_identifier = unique_identifier
+
         self.request_args = request_args
         if "headers" not in self.request_args:
             self.request_args["headers"] = {}
         self.request_args["headers"]['User-Agent'] = fake_useragent.UserAgent().random
-        self.is_endpoint_enabled = api_keys.get(api_name, None) is not None
+
+        self.api_key = api_keys.get(api_name, None)
+        self.is_endpoint_enabled = self.api_key is not None
+
         self.logger = logging.getLogger('oneaudit')
 
     def fetch_results_using_cache(self, variable_key):
@@ -101,7 +105,7 @@ class DefaultProvider:
         data = get_cached_result(self.api_name, cached_result_key)
         if data is None:
             cached = False
-            response = requests.request(**self.request_args)
+            response = self.handle_request()
             if response.status_code == 429:
                 self.handle_rate_limit(response)
                 return self.fetch_results_using_cache(variable_key)
@@ -120,6 +124,9 @@ class DefaultProvider:
 
             set_cached_result(cached_result_key, data)
         return cached, data
+
+    def handle_request(self):
+        return requests.request(**self.request_args)
 
     def handle_rate_limit(self, response):
         """

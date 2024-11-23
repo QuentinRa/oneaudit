@@ -1,6 +1,8 @@
-import json
+import time
 
 from oneaudit.api.osint import OSINTProvider
+import json
+import rocketreach
 
 
 class RocketReachAPI(OSINTProvider):
@@ -11,6 +13,39 @@ class RocketReachAPI(OSINTProvider):
             request_args={},
             api_keys=api_keys
         )
+        self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+        self.search_handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+
+    def fetch_targets_for_company(self, company_name):
+        search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
+        page = 0
+        try:
+            while True:
+                targets = []
+                self.search_handler = search_handler.params(start=page * 100 + 1, size=100)
+                cached, data = self.fetch_results_using_cache(f"{company_name}_{page}")
+                for profile in data["profiles"]:
+                    target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
+                    target_emails = list(set(target_emails))
+                    targets.append({
+                        "full_name": profile["name"],
+                        "linkedin_url": profile["linkedin_url"],
+                        'birth_year': profile['birth_year'],
+                        '_status': profile['status'],
+                        '_count': len(target_emails),
+                    })
+
+                yield cached, { self.api_name: targets }
+
+                pagination = data['pagination']
+                if pagination['next'] > pagination['total']:
+                    break
+                page += 1
+        except Exception as e:
+            print(e)
+
+    def self_handle_request(self):
+        return self.search_handler.execute().response
 
     def parse_records_from_file(self, file_source, input_file):
         targets = []
@@ -36,29 +71,14 @@ class RocketReachAPI(OSINTProvider):
         return targets
 
     def handle_rate_limit(self, response):
-        self.logger.error(response.text)
-        self.logger.error(response.headers)
-        pass
+        wait = int(response.headers["retry-after"] if "retry-after" in response.headers else 2)
+        self.logger.warning(f"{self.api_name}: Rate-limited. Waiting for {wait} seconds.")
+        time.sleep(wait)
 
     def get_rate(self):
         return 5
 
-# def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):
-#     results = {
-#         "source": "rocketreach",
-#         "date": time.time(),
-#         "version": 1.0,
-#         "targets": []
-#     }
-#
-#     api_key = args.api_keys.get("rocketreach", None)
-#     if not api_key:
-#         print("[!] RocketReach Skipped: API Key Missing.")
-#         return results
-#
-#     rr = rocketreach.Gateway(rocketreach.GatewayConfig(api_key))
-#     s = rr.person.search().filter(current_employer=f'\"{args.company_name}\"')
-#
+# def _rocketreach_fetch_records(args: OSINTScrapLinkedInProgramData):#
 #     page = 0
 #     try:
 #         while True:
