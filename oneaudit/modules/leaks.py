@@ -198,14 +198,14 @@ def run(parser, module_parser):
             credentials.append(final_data)
 
         result = {
-            'version': 1.2,
+            'version': 1.3,
             'credentials': credentials,
             "additional": additional_data,
         }
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
         result = {
-            'version': '1.0',
+            'version': 1.0,
             'credentials': []
         }
         for entry in args.data['entries']:

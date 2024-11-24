@@ -8,6 +8,8 @@
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/QuentinRa/oneaudit)](https://github.com/QuentinRa/oneaudit)
 </div>
 
+This tool is intended for legitimate open-source intelligence (OSINT) purposes, such as research and security assessments. Users are responsible for ensuring that their use of this tool complies with all applicable laws and regulations in their jurisdiction. We strongly encourage users to respect individuals' privacy and to refrain from using this tool for any malicious activities, including harassment or unauthorized access to personal data. By using this tool, you agree to act ethically and responsibly, understanding the potential legal implications of your actions.
+
 WIP
 
 * Use given cache folder or temporary as default
@@ -16,19 +18,12 @@ WIP
 * Adding verbose to see enabled libraries
 * Add the last route for WhiteIntel
 * Clean censored passwords
-* Add emails to "logins"
-
-```json!
-{
-    "version": 1.0,
-    "credentials": [
-        {
-            "login": "user1@example.com",
-            "passwords": ["pass1", "pass2"]
-        }
-    ]
-}
-```
+* Firstnames/Lastnames ending with ".."
+* Remove description for subcommands
+* Fix "action" not being required
+* Identify if the login is verified or not
+* Merge search results with lookup results
+* Add sleep of 5 seconds between rocket reach searches
 
 ## SocOSINT
 
@@ -95,7 +90,7 @@ $ oneaudit socosint linkedin parse -s rocketreach -i rocketreach_export.json -o 
 
 ## Leaks
 
-#### From OSINT Results
+#### Generate A List Of Targets
 
 We can compute a list of targets from OSINT results.
 
@@ -116,6 +111,54 @@ $ oneaudit leaks parse -i contacts.json -f flast -d example.com -o targets.json
       ]
     }
   ]
+}
+```
+
+#### Download Leaks For Each Target
+
+You can download leaks and dark web data using the following module.
+
+```bash
+$ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
+```
+
+```json
+{
+  "version": 1.3,
+  "credentials": [
+    {
+      "login": "john.doe@example.com",
+      "logins": [
+        "john.doe",
+        "johndoe@example.com",
+        "johndoe@dev.example.com",
+        "johndoe001"
+      ],
+      "passwords": [
+        "hello"
+      ],
+      "censored_logins": [
+        "jo*******1"
+      ],
+      "censored_passwords": [
+        "h***o"
+      ],
+      "info_stealers": [],
+      "breaches": [
+        {
+          "name": "Rockyou",
+          "source": "2009-01"
+        }
+      ],
+      "hashes": [
+        "8d016244527e4d86737d6a3332da6d82"
+      ]
+    }
+  ],
+  "additional": {
+    "censored_data": [],
+    "leaked_urls": []
+  }
 }
 ```
 

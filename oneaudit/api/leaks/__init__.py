@@ -35,6 +35,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
         }
 
     def append_data(self, email, result):
+        result['logins'].append(email)
         return self._call_method_on_each_provider(result, 'fetch_email_results', email)
 
     def investigate_hashes(self, login, data):
