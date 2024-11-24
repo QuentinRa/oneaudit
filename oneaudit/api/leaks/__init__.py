@@ -102,6 +102,10 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
 
 
 class LeaksProvider(oneaudit.api.DefaultProvider):
+    def __init__(self, api_name, request_args, api_keys):
+        super().__init__(api_name, request_args, api_keys)
+        self.is_endpoint_enabled_for_cracking = False
+
     def fetch_email_results(self, email):
         yield True, {}
 
