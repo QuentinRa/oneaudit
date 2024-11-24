@@ -106,7 +106,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'leaked_urls': [],
         }
 
-        return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)[0]
+        return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)[1]
 
 
 class LeaksProvider(oneaudit.api.DefaultProvider):

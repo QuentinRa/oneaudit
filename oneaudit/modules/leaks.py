@@ -50,6 +50,7 @@ class LeaksOSINTParseProgramData:
                 self.data['entries'].extend(json.load(file_data)["entries"])
         self.output_file = args.output
         self.domain = args.company_domain
+        self.domain_aliases = [self.domain] + args.domain_aliases
         self.email_format = email_formats[args.email_format]
         self.email_regex = re.compile(r'\b[A-Za-z0-9.-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
 
@@ -147,6 +148,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     parse_osint.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     parse_osint.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
+    parse_osint.add_argument('--alias', dest='domain_aliases', action='append', help='Alternative domain names that should be investigated.')
     oneaudit.utils.args_verbose_config(parse_osint)
 
     clean_leaks = submodule_parser.add_parser('clean', help='Select which passwords to keep.')
@@ -188,6 +190,11 @@ def run(parser, module_parser):
                 if was_modified and email == key:
                     credential['verified'] = True
                     logger.debug(f"Email {email} was verified due to leaks associated to it.")
+
+            for login in results[key]["logins"]:
+                if "@" not in login or login in credential['emails']:
+                    continue
+                logger.error(f"Found new email that was not handled: {login}")
 
             results[key]['verified'] = credential['verified']
 
@@ -247,10 +254,15 @@ def run(parser, module_parser):
                     target_email = target_email_data['email']
                     is_target_email_verified = target_email_data['verified']
                     verified = verified or (email == target_email and is_target_email_verified)
-                    if not target_email.endswith(args.domain):
+                    allowed = [domain for domain in args.domain_aliases if target_email.endswith(domain)] == []
+                    if allowed:
                         emails.add(target_email.lower())
+                for target_domain in args.domain_aliases:
+                    if target_domain == args.domain:
+                        continue
+                    emails.add(email.replace(args.domain, target_domain))
                 emails = list(emails)
-                logger.debug(f"Using login: {email} and the following emails: {emails}")
+                logger.info(f"Using login: '{email}' and the following emails: {emails}")
 
                 if email not in found:
                     found[email] = {
