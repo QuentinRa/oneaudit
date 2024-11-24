@@ -31,7 +31,8 @@ class HashMobAPI(LeaksProvider):
         return cached, PasswordHashDataFormat(
             crackable_hash,
             None if len(found) == 0 else found[0]['plain'],
-            None
+            None,
+            False
         )
 
     def handle_rate_limit(self, response):

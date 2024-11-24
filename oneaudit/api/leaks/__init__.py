@@ -11,15 +11,17 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
         import oneaudit.api.leaks.hashmob
         import oneaudit.api.leaks.hudsonrocks
         import oneaudit.api.leaks.leakcheck
+        import oneaudit.api.leaks.nth
         import oneaudit.api.leaks.whiteintel
         super().__init__([
             oneaudit.api.leaks.aura.AuraAPI(api_keys),
             oneaudit.api.leaks.hashmob.HashMobAPI(api_keys),
             oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
             oneaudit.api.leaks.leakcheck.LeakCheckAPI(api_keys),
+            oneaudit.api.leaks.nth.NameThatHashAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ])
-        self.bcrypt_hash_regex = re.compile(r'^\$2[aby]\$([0-9]{2})\$([A-Za-z0-9./]{22})')
+        self.bcrypt_hash_regex = re.compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
     def get_base_data(self):
         return {
@@ -58,14 +60,14 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                 continue
             match = self.bcrypt_hash_regex.match(crackable_hash)
             if match:
-                salt = match.group(2)
+                salt = match.group(1)
                 for p in candidates:
                     known_hashes.append(bcrypt_hash(p, salt))
                 if crackable_hash in known_hashes:
                     continue
 
             # Attempt to crack the hash
-            result = PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None)
+            result = PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None, format_verified=False)
             for provider in self.providers:
                 if not provider.is_endpoint_enabled_for_cracking:
                     continue
@@ -77,7 +79,8 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                 result = PasswordHashDataFormat(
                     crackable_hash,
                     api_result.plaintext if api_result.plaintext else result.plaintext,
-                    api_result.format if api_result.format else result.format
+                    api_result.format if not result.format_verified or not result.format else result.format,
+                    api_result.format_verified if not result.format_verified or not result.format else result.format_verified,
                 )
 
             # If uncracked, add the hash to the list, otherwise
@@ -161,9 +164,11 @@ class PasswordHashDataFormat:
     value: str
     plaintext: str|None
     format: str|None
+    format_verified: bool
 
     def to_dict(self):
         return {
             "value": self.value,
             "format": self.format,
+            "format_verified": self.format_verified,
         }
