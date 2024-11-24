@@ -128,7 +128,9 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
   // This API is free, just leave the key empty
   "hudsonrocks": "",
   "leakcheck": "",
+  "nth": "",
   // This API is paid, an API key is required
+  "hashmob": "your_api_key",
   "rocketreach": "your_api_key",
   "leakcheck_pro": "your_api_key",
   // This API is disabled (leading underscore)
@@ -143,6 +145,12 @@ The followed APIs are used by the plugin:
 | [rocketreach](https://rocketreach.co/)             | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
 | [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`     | InfoStealer API (censored).                    |
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
-| [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                  |
-| [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                  |
+| [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
+| [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
 | [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |
+| [nth](https://github.com/HashPals/Name-That-Hash)                                            | `FREE`     | Hash Identifier.                               |
+| [hashmob](https://hashmob.net/)                                           | `FREEMIUM` | Hash Rainbow tables.                           |
+
+Candidates:
+
+* [hashes.com](https://hashes.com/en/docs): hash identifier (FREE) or Rainbow table (PAID)
