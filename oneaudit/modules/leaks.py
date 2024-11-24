@@ -184,7 +184,12 @@ def run(parser, module_parser):
                 continue
             results[key] = provider.get_base_data()
             for email in credential['emails']:
-                results[key] = provider.append_data(email, results[key])
+                was_modified, results[key] = provider.append_data(email, results[key])
+                if was_modified and email == key:
+                    credential['verified'] = True
+                    logger.debug(f"Email {email} was verified due to leaks associated to it.")
+
+            results[key]['verified'] = credential['verified']
 
         credentials = []
         for login, data in results.items():
@@ -193,11 +198,13 @@ def run(parser, module_parser):
             data = provider.investigate_hashes(login, data)
 
             for k, v in data.items():
-                if type(v) is not list:
-                    logger.error("Unexpected type for:", f"k={k}", f"v={v}")
+                if isinstance(v, list):
+                    final_data[k] = [e for e in set(v) if e]
+                elif isinstance(v, bool):
+                    final_data[k] = v
+                else:
+                    logger.error(f"Unexpected type for: k={k} v={v}")
                     continue
-
-                final_data[k] = [e for e in set(v) if e]
 
             credentials.append(final_data)
 

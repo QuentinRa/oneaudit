@@ -32,6 +32,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'raw_hashes': [],
             'info_stealers': [],
             'breaches': [],
+            'verified': False,
         }
 
     def append_data(self, email, result):
@@ -41,6 +42,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
     def investigate_hashes(self, login, data):
         uncracked_hashes = []
         if not data['passwords']:
+            del data['raw_hashes']
             return data
 
         md5_sum = lambda p : hashlib.md5(p.encode()).hexdigest()
@@ -102,7 +104,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'leaked_urls': [],
         }
 
-        return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)
+        return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)[0]
 
 
 class LeaksProvider(oneaudit.api.DefaultProvider):

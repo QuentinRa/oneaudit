@@ -83,6 +83,7 @@ class DefaultProviderManager:
         self.last_called[handler] = time.time()
 
     def _call_method_on_each_provider(self, result, method_name, *args):
+        was_modified = False
         for provider in self.providers:
             if not provider.is_endpoint_enabled:
                 continue
@@ -91,12 +92,26 @@ class DefaultProviderManager:
                 if not cached:
                     self.trigger(provider.__class__.__name__, provider.get_rate())
                 for k, v in api_result.items():
-                    result[k].extend(v)
+                    if not v:
+                        continue
+                    was_modified = True
+                    if isinstance(v, list):
+                        result[k].extend(v)
+                    elif isinstance(v, bool):
+                        result[k] = result[k] or v
+                    else:
+                        raise Exception(f"Unexpected type for {k}: {type(v)}")
 
-        for k, v in result.items():
-            result[k] = sorted([e for e in set(v) if e])
+        if was_modified:
+            for k, v in result.items():
+                if isinstance(v, list):
+                    result[k] = sorted([e for e in set(v) if e])
+                elif isinstance(v, bool):
+                    result[k] = v
+                else:
+                    raise Exception(f"Unexpected type for {k}: {type(v)}")
 
-        return result
+        return was_modified, result
 
 class DefaultProvider:
     def __init__(self, api_name, request_args, api_keys, show_notice=True):

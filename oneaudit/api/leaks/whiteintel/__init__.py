@@ -32,6 +32,7 @@ class WhiteIntelAPI(LeaksProvider):
         for endpoint_url, details_url in [
             ('/stealer_exposure_handler_v2.php', '/breach_info_handler.php'),
             ('/combolist_exposure_handler_v2.php', '/breach_info_combolists_handler.php'),
+            ('/stealer_exposure_employees_handler_v2.php', '/breach_info_employees_handler.php'),
         ]:
             self.request_args['url'] = self.api_endpoint.format(endpoint=endpoint_url)
             self.request_args['json'] = {

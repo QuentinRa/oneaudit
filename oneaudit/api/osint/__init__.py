@@ -30,7 +30,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
         result = {}
         for provider in self.providers:
             result[provider.api_name] = []
-        result = self._call_method_on_each_provider(result, 'fetch_targets_for_company', company_name)
+        _, result = self._call_method_on_each_provider(result, 'fetch_targets_for_company', company_name)
         final_result = []
         for provider in self.providers:
             final_result.append(

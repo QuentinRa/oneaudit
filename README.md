@@ -12,8 +12,6 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 
 WIP
 
-* Support wildcard import for LinkedIn Parser
-* Add the last route for WhiteIntel
 * Clean censored passwords
 
 ## SocOSINT
