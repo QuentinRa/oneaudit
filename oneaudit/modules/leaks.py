@@ -186,8 +186,7 @@ def run(parser, module_parser):
         for login, data in results.items():
             final_data = {'login': login}
 
-            data['hashes'] = provider.investigate_hashes(login, data)
-            del data['raw_hashes']
+            data = provider.investigate_hashes(login, data)
 
             for k, v in data.items():
                 if type(v) is not list:

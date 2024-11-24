@@ -38,7 +38,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
     def investigate_hashes(self, login, data):
         uncracked_hashes = []
         if not data['passwords']:
-            return uncracked_hashes
+            return data
 
         md5_sum = lambda p : hashlib.md5(p.encode()).hexdigest()
         sha1_sum = lambda p : hashlib.sha1(p.encode()).hexdigest()
@@ -65,12 +65,32 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                     continue
 
             # Attempt to crack the hash
-            print(crackable_hash)
+            result = PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None)
+            for provider in self.providers:
+                if not provider.is_endpoint_enabled_for_cracking:
+                    continue
+                provider.logger.info(f"Attempting to crack hashes using {provider.api_name} (args={crackable_hash})")
+                cached, api_result = provider.fetch_plaintext_from_hash(crackable_hash)
+                if not cached:
+                    self.trigger(provider.__class__.__name__, provider.get_rate())
 
-            # If uncracked
-            uncracked_hashes.append(crackable_hash)
+                result = PasswordHashDataFormat(
+                    crackable_hash,
+                    api_result.plaintext if api_result.plaintext else result.plaintext,
+                    api_result.format if api_result.format else result.format
+                )
 
-        return uncracked_hashes
+            # If uncracked, add the hash to the list, otherwise
+            # Add the password to the list
+            if result.plaintext is None:
+                uncracked_hashes.append(result)
+            else:
+                data['passwords'].append(result.plaintext)
+
+        data['hashes'] = uncracked_hashes
+        del data['raw_hashes']
+
+        return data
 
     def investigate_domain(self, domain):
         result = {
@@ -84,6 +104,9 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
 class LeaksProvider(oneaudit.api.DefaultProvider):
     def fetch_email_results(self, email):
         yield True, {}
+
+    def fetch_plaintext_from_hash(self, crackable_hash):
+        return True, PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None)
 
     def fetch_domain_results(self, domain):
         yield True, {}
@@ -127,4 +150,16 @@ class BreachDataFormat:
         return {
             "name": self.name,
             "source": self.source,
+        }
+
+@dataclasses.dataclass(frozen=True, order=True)
+class PasswordHashDataFormat:
+    value: str
+    plaintext: str|None
+    format: str|None
+
+    def to_dict(self):
+        return {
+            "value": self.value,
+            "format": self.format,
         }
