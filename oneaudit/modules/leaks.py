@@ -42,8 +42,12 @@ class LeaksDownloadProgramData:
 class LeaksOSINTParseProgramData:
     def __init__(self, args):
         oneaudit.utils.args_parse_parse_verbose(self, args)
-        with open(args.input, 'r') as file_data:
-            self.data = json.load(file_data)
+        self.data = {
+            'entries': []
+        }
+        for file in args.input:
+            with open(file, 'r') as file_data:
+                self.data['entries'].extend(json.load(file_data)["entries"])
         self.output_file = args.output
         self.domain = args.company_domain
         self.email_format = email_formats[args.email_format]
@@ -136,16 +140,16 @@ class LeaksCredentialProcessor(cmd.Cmd):
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
     global email_formats
 
-    submodule_parser = module_parser.add_subparsers(dest='action', description='You can download or clean downloaded leaks.', required=True)
+    submodule_parser = module_parser.add_subparsers(dest='action', required=True)
 
-    parse_osint = submodule_parser.add_parser('parse', description='Parse OSINT results into records when can download.')
-    parse_osint.add_argument('-i', metavar='input.json', dest='input', help='JSON contacts file from OSINT investigations.', required=True)
+    parse_osint = submodule_parser.add_parser('parse', help='Parse OSINT results into records suitable for the "download" module.')
+    parse_osint.add_argument('-i', metavar='input.json', dest='input', help='JSON contacts file from OSINT investigations.', action='append', required=True)
     parse_osint.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     parse_osint.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
     oneaudit.utils.args_verbose_config(parse_osint)
 
-    clean_leaks = submodule_parser.add_parser('clean', description='Select which passwords to keep.')
+    clean_leaks = submodule_parser.add_parser('clean', help='Select which passwords to keep.')
     clean_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
     clean_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     clean_leaks.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
@@ -205,15 +209,16 @@ def run(parser, module_parser):
     elif args.action == 'parse':
         args = LeaksOSINTParseProgramData(args)
         result = {
-            'version': 1.0,
+            'version': 1.1,
             'credentials': []
         }
+        found = {}
         for entry in args.data['entries']:
             for target in entry['targets']:
                 firstname = target['first_name'] if 'first_name' in target else ""
                 lastname = target['last_name'] if 'last_name' in target else ""
                 if 'full_name' in target and ' ' in target['full_name']:
-                    words = target['full_name'].split()[0]
+                    words = target['full_name'].split()
                     firstname = words[0]
                     lastname = ''.join(words[1:])
 
@@ -224,19 +229,37 @@ def run(parser, module_parser):
                 email_valid = email_valid and "_" not in firstname+lastname
                 email_valid = email_valid and args.email_regex.match(email) is not None
                 if not email_valid:
-                    logger.warning(f"Invalid Computed Login: {email}")
+                    if email not in found:
+                        logger.warning(f"Invalid Computed Login: {email}")
+                        found[email] = {}
                     continue
-                else:
-                    emails = [email] + [email.lower()
-                        for email in set(target["emails"] if "emails" in target else [])
-                        if not email.endswith(args.domain)
-                    ]
-                    logger.debug(f"Using login: {email} and the following emails: {emails}")
 
-                result["credentials"].append({
-                    "login": email,
-                    "emails": emails
-                })
+                verified = False
+                emails = {email}
+                for target_email_data in target["emails"] if "emails" in target else []:
+                    target_email = target_email_data['email']
+                    is_target_email_verified = target_email_data['verified']
+                    verified = verified or (email == target_email and is_target_email_verified)
+                    if not email.endswith(args.domain):
+                        emails.add(target_email.lower())
+                emails = list(emails)
+                logger.debug(f"Using login: {email} and the following emails: {emails}")
+
+                if email not in found:
+                    found[email] = {
+                        "login": email,
+                        "verified": verified,
+                        "emails": emails
+                    }
+                else:
+                    found[email]["verified"] = verified or found[email]["verified"]
+                    found[email]["emails"].extend(emails)
+
+        result["credentials"] = [{
+            "login": c["login"],
+            "verified": c["verified"],
+            "emails": list(set(c["emails"]))
+        } for c in found.values() if "login" in c]
 
     with open(args.output_file, 'w') as output_file:
         json.dump(result, output_file, cls=oneaudit.modules.GenericObjectEncoder,  indent=4)

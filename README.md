@@ -15,16 +15,12 @@ WIP
 * Support wildcard import for LinkedIn Parser
 * Add the last route for WhiteIntel
 * Clean censored passwords
-* Firstnames/Lastnames ending with ".."
-* Identify if the login is verified or not
-* Merge search results with lookup results
-* Add sleep of 5 seconds between rocket reach searches
 
 ## SocOSINT
 
 ### LinkedIn OSINT
 
-✍️ Get name, birthdate, and other PII. Additionally, can lookup for emails.
+✍️ Get name, birthdate, LinkedIn profile URL, professional and personal emails.
 
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
@@ -93,8 +89,7 @@ $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s roc
 We can compute a list of targets from OSINT results.
 
 ```bash
-$ oneaudit leaks parse -i osint.json -f flast -d example.com -o targets.json
-$ oneaudit leaks parse -i contacts.json -f flast -d example.com -o targets.json
+$ oneaudit leaks parse -i osint.json -i contacts.json -f flast -d example.com -o targets.json
 ```
 
 ```json
