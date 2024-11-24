@@ -240,7 +240,7 @@ def run(parser, module_parser):
                     target_email = target_email_data['email']
                     is_target_email_verified = target_email_data['verified']
                     verified = verified or (email == target_email and is_target_email_verified)
-                    if not email.endswith(args.domain):
+                    if not target_email.endswith(args.domain):
                         emails.add(target_email.lower())
                 emails = list(emails)
                 logger.debug(f"Using login: {email} and the following emails: {emails}")

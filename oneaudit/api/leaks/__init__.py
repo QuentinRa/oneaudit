@@ -149,16 +149,25 @@ class CensoredCredentialsLeakDataFormat:
             "censored_password": self.censored_password,
         }
 
-@dataclasses.dataclass(frozen=True, order=True)
+@dataclasses.dataclass(frozen=True, order=False)
 class BreachDataFormat:
     name: str
-    source: str
+    source: str|None
 
     def to_dict(self):
         return {
             "name": self.name,
             "source": self.source,
         }
+
+    def __lt__(self, other):
+        if not isinstance(other, BreachDataFormat):
+            return NotImplemented
+
+        if self.name != other.name:
+            return self.name < other.name
+
+        return (self.source is not None, self.source) < (other.source is not None, other.source)
 
 @dataclasses.dataclass(frozen=True, order=True)
 class PasswordHashDataFormat:
