@@ -17,9 +17,11 @@ class RocketReachAPI(OSINTProvider):
     def fetch_targets_for_company(self, company_name):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
         page = 0
+        total = -1
         try:
             while True:
                 targets = []
+                self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
                 self.search_handler = search_handler.params(start=page * 100 + 1, size=100)
                 cached, data = self.fetch_results_using_cache(f"{company_name}_{page}")
                 for profile in data["profiles"]:
@@ -38,10 +40,11 @@ class RocketReachAPI(OSINTProvider):
                 if pagination['next'] > pagination['total']:
                     break
                 page += 1
+                total = (pagination['total'] // 100) + 1
         except Exception as e:
             self.logger.error(f"{self.api_name}: Error received: {e}")
 
-    def self_handle_request(self):
+    def handle_request(self):
         return self.search_handler.execute().response
 
     def parse_records_from_file(self, file_source, input_file):

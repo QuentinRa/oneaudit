@@ -37,7 +37,7 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 
 ```json
 {
-  "version": 1.0,
+  "version": 1.1,
   "entries": [
     {
       "source": "rocketreach",
@@ -48,8 +48,7 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
           "full_name": "Firstname Lastname",
           "linkedin_url": "https://www.linkedin.com/in/john_doe",
           "birth_year": null,
-          "_status": "complete",
-          "_count": 1
+          "count": 1
         }
       ]
     }
@@ -57,7 +56,7 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 }
 ```
 
-After exporting the emails (must be done manually), you can prepare them for use with other module with:
+After exporting the emails (must be done manually, exporting results using the API is not planned for now), you can prepare them for use with other module with:
 
 ```bash
 $ oneaudit socosint linkedin parse -s rocketreach -i rocketreach_export.json -o contacts.json
@@ -162,7 +161,13 @@ $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d 
 
 ## API Configuration
 
-Create a JSON file called `config.json` or specify any file using `--config`. The expected format is:
+Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
+
+```bash
+$ oneaudit [...] --config config.json --cache .cache
+```
+
+The expected format is:
 
 ```json
 {

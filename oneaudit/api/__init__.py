@@ -7,9 +7,12 @@ import json
 import os
 import time
 
+cache_folder = ".cache"
+
 
 def args_api_config(parser: argparse.ArgumentParser):
     parser.add_argument('--config', metavar='config.json', dest='api_config', help='Path to the config.json file with API settings.')
+    parser.add_argument('--cache', metavar='.cache', dest='cache_folder', help='Path to the cache folder used to cache requests.')
 
 
 def args_parse_api_config(obj, args):
@@ -24,9 +27,16 @@ def args_parse_api_config(obj, args):
         except json.JSONDecodeError:
             pass
 
+    global cache_folder
+    cache_folder = args.cache_folder
+
 
 def set_cached_result(api_name, key, data):
-    url_hash = f"../cache/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+    global cache_folder
+    url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+    url_hash_directory = os.path.dirname(url_hash)
+    if not os.path.exists(url_hash_directory):
+        os.mkdir(url_hash_directory)
     with open(url_hash, 'w') as f:
         json.dump({
             "timestamp": time.time(),
@@ -35,7 +45,8 @@ def set_cached_result(api_name, key, data):
 
 
 def get_cached_result(api_name, key):
-    url_hash = f"../cache/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+    global cache_folder
+    url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
     url_hash_directory = os.path.dirname(url_hash)
     if not os.path.exists(url_hash_directory):
         os.mkdir(url_hash_directory)
@@ -127,7 +138,7 @@ class DefaultProvider:
                 self.logger.error(f"[!] {self.__class__.__name__}: {response.text}")
                 return True, {}
 
-            if response.status_code not in [200, 204]:
+            if response.status_code not in [200, 201, 204]:
                 self.logger.error(self.__class__.__name__)
                 self.logger.error(response.text)
                 self.logger.error(response.status_code)

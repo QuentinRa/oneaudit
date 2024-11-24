@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="oneaudit",
-    version="1.5.1-dev",
+    version="1.5.2-dev",
     packages=setuptools.find_packages(),
     install_requires=[x.strip() for x in open("requirements.txt").readlines()],
     entry_points={
