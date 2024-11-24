@@ -102,15 +102,6 @@ class DefaultProviderManager:
                     else:
                         raise Exception(f"Unexpected type for {k}: {type(v)}")
 
-        if was_modified:
-            for k, v in result.items():
-                if isinstance(v, list):
-                    result[k] = sorted([e for e in set(v) if e])
-                elif isinstance(v, bool):
-                    result[k] = v
-                else:
-                    raise Exception(f"Unexpected type for {k}: {type(v)}")
-
         return was_modified, result
 
 class DefaultProvider:

@@ -206,7 +206,7 @@ def run(parser, module_parser):
 
             for k, v in data.items():
                 if isinstance(v, list):
-                    final_data[k] = [e for e in set(v) if e]
+                    final_data[k] = sorted([e for e in set(v) if e])
                 elif isinstance(v, bool):
                     final_data[k] = v
                 else:
