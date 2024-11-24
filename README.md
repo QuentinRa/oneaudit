@@ -13,7 +13,6 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 WIP
 
 * Support wildcard import for LinkedIn Parser
-* Adding verbose to see enabled libraries
 * Add the last route for WhiteIntel
 * Clean censored passwords
 * Firstnames/Lastnames ending with ".."
@@ -57,24 +56,28 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 After exporting the emails (must be done manually, exporting results using the API is not planned for now), you can prepare them for use with other module with:
 
 ```bash
+$ # Only keep employees working at LinkedIn
 $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json
 ```
 
 ```json
 {
-  "version": 1.1,
+  "version": 1.0,
   "entries": [
     {
       "source": "rocketreach",
       "date": 1732044168.2800202,
-      "version": 1.0,
+      "version": 1.2,
       "targets": [
         {
           "first_name": "John",
           "last_name": "Doe",
           "linkedin_url": "https://www.linkedin.com/in/johndoe",
           "emails": [
-            "johndoe@example.com"
+            {
+              "email": "johndoe@example.com",
+              "verified": false
+            }
           ]
         }
       ]

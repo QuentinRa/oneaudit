@@ -18,7 +18,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                 result.append({
                     "source": provider.api_name,
                     "date": time.time(),
-                    "version": 1.0,
+                    "version": 1.2,
                     "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
                 })
             except Exception as e:
@@ -70,4 +70,15 @@ class OSINTScrappedDataFormat:
             "linkedin_url": self.linkedin_url,
             "birth_year": self.birth_year,
             "count": self.count,
+        }
+
+@dataclasses.dataclass(frozen=True, order=True)
+class OSINTScrappedEmailDataFormat:
+    email: str
+    verified: bool
+
+    def to_dict(self):
+        return {
+            "email": self.email,
+            "verified": self.verified,
         }

@@ -1,4 +1,4 @@
-from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat
+from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScrappedEmailDataFormat
 import json
 import time
 import rocketreach
@@ -16,6 +16,14 @@ class RocketReachAPI(OSINTProvider):
             self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
             self.search_handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
             self.show_notice()
+
+        self.email_verified_mapper = {
+            "accept_all": False,
+            "unknown": False,
+            "catch-all": False,
+            "invalid": False,
+            "valid": True
+        }
 
     def fetch_targets_for_company(self, company_name):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
@@ -67,7 +75,10 @@ class RocketReachAPI(OSINTProvider):
                             continue
                         if email['confidence'] < 50:
                             continue
-                    emails.append(email['email'].lower())
+                    emails.append(OSINTScrappedEmailDataFormat(
+                        email['email'].lower(),
+                        self.email_verified_mapper[email['validity']]
+                    ))
 
                 # If the employee is not part of the target company
                 if employee_filter not in entry["current_employer"].lower():

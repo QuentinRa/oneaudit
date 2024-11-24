@@ -28,7 +28,7 @@ def args_parse_api_config(obj, args):
             pass
 
     global cache_folder
-    cache_folder = args.cache_folder
+    cache_folder = args.cache_folder if args.cache_folder else cache_folder
 
 
 def set_cached_result(api_name, key, data):

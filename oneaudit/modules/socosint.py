@@ -55,8 +55,10 @@ def run(parser, module_parser):
             args = OSINTScrapLinkedInProgramData(args)
             provider = oneaudit.api.osint.OSINTProviderManager(args.api_keys)
             results = provider.fetch_records(args.company_name)
+            version = 1.1
         elif args.action == 'parse':
             args = OSINTParseLinkedInProgramData(args)
+            version = 1.0
             provider = oneaudit.api.osint.OSINTProviderManager({}, cache_only=True)
             try:
                 with open(args.input_file, 'r', encoding='utf-8') as input_file:
@@ -67,6 +69,6 @@ def run(parser, module_parser):
 
         with open(args.output_file, 'w') as output_file:
             json.dump({
-                "version": 1.1,
+                "version": version,
                 "entries": results,
             }, output_file, cls=oneaudit.modules.GenericObjectEncoder, indent=4)
