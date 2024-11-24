@@ -12,8 +12,6 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 
 WIP
 
-* Use given cache folder or temporary as default
-* Divide cache folder in api folders
 * Support wildcard import for LinkedIn Parser
 * Adding verbose to see enabled libraries
 * Add the last route for WhiteIntel
@@ -59,7 +57,7 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 After exporting the emails (must be done manually, exporting results using the API is not planned for now), you can prepare them for use with other module with:
 
 ```bash
-$ oneaudit socosint linkedin parse -s rocketreach -i rocketreach_export.json -o contacts.json
+$ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json
 ```
 
 ```json

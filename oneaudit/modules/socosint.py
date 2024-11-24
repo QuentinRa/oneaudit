@@ -19,6 +19,7 @@ class OSINTParseLinkedInProgramData:
     def __init__(self, args):
         oneaudit.utils.args_parse_parse_verbose(self, args)
         self.file_source = args.source
+        self.filter = args.filter.lower()
         self.input_file = args.input
         self.output_file = args.output
 
@@ -59,7 +60,7 @@ def run(parser, module_parser):
             provider = oneaudit.api.osint.OSINTProviderManager({}, cache_only=True)
             try:
                 with open(args.input_file, 'r', encoding='utf-8') as input_file:
-                    results = provider.parse_records(args.file_source, input_file)
+                    results = provider.parse_records(args.file_source, args.filter, input_file)
             except (FileNotFoundError, json.JSONDecodeError) as e:
                 logger.error(f"[+] Failed to parse results: '{e}'.")
                 return

@@ -50,7 +50,7 @@ class RocketReachAPI(OSINTProvider):
     def handle_request(self):
         return self.search_handler.execute().response
 
-    def parse_records_from_file(self, file_source, input_file):
+    def parse_records_from_file(self, file_source, employee_filter, input_file):
         targets = []
         if file_source != 'rocketreach':
             return targets
@@ -68,6 +68,10 @@ class RocketReachAPI(OSINTProvider):
                         if email['confidence'] < 50:
                             continue
                     emails.append(email['email'].lower())
+
+                # If the employee is not part of the target company
+                if employee_filter not in entry["current_employer"].lower():
+                    continue
 
                 targets.append({
                     "first_name": entry["first_name"],

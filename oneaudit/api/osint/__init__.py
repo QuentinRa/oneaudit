@@ -10,7 +10,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only)
         ])
 
-    def parse_records(self, file_source, input_file):
+    def parse_records(self, file_source, employee_filter, input_file):
         result = []
 
         for provider in self.providers:
@@ -19,7 +19,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                     "source": provider.api_name,
                     "date": time.time(),
                     "version": 1.0,
-                    "targets": provider.parse_records_from_file(file_source, input_file)
+                    "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
                 })
             except Exception as e:
                 logging.error(f"Error during parsing of {input_file} by {provider.api_name}: {e}")
@@ -50,7 +50,7 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
         super().__init__(api_name, request_args, api_keys, show_notice)
         self.api_version = api_version
 
-    def parse_records_from_file(self, file_source, input_file):
+    def parse_records_from_file(self, file_source, employee_filter, input_file):
         return []
 
     def fetch_targets_for_company(self, company_name):
