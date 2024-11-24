@@ -185,6 +185,13 @@ def run(parser, module_parser):
         credentials = []
         for login, data in results.items():
             final_data = {'login': login}
+
+            if not data['raw_hashes']:
+                data['hashes'] = []
+            else:
+                data['hashes'] = data['raw_hashes']
+            del data['raw_hashes']
+
             for k, v in data.items():
                 if type(v) is not list:
                     logger.error("Unexpected type for:", f"k={k}", f"v={v}")

@@ -125,8 +125,10 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
 {
   // This API is free, just leave the key empty
   "hudsonrocks": "",
+  "leakcheck": "",
   // This API is paid, an API key is required
   "rocketreach": "your_api_key",
+  "leakcheck_pro": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
 }
@@ -134,9 +136,11 @@ Create a JSON file called `config.json` or specify any file using `--config`. Th
 
 The followed APIs are used by the plugin:
 
-| API Identifier                                     | Pricing   | Usage                                          |
-|----------------------------------------------------|-----------|------------------------------------------------|
+| API Identifier                                     | Pricing    | Usage                                          |
+|----------------------------------------------------|------------|------------------------------------------------|
 | [rocketreach](https://rocketreach.co/)             | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
-| [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`    | InfoStealer API (censored).                    |
+| [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`     | InfoStealer API (censored).                    |
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
-| [aura](https://scan.aura.com/)                     | `FREE` | Leaked Credentials API (censored).             |
+| [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                  |
+| [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                  |
+| [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |

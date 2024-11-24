@@ -21,7 +21,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'passwords': [],
             'censored_logins': [],
             'censored_passwords': [],
-            'hashes': [],
+            'raw_hashes': [],
             'info_stealers': [],
             'breaches': [],
         }
@@ -32,7 +32,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             'passwords': current['passwords'],
             'censored_logins': current['censored_logins'],
             'censored_passwords': current['censored_passwords'],
-            'hashes': current['hashes'],
+            'raw_hashes': current['raw_hashes'],
             'info_stealers': current['info_stealers'],
             'breaches': current['breaches'],
         }

@@ -43,7 +43,7 @@ class LeakCheckAPI(LeaksProvider):
                 raise Exception(f"Unexpected result for {self.api_name}: {data}")
             sources = [entry['source'] for entry in data['result'] if 'source' in entry]
             results = {
-                'censored_passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
+                'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
                 'breaches': [BreachDataFormat(source["name"], source["breach_date"])
                              for source in sources if source['name'] != "Unknown"],
             }
