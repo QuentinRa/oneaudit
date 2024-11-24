@@ -13,6 +13,8 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 WIP
 
 * Clean censored passwords
+* Recursive search based on new emails
+* Handle domain aliases
 
 ## SocOSINT
 
