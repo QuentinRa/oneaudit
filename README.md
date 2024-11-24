@@ -166,9 +166,11 @@ The expected format is:
 ```json
 {
   // This API is free, just leave the key empty
+  "aura": "",
   "hudsonrocks": "",
   "leakcheck": "",
   "nth": "",
+  "spycloud": "",
   // This API is paid, an API key is required
   "hashmob": "your_api_key",
   "rocketreach": "your_api_key",
@@ -186,10 +188,11 @@ The followed APIs are used by the plugin:
 | [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`     | InfoStealer API (censored).                    |
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
+| [spycloud](https://spycloud.com/)                  | `FREE`     | Data breaches API.                             |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
 | [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |
-| [nth](https://github.com/HashPals/Name-That-Hash)                                            | `FREE`     | Hash Identifier.                               |
-| [hashmob](https://hashmob.net/)                                           | `FREEMIUM` | Hash Rainbow tables.                           |
+| [nth](https://github.com/HashPals/Name-That-Hash)  | `FREE`     | Hash Identifier.                               |
+| [hashmob](https://hashmob.net/)                    | `FREEMIUM` | Hash Rainbow tables.                           |
 
 Candidates:
 

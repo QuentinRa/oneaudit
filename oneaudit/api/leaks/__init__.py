@@ -12,6 +12,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
         import oneaudit.api.leaks.hudsonrocks
         import oneaudit.api.leaks.leakcheck
         import oneaudit.api.leaks.nth
+        import oneaudit.api.leaks.spycloud
         import oneaudit.api.leaks.whiteintel
         super().__init__([
             oneaudit.api.leaks.aura.AuraAPI(api_keys),
@@ -19,6 +20,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             oneaudit.api.leaks.hudsonrocks.HudsonRocksAPI(api_keys),
             oneaudit.api.leaks.leakcheck.LeakCheckAPI(api_keys),
             oneaudit.api.leaks.nth.NameThatHashAPI(api_keys),
+            oneaudit.api.leaks.spycloud.SpyCloudAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ])
         self.bcrypt_hash_regex = re.compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
