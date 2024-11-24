@@ -27,12 +27,11 @@ class HashMobAPI(LeaksProvider):
 
         found = data['data']['found']
 
-        # format is a INT so we can't return it too
         return cached, PasswordHashDataFormat(
             crackable_hash,
             None if len(found) == 0 else found[0]['plain'],
             None,
-            False
+            -1
         )
 
     def handle_rate_limit(self, response):

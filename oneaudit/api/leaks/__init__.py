@@ -67,7 +67,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                     continue
 
             # Attempt to crack the hash
-            result = PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None, format_verified=False)
+            result = PasswordHashDataFormat(value=crackable_hash, plaintext=None, format=None, format_confidence=-1)
             for provider in self.providers:
                 if not provider.is_endpoint_enabled_for_cracking:
                     continue
@@ -79,8 +79,8 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                 result = PasswordHashDataFormat(
                     crackable_hash,
                     api_result.plaintext if api_result.plaintext else result.plaintext,
-                    api_result.format if not result.format_verified or not result.format else result.format,
-                    api_result.format_verified if not result.format_verified or not result.format else result.format_verified,
+                    api_result.format if result.format_confidence < api_result.format_confidence else result.format,
+                    api_result.format_confidence if result.format_confidence < api_result.format_confidence else result.format_confidence,
                 )
 
             # If uncracked, add the hash to the list, otherwise
@@ -164,11 +164,11 @@ class PasswordHashDataFormat:
     value: str
     plaintext: str|None
     format: str|None
-    format_verified: bool
+    format_confidence: int
 
     def to_dict(self):
         return {
             "value": self.value,
             "format": self.format,
-            "format_verified": self.format_verified,
+            "format_confidence": self.format_confidence,
         }

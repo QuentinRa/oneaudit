@@ -24,5 +24,5 @@ class NameThatHashAPI(LeaksProvider):
             crackable_hash,
             None,
             output[0].name if len(output) > 0 else None,
-            False
+            -1 if len(output) == 0 else 40 if output[0].name in self.popular else 20
         )
