@@ -8,11 +8,13 @@ class NameThatHashAPI(LeaksProvider):
         super().__init__(
             api_name='nth',
             request_args={},
-            api_keys=api_keys
+            api_keys=api_keys,
+            show_notice=False
         )
         self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
         self.is_endpoint_enabled = False
         self.popular = hash_info.HashInformation().popular
+        self.show_notice(self.is_endpoint_enabled_for_cracking)
 
     def fetch_plaintext_from_hash(self, crackable_hash):
         chash = crackable_hash.strip()

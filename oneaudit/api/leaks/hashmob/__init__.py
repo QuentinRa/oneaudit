@@ -13,11 +13,13 @@ class HashMobAPI(LeaksProvider):
                 'json': {},
                 'headers': {}
             },
-            api_keys=api_keys
+            api_keys=api_keys,
+            show_notice=False
         )
-        self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled and len(self.api_key) > 0
+        self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
         self.is_endpoint_enabled = False
         self.request_args['headers']['api-key'] = self.api_key
+        self.show_notice(self.is_endpoint_enabled_for_cracking)
 
     def fetch_plaintext_from_hash(self, crackable_hash):
         self.request_args['json']['hashes'] = [crackable_hash]

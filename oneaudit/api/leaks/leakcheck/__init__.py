@@ -12,12 +12,14 @@ class LeakCheckAPI(LeaksProvider):
                     'X-API-Key': ''
                 }
             },
-            api_keys=api_keys
+            api_keys=api_keys,
+            show_notice=False
         )
         self.api_key = api_keys.get('leakcheck_pro', None)
         self.is_public_endpoint_enabled = self.is_endpoint_enabled
         self.is_pro_endpoint_enabled = self.api_key is not None
         self.is_endpoint_enabled = self.is_public_endpoint_enabled or self.is_pro_endpoint_enabled
+        self.show_notice()
 
     def fetch_email_results(self, email):
         if self.is_public_endpoint_enabled:

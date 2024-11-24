@@ -19,8 +19,6 @@ WIP
 * Add the last route for WhiteIntel
 * Clean censored passwords
 * Firstnames/Lastnames ending with ".."
-* Remove description for subcommands
-* Fix "action" not being required
 * Identify if the login is verified or not
 * Merge search results with lookup results
 * Add sleep of 5 seconds between rocket reach searches
@@ -34,7 +32,7 @@ WIP
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
 ```bash
-$ oneaudit socosint linkedin -d example.com -o osint.json
+$ oneaudit socosint linkedin scrap -d example.com -o osint.json
 ```
 
 ```json

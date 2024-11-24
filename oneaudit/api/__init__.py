@@ -88,7 +88,7 @@ class DefaultProviderManager:
         return result
 
 class DefaultProvider:
-    def __init__(self, api_name, request_args, api_keys):
+    def __init__(self, api_name, request_args, api_keys, show_notice=True):
         self.api_name = api_name
         self.unique_identifier = f'{api_name}_'
 
@@ -101,6 +101,16 @@ class DefaultProvider:
         self.is_endpoint_enabled = self.api_key is not None
 
         self.logger = logging.getLogger('oneaudit')
+
+        if show_notice:
+            self.show_notice()
+
+    def show_notice(self, is_endpoint_enabled=None):
+        is_endpoint_enabled = is_endpoint_enabled if is_endpoint_enabled else self.is_endpoint_enabled
+        if not is_endpoint_enabled:
+            self.logger.warning(f"API '{self.api_name}' is not enabled.")
+        else:
+            self.logger.info(f"API '{self.api_name}' was enabled.")
 
     def fetch_results_using_cache(self, variable_key):
         cached = True

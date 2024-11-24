@@ -46,8 +46,8 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
 
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
-    def __init__(self, unique_identifier, request_args, api_name, api_keys, api_version=1.0):
-        super().__init__(unique_identifier, request_args, api_name, api_keys)
+    def __init__(self, request_args, api_name, api_keys, api_version=1.0, show_notice=True):
+        super().__init__(api_name, request_args, api_keys, show_notice)
         self.api_version = api_version
 
     def parse_records_from_file(self, file_source, input_file):
