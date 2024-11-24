@@ -5,14 +5,17 @@ import rocketreach
 
 
 class RocketReachAPI(OSINTProvider):
-    def __init__(self, api_keys):
+    def __init__(self, api_keys, cache_only):
         super().__init__(
             api_name='rocketreach',
             request_args={},
-            api_keys=api_keys
+            api_keys=api_keys,
+            show_notice=False
         )
-        self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
-        self.search_handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+        if not cache_only:
+            self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+            self.search_handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+            self.show_notice()
 
     def fetch_targets_for_company(self, company_name):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
@@ -51,23 +54,27 @@ class RocketReachAPI(OSINTProvider):
         targets = []
         if file_source != 'rocketreach':
             return targets
-        entries = json.load(input_file)["records"]
-        for entry in entries:
-            emails = []
-            for email in entry['emails']:
-                if email['source'] == "predicted":
-                    if email['format_probability'] and email['format_probability'] < 35:
-                        continue
-                    if email['confidence'] < 50:
-                        continue
-                emails.append(email['email'].lower())
+        file_contents = json.load(input_file)
+        if not isinstance(file_contents, list):
+            file_contents = [file_contents]
 
-            targets.append({
-                "first_name": entry["first_name"],
-                "last_name": entry["last_name"],
-                "linkedin_url": entry["linkedin_url"],
-                'emails': emails,
-            })
+        for file_content in file_contents:
+            for entry in file_content["records"]:
+                emails = []
+                for email in entry['emails']:
+                    if email['source'] == "predicted":
+                        if email['format_probability'] and email['format_probability'] < 35:
+                            continue
+                        if email['confidence'] < 50:
+                            continue
+                    emails.append(email['email'].lower())
+
+                targets.append({
+                    "first_name": entry["first_name"],
+                    "last_name": entry["last_name"],
+                    "linkedin_url": entry["linkedin_url"],
+                    'emails': emails,
+                })
         return targets
 
     def handle_rate_limit(self, response):

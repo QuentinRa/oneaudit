@@ -4,10 +4,10 @@ import dataclasses
 import oneaudit.api
 
 class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
-    def __init__(self, api_keys):
+    def __init__(self, api_keys, cache_only=False):
         import oneaudit.api.osint.rocketreach
         super().__init__([
-            oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys)
+            oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only)
         ])
 
     def parse_records(self, file_source, input_file):

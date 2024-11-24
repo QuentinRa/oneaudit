@@ -38,8 +38,9 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
 
     linkedin_parse = linkedin_module_action.add_parser("parse", help='Parse exported results from OSINT tools into JSON usable by this toolkit.')
     linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
-    linkedin_parse.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
-    linkedin_parse.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
+    linkedin_parse.add_argument('-f', '--filter', dest='filter', type=str, help="A case-insensitive string such as 'LinkedIn' to only keep current employees.", required=True)
+    linkedin_parse.add_argument('-i', '--input', metavar='export.json', type=str, dest='input', help='Exported results from one of the supported APIs.', required=True)
+    linkedin_parse.add_argument('-o', '--output', metavar='output.json', type=str, dest='output', help='Export results as JSON.', required=True)
     oneaudit.utils.args_verbose_config(linkedin_parse)
 
     return parser.parse_args()
@@ -55,10 +56,10 @@ def run(parser, module_parser):
             results = provider.fetch_records(args.company_name)
         elif args.action == 'parse':
             args = OSINTParseLinkedInProgramData(args)
-            provider = oneaudit.api.osint.OSINTProviderManager({})
+            provider = oneaudit.api.osint.OSINTProviderManager({}, cache_only=True)
             try:
-                with open(args.input_file, 'r') as input_file:
-                    results = provider.parse_records(args, input_file)
+                with open(args.input_file, 'r', encoding='utf-8') as input_file:
+                    results = provider.parse_records(args.file_source, input_file)
             except (FileNotFoundError, json.JSONDecodeError) as e:
                 logger.error(f"[+] Failed to parse results: '{e}'.")
                 return
