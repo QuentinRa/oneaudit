@@ -24,19 +24,19 @@ class OSINTParseLinkedInProgramData:
 
 
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
-    submodule_parser = module_parser.add_subparsers(dest='scope', description='Target platform')
+    submodule_parser = module_parser.add_subparsers(dest='scope', help="Target Social Networks", required=True)
 
     # LinkedIn
     linkedin_module = submodule_parser.add_parser('linkedin')
-    linkedin_module_action = linkedin_module.add_subparsers(dest='action', required=True)
+    linkedin_module_action = linkedin_module.add_subparsers(dest='action', help="Action to perform.", required=True)
 
-    linkedin_scrapper = linkedin_module_action.add_parser("scrap", description='Scrap LinkedIn to fetch user profiles.')
+    linkedin_scrapper = linkedin_module_action.add_parser("scrap", help='Scrap LinkedIn to fetch user profiles.')
     linkedin_scrapper.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     linkedin_scrapper.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     oneaudit.api.args_api_config(linkedin_scrapper)
     oneaudit.utils.args_verbose_config(linkedin_scrapper)
 
-    linkedin_parse = linkedin_module_action.add_parser("parse", description='Parse exported results from Lookups into JSON usable by this toolkit.')
+    linkedin_parse = linkedin_module_action.add_parser("parse", help='Parse exported results from OSINT tools into JSON usable by this toolkit.')
     linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
     linkedin_parse.add_argument('-i', '--input', metavar='export.json', dest='input', help='Exported results from one of the supported APIs.', required=True)
     linkedin_parse.add_argument('-o', '--output', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
