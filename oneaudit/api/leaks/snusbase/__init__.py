@@ -20,11 +20,11 @@ class SnusbaseAPI(LeaksProvider):
         self.show_notice()
 
         self.known_keys = [
-            'email', 'username', 'name', '_domain', 'url',
-            'hash', 'password',
-            'city', 'country', 'address', 'zip',
-            'company', 'job',
-            'created'
+            'email', 'username', 'name', 'id', 'uid', 'created', 'updated',
+            '_domain', 'url', 'followers',
+            'hash', 'salt', 'password', 'lastip',
+            'city', 'country', 'address', 'zip', 'birthdate', 'language',
+            'company', 'job', 'gender', 'other'
         ]
         self.api_endpoint = 'https://api.snusbase.com/{route}'
 
@@ -38,10 +38,11 @@ class SnusbaseAPI(LeaksProvider):
         results = {
             'logins': [],
             'passwords': [],
-            'raw_hashes': [],
+            'raw_hashes': []
         }
         # city, country, zip, company, address, url
         for breach_data in data['results'].values():
+            results['verified'] = True
             for entry in breach_data:
                 for k, v in [
                     ('username', 'logins'),
@@ -51,9 +52,10 @@ class SnusbaseAPI(LeaksProvider):
                 ]:
                     if k in entry:
                         results[v].append(entry[k])
+
                 for k in entry.keys():
                     if k not in self.known_keys:
-                        raise Exception(f'{self.api_name}: Unknown key "{k}"')
+                        raise Exception(f'{self.api_name}: Unknown key "{k}" with value "{entry[k]}" for "{email}"')
 
         yield cached, results
 

@@ -34,4 +34,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logging.getLogger('oneaudit').error(e)
-        logging.getLogger('oneaudit').error("Program was cancelled due to an exception.")
+        logging.getLogger('oneaudit').error("Program was terminated due to an exception.")
