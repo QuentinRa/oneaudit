@@ -1,4 +1,4 @@
-from oneaudit.api.leaks import LeaksProvider
+from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
 import time
 
 
@@ -8,17 +8,15 @@ class SnusbaseAPI(LeaksProvider):
         super().__init__(
             api_name='snusbase',
             request_args={
-                'url': 'https://api.snusbase.com/data/search',
                 'method': 'POST',
-                'json': {
-                    'types': ['email'],
-                }
+                'json': {}
             },
             api_keys=api_keys,
             show_notice=False
         )
         self.request_args['headers']['Auth'] = self.api_key
         self.is_endpoint_enabled  = len(self.api_key) > 0 and self.api_key.startswith("sb")
+        self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
         self.show_notice()
 
         self.known_keys = [
@@ -28,20 +26,19 @@ class SnusbaseAPI(LeaksProvider):
             'company', 'job',
             'created'
         ]
+        self.api_endpoint = 'https://api.snusbase.com/{route}'
 
     def fetch_email_results(self, email):
         # Update parameters
+        self.request_args['url'] = self.api_endpoint.format(route='data/search')
         self.request_args['json']['terms'] = [email]
+        self.request_args['json']['types'] = ['email']
         # Send the request
         cached, data = self.fetch_results_using_cache(f"search_{email}")
         results = {
             'logins': [],
             'passwords': [],
-            'censored_logins': [],
-            'censored_passwords': [],
             'raw_hashes': [],
-            'info_stealers': [],
-            'breaches': [],
         }
         # city, country, zip, company, address, url
         for breach_data in data['results'].values():
@@ -49,8 +46,8 @@ class SnusbaseAPI(LeaksProvider):
                 for k, v in [
                     ('username', 'logins'),
                     ('name', 'logins'),
-                    ('hash', 'raw_hashes'),
                     ('password', 'passwords'),
+                    ('hash', 'raw_hashes'),
                 ]:
                     if k in entry:
                         results[v].append(entry[k])
@@ -58,7 +55,23 @@ class SnusbaseAPI(LeaksProvider):
                     if k not in self.known_keys:
                         raise Exception(f'{self.api_name}: Unknown key "{k}"')
 
-        yield cached, {}
+        yield cached, results
+
+    def fetch_plaintext_from_hash(self, crackable_hash):
+        # Update parameters
+        self.request_args['url'] = self.api_endpoint.format(route='tools/hash-lookup')
+        self.request_args['json']['terms'] = [crackable_hash]
+        self.request_args['json']['types'] = ['hash']
+
+        cached, data = self.fetch_results_using_cache(crackable_hash)
+        passwords = [entry['password'] for breach_data in data['results'].values() for entry in breach_data if 'password' in entry]
+
+        return cached, PasswordHashDataFormat(
+            crackable_hash,
+            None if not passwords else passwords[0],
+            None,
+            -1
+        )
 
 
     def handle_rate_limit(self, response):

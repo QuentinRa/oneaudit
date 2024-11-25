@@ -92,6 +92,10 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
                     api_result.format_confidence if result.format_confidence < api_result.format_confidence else result.format_confidence,
                 )
 
+                # We found a password
+                if result.plaintext:
+                    break
+
             # If uncracked, add the hash to the list, otherwise
             # Add the password to the list
             if result.plaintext is None:
