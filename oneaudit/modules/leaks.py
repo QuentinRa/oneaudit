@@ -194,7 +194,7 @@ def run(parser, module_parser):
             for login in results[key]["logins"]:
                 if "@" not in login or login in credential['emails']:
                     continue
-                logger.error(f"Found new email that was not handled: {login}")
+                raise Exception(f"Found new email that was not handled: {login}")
 
             results[key]['verified'] = credential['verified']
 

@@ -14,7 +14,14 @@ WIP
 
 * Clean censored passwords
 * Recursive search based on new emails
-* Handle domain aliases
+* IPs, addresses, usernames, etc.
+* Dehashed (all in one)
+* Snusbase
+* Rocketreach lookups (more important)
+* Rocketreach exports (least important)
+* Keep verified even if there are no results
+* Multiple filters for company rocketreach export
+* handle facebook, twitter, github, etc?
 
 ## SocOSINT
 
