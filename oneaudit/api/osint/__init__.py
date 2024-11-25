@@ -1,5 +1,7 @@
 import logging
+import enum
 import time
+import typing
 import dataclasses
 import oneaudit.api
 
@@ -18,7 +20,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                 result.append({
                     "source": provider.api_name,
                     "date": time.time(),
-                    "version": 1.2,
+                    "version": 1.3,
                     "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
                 })
             except Exception as e:
@@ -37,7 +39,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                 {
                     "source": provider.api_name,
                     "date": time.time(),
-                    "version": provider.api_version,
+                    "version": 1.2,
                     "targets": result[provider.api_name]
                 }
             )
@@ -46,9 +48,8 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
 
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
-    def __init__(self, request_args, api_name, api_keys, api_version=1.0, show_notice=True):
+    def __init__(self, request_args, api_name, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
-        self.api_version = api_version
 
     def parse_records_from_file(self, file_source, employee_filter, input_file):
         return []
@@ -57,19 +58,32 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
         return []
 
 
+class SocialNetworkEnum(enum.Enum):
+    LINKEDIN = "linkedin"
+    TWITTER = "twitter"
+    FACEBOOK = "facebook"
+    BADOO = "badoo"
+    FOURSQUARE = "foursquare"
+
+    def get(value):
+        for name, member in SocialNetworkEnum.__members__.items():
+            if member.value == value:
+                return name
+        raise ValueError(f"The following value '{value}' is not within the supported social networks.")
+
 @dataclasses.dataclass(frozen=True, order=True)
 class OSINTScrappedDataFormat:
     full_name: str
-    linkedin_url: str
     birth_year: str
     count: int
+    links: typing.Dict[SocialNetworkEnum, str] = dataclasses.field(default_factory=dict)
 
     def to_dict(self):
         return {
             "full_name": self.full_name,
-            "linkedin_url": self.linkedin_url,
             "birth_year": self.birth_year,
             "count": self.count,
+            "links": self.links,
         }
 
 @dataclasses.dataclass(frozen=True, order=True)

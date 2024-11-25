@@ -1,4 +1,4 @@
-from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScrappedEmailDataFormat
+from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
 import json
 import time
 import rocketreach
@@ -25,6 +25,7 @@ class RocketReachAPI(OSINTProvider):
             "valid": True
         }
 
+
     def fetch_targets_for_company(self, company_name):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
         page = 0
@@ -40,9 +41,9 @@ class RocketReachAPI(OSINTProvider):
                     target_emails = list(set(target_emails))
                     targets.append(OSINTScrappedDataFormat(
                         profile["name"],
-                        profile["linkedin_url"],
                         profile['birth_year'],
                         len(target_emails),
+                        {SocialNetworkEnum.get(k): str(v) for k, v in (profile['links'] if profile['links'] else {}).items()}
                     ))
 
                 yield cached, { self.api_name: targets }
@@ -87,8 +88,8 @@ class RocketReachAPI(OSINTProvider):
                 targets.append({
                     "first_name": entry["first_name"],
                     "last_name": entry["last_name"],
-                    "linkedin_url": entry["linkedin_url"],
                     'emails': emails,
+                    'links': {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 })
         return targets
 

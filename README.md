@@ -42,12 +42,14 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
     {
       "source": "rocketreach",
       "date": 1732044168.2800202,
-      "version": 1.0,
+      "version": 1.2,
       "targets": [
         {
           "full_name": "Firstname Lastname",
-          "linkedin_url": "https://www.linkedin.com/in/john_doe",
-          "birth_year": null,
+          "birth_year": 1337,
+          "links": {
+            "LINKEDIN": "https://www.linkedin.com/in/john_doe"
+          },
           "count": 1
         }
       ]
@@ -70,12 +72,14 @@ $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s roc
     {
       "source": "rocketreach",
       "date": 1732044168.2800202,
-      "version": 1.2,
+      "version": 1.3,
       "targets": [
         {
           "first_name": "John",
           "last_name": "Doe",
-          "linkedin_url": "https://www.linkedin.com/in/johndoe",
+          "links": {
+            "LINKEDIN": "https://www.linkedin.com/in/john_doe"
+          },
           "emails": [
             {
               "email": "johndoe@example.com",
