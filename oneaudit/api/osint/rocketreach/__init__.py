@@ -14,7 +14,7 @@ class RocketReachAPI(OSINTProvider):
         )
         if not cache_only:
             self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
-            self.search_handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
+            self.search_handler = None
             self.show_notice()
 
         self.email_verified_mapper = {
@@ -45,6 +45,7 @@ class RocketReachAPI(OSINTProvider):
                         len(target_emails),
                         {SocialNetworkEnum.get(k): str(v) for k, v in (profile['links'] if profile['links'] else {}).items()}
                     ))
+                    print(profile['id'])
 
                 yield cached, { self.api_name: targets }
 

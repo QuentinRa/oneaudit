@@ -13,6 +13,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
         import oneaudit.api.leaks.leakcheck
         import oneaudit.api.leaks.nth
         import oneaudit.api.leaks.proxynova
+        import oneaudit.api.leaks.snusbase
         import oneaudit.api.leaks.spycloud
         import oneaudit.api.leaks.whiteintel
         super().__init__([
@@ -22,6 +23,7 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             oneaudit.api.leaks.leakcheck.LeakCheckAPI(api_keys),
             oneaudit.api.leaks.nth.NameThatHashAPI(api_keys),
             oneaudit.api.leaks.proxynova.ProxyNovaAPI(api_keys),
+            oneaudit.api.leaks.snusbase.SnusbaseAPI(api_keys),
             oneaudit.api.leaks.spycloud.SpyCloudAPI(api_keys),
             oneaudit.api.leaks.whiteintel.WhiteIntelAPI(api_keys)
         ])

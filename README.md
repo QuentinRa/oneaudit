@@ -16,7 +16,6 @@ WIP
 * Recursive search based on new emails
 * IPs, addresses, usernames, etc.
   * Leakcheck returns a lot of them (check the fields)
-  * Snusbase
 * Dehashed (all in one)
 * Rocketreach lookups (more important)
 * Rocketreach exports (least important)
@@ -209,6 +208,7 @@ The expected format is:
   "hashmob": "your_api_key",
   "rocketreach": "your_api_key",
   "leakcheck_pro": "your_api_key",
+  "snusbase": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
 }
@@ -223,8 +223,9 @@ The followed APIs are used by the plugin:
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
 | [spycloud](https://spycloud.com/)                  | `FREE`     | Data breaches API.                             |
-| [proxynova](https://www.proxynova.com/tools/comb)                  | `FREE`     | Leaked Credentials API.                        |
+| [proxynova](https://www.proxynova.com/tools/comb)  | `FREE`     | Leaked Credentials API.                        |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
+| [snusbase](https://docs.snusbase.com/)                  | `PAID`     | Leaked Credentials API.                        |
 | [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |
 | [nth](https://github.com/HashPals/Name-That-Hash)  | `FREE`     | Hash Identifier.                               |
 | [hashmob](https://hashmob.net/)                    | `FREEMIUM` | Hash Rainbow tables.                           |
