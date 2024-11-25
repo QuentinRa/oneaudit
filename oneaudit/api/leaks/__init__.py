@@ -161,7 +161,7 @@ class BreachDataFormat:
     def to_dict(self):
         return {
             "name": self.name,
-            "source": self.source,
+            "source": self.source if self.source else None,
         }
 
     def __lt__(self, other):
@@ -172,6 +172,15 @@ class BreachDataFormat:
             return self.name < other.name
 
         return (self.source is not None, self.source) < (other.source is not None, other.source)
+
+    def __hash__(self):
+        normalized_source = self.source if self.source is not None else ''
+        return hash((self.name, normalized_source))
+
+    def __eq__(self, other):
+        if not isinstance(other, BreachDataFormat):
+            return NotImplemented
+        return (self.name, self.source if self.source is not None else '') == (other.name, other.source if other.source is not None else '')
 
 @dataclasses.dataclass(frozen=True, order=True)
 class PasswordHashDataFormat:

@@ -21,7 +21,8 @@ WIP
 * Rocketreach exports (least important)
 * Keep verified even if there are no results
 * Multiple filters for company rocketreach export
-* handle facebook, twitter, github, etc?
+* add proxynova
+* handle github/nubela/descriptions?
 
 ## SocOSINT
 
@@ -105,10 +106,11 @@ $ oneaudit leaks parse -i osint.json -i contacts.json -f flast -d example.com -o
 
 ```json
 {
-  "version": "1.0",
+  "version": 1.1,
   "credentials": [
     {
       "login": "johndoe@example.com",
+      "verified": true,
       "emails": [
         "johndoe@example.com",
         "johndoe@dev.example.com"
@@ -147,7 +149,13 @@ $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d 
       "censored_passwords": [
         "h***o"
       ],
-      "info_stealers": [],
+      "info_stealers": [
+        {
+          "computer_name": "jojo",
+          "operating_system": "Windows 7 Pro x64",
+          "date_compromised": "2009-01-01"
+        }
+      ],
       "breaches": [
         {
           "name": "Rockyou",
