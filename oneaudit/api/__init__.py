@@ -82,6 +82,16 @@ class DefaultProviderManager:
 
         self.last_called[handler] = time.time()
 
+    def sort_results(self, source, output):
+        for k, v in source.items():
+            if isinstance(v, list):
+                output[k] = sorted([e for e in set(v) if e])
+            elif isinstance(v, bool):
+                output[k] = v
+            else:
+                self.logger.error(f"Unexpected type for: k={k} v={v}")
+                continue
+
     def _call_method_on_each_provider(self, result, method_name, *args):
         was_modified = False
         for provider in self.providers:

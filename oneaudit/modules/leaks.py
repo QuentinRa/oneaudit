@@ -179,6 +179,7 @@ def run(parser, module_parser):
         provider = oneaudit.api.leaks.LeaksProviderManager(args.api_keys)
         results = {}
         additional_data = provider.investigate_domain(args.company_domain)
+        provider.sort_results(additional_data, additional_data)
 
         for credential in args.data['credentials']:
             key = credential['login']
@@ -202,17 +203,13 @@ def run(parser, module_parser):
         for login, data in results.items():
             final_data = {'login': login}
 
+            # Attempt to crack hashes
             data = provider.investigate_hashes(login, data)
 
-            for k, v in data.items():
-                if isinstance(v, list):
-                    final_data[k] = sorted([e for e in set(v) if e])
-                elif isinstance(v, bool):
-                    final_data[k] = v
-                else:
-                    logger.error(f"Unexpected type for: k={k} v={v}")
-                    continue
+            # Sort results
+            provider.sort_results(data, final_data)
 
+            # Add
             credentials.append(final_data)
 
         result = {
