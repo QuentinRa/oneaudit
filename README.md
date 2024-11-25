@@ -15,14 +15,15 @@ WIP
 * Clean censored passwords
 * Recursive search based on new emails
 * IPs, addresses, usernames, etc.
+  * Leakcheck returns a lot of them (check the fields)
+  * Snusbase
 * Dehashed (all in one)
-* Snusbase
 * Rocketreach lookups (more important)
 * Rocketreach exports (least important)
 * Keep verified even if there are no results
 * Multiple filters for company rocketreach export
-* add proxynova
 * handle github/nubela/descriptions?
+* Fix cache folder parameter
 
 ## SocOSINT
 
@@ -163,13 +164,24 @@ $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d 
         }
       ],
       "hashes": [
-        "8d016244527e4d86737d6a3332da6d82"
+        {
+          "value": "8d016244527e4d86737d6a3332da6d82",
+          "format": "MD5",
+          "format_confidence": 40
+        }
       ]
     }
   ],
   "additional": {
-    "censored_data": [],
-    "leaked_urls": []
+    "censored_data": [
+      {
+        "censored_username": "j******e@example.com",
+        "censored_password": "**********"
+      }
+    ],
+    "leaked_urls": [
+      "https://secret.auth.example.com"
+    ]
   }
 }
 ```
@@ -191,6 +203,7 @@ The expected format is:
   "hudsonrocks": "",
   "leakcheck": "",
   "nth": "",
+  "proxynova": "",
   "spycloud": "",
   // This API is paid, an API key is required
   "hashmob": "your_api_key",
@@ -210,6 +223,7 @@ The followed APIs are used by the plugin:
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
 | [spycloud](https://spycloud.com/)                  | `FREE`     | Data breaches API.                             |
+| [proxynova](https://www.proxynova.com/tools/comb)                  | `FREE`     | Leaked Credentials API.                        |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
 | [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |
 | [nth](https://github.com/HashPals/Name-That-Hash)  | `FREE`     | Hash Identifier.                               |
