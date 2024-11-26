@@ -23,7 +23,7 @@ class SnusbaseAPI(LeaksProvider):
             'email', 'username', 'name', 'id', 'uid', 'created', 'updated',
             '_domain', 'url', 'followers',
             'hash', 'salt', 'password', 'lastip',
-            'city', 'country', 'address', 'zip', 'birthdate', 'language',
+            'city', 'country', 'address', 'zip', 'birthdate', 'language', 'phone',
             'company', 'job', 'gender', 'other'
         ]
         self.api_endpoint = 'https://api.snusbase.com/{route}'

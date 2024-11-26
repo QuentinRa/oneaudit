@@ -54,7 +54,7 @@ def get_cached_result(api_name, key, do_not_expire=False):
         with open(url_hash, 'r') as f:
             cached_data = json.load(f)
             timestamp = cached_data['timestamp']
-            if do_not_expire or time.time() - timestamp < 7 * 24 * 60 * 60:
+            if do_not_expire or time.time() - timestamp < 30 * 24 * 60 * 60:
                 return cached_data['response']
     return None
 

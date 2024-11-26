@@ -194,7 +194,7 @@ def run(parser, module_parser):
                     logger.debug(f"Email {email} was verified due to leaks associated to it.")
 
             for login in results[key]["logins"]:
-                if "@" not in login or login in credential['emails']:
+                if "@" not in login or ':' in login or login in credential['emails']:
                     continue
                 raise Exception(f"Found new email that was not handled: {login}")
 
