@@ -152,9 +152,14 @@ class DefaultProvider:
 
     def fetch_result_without_cache(self, **kwargs):
         response = self.handle_request(**kwargs)
+        if not self.is_response_valid(response):
+            return self.fetch_results_using_cache(**kwargs)
+        return response.json()
+
+    def is_response_valid(self, response):
         if response.status_code == 429:
             self.handle_rate_limit(response)
-            return self.fetch_result_without_cache(**kwargs)
+            return False
 
         if response.status_code == 401:
             raise Exception(f"[!] {self.__class__.__name__}: {response.text}")
@@ -165,7 +170,7 @@ class DefaultProvider:
             self.logger.error(response.status_code)
             raise Exception("This response code was not allowed/handled.")
 
-        return response.json()
+        return True
 
     def handle_request(self, **kwargs):
         return requests.request(**self.request_args)

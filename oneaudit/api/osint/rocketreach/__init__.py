@@ -2,6 +2,9 @@ from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScra
 from oneaudit.api import get_cached_result, set_cached_result
 import json
 import time
+import string
+import secrets
+import requests
 import rocketreach
 
 
@@ -15,8 +18,13 @@ class RocketReachAPI(OSINTProvider):
         )
         if not cache_only:
             self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
-            self.search_handler = None
+            self.current_handler = None
             self.show_notice()
+
+            # Undocumented
+            rocketreach_session = api_keys.get('rocketreach_session', {})
+            self.session_id = rocketreach_session.get("session_id", None)
+            self.profile_list_id = rocketreach_session.get("profile_list_id", None)
 
         self.email_verified_mapper = {
             "accept_all": False,
@@ -36,8 +44,8 @@ class RocketReachAPI(OSINTProvider):
             while True:
                 targets = []
                 self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
-                self.search_handler = search_handler.params(start=page * 100 + 1, size=100)
-                cached, data = self.fetch_results_using_cache(f"{company_name}_{page}")
+                self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
+                cached, data = self.fetch_results_using_cache(f"{company_name}_{page}", method='execute')
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
@@ -64,12 +72,44 @@ class RocketReachAPI(OSINTProvider):
             ids_to_check = [value for value in ids if value not in ids_checked]
             if ids_to_check:
                 self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
-            set_cached_result(self.api_name, 'ids_checked', ids_checked)
+
+                # We can try to fetch the trigger the requests for you, but it's somewhat dirty
+                if self.session_id and self.profile_list_id:
+                    csrf_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+                    for i in range(0, len(ids_to_check), 25):
+                        batch = ids_to_check[i:i + 25]
+                        response = requests.post(
+                            url=f'https://rocketreach.co/v1/profileList/{self.profile_list_id}/lookup',
+                            headers = {
+                                'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
+                                'User-Agent': self.request_args["headers"]['User-Agent'],
+                                "X-CSRFToken": csrf_token,
+                                'referer': 'https://rocketreach.co/person'
+                            },
+                            json={
+                                "profile_ids": batch,
+                                "linkedin_urls": [],
+                            }
+                        )
+
+                        # Check the reply
+                        if not self.is_response_valid(response):
+                            self.logger.info(f"{self.api_name}: Rate-limited. Waiting 30 seconds.")
+                            time.sleep(30)
+                            continue
+
+                        # Save the status
+                        ids_checked.extend(batch)
+                        set_cached_result(self.api_name, 'ids_checked', ids_checked)
+
+                        # Wait a minute
+                        self.logger.info(f"{self.api_name}: waiting 60 seconds to respect fair use.")
+                        time.sleep(60)
         except Exception as e:
             self.logger.error(f"{self.api_name}: Error received: {e}")
 
-    def handle_request(self):
-        return self.search_handler.execute().response
+    def handle_request(self, method):
+        return getattr(self.current_handler, method)().response
 
     def parse_records_from_file(self, file_source, employee_filter, input_file):
         targets = []
