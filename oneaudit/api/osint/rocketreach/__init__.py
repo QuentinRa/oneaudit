@@ -80,7 +80,7 @@ class RocketReachAPI(OSINTProvider):
                         batch = ids_to_check[i:i + 25]
                         response = requests.post(
                             url=f'https://rocketreach.co/v1/profileList/{self.profile_list_id}/lookup',
-                            headers = {
+                            headers={
                                 'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
                                 'User-Agent': self.request_args["headers"]['User-Agent'],
                                 "X-CSRFToken": csrf_token,
@@ -144,6 +144,60 @@ class RocketReachAPI(OSINTProvider):
                     'links': {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 })
         return targets
+
+    def export_records_from_profile(self, source, profile_list_id):
+        # Get Account ID
+        self.current_handler = self.handler.account
+        _, data = self.fetch_results_using_cache(f'{self.api_name}_profile_id', method='get')
+        account_id = data['id']
+
+        # Get Count
+        headers = {
+            'Cookie': f'sessionid-20191028={self.session_id}; selected_profile_list_id_{account_id}={profile_list_id}',
+            'User-Agent': self.request_args["headers"]['User-Agent'],
+        }
+        response = requests.get(
+            f'https://rocketreach.co/v1/profileList/{profile_list_id}/profiles?page=1&order_by=-create_time&limit=1',
+            headers=headers
+        )
+        if not self.is_response_valid(response):
+            raise Exception(f"{self.api_name} cannot handle a rate-limit inside self.export_records_from_profile")
+        response_count = response.json()['count']
+
+        cached_response = get_cached_result(self.api_name, f'export_profile_{profile_list_id}', do_not_expire=True)
+        result = {
+            'count': cached_response['count'] if cached_response else 0,
+            'entries': cached_response['entries'] if cached_response else []
+        }
+        page = 1
+        missing_entries = response_count - result['count']
+        while missing_entries > 0:
+            self.logger.debug(f"{self.api_name}: Missing {missing_entries} entries from profile={profile_list_id}")
+
+            limit = 100 if missing_entries > 100 else missing_entries
+            response = requests.get(
+                url=f'https://rocketreach.co/v1/profileList/{profile_list_id}/profiles?page={page}&order_by=-create_time&limit={limit}',
+                headers=headers
+            )
+
+            if not self.is_response_valid(response):
+                raise Exception(f"{self.api_name} cannot handle a rate-limit inside self.export_records_from_profile")
+
+            data = response.json()
+            result['entries'].extend(data['records'])
+            result['count'] += len(data['records'])
+            set_cached_result(self.api_name, f'export_profile_{profile_list_id}', result)
+
+            self.logger.info(f"{self.api_name}: waiting 30 seconds to respect fair use.")
+            time.sleep(30)
+
+            if data['num_pages'] == page:
+                break
+
+            page += 1
+            missing_entries = response_count - result['count']
+
+        return result['entries']
 
     def handle_rate_limit(self, response):
         wait = int(response.headers["retry-after"] if "retry-after" in response.headers else 2)

@@ -165,9 +165,9 @@ class DefaultProvider:
             raise Exception(f"[!] {self.__class__.__name__}: {response.text}")
 
         if response.status_code not in [200, 201, 204]:
-            self.logger.error(self.__class__.__name__)
+            self.logger.error(f"Provider: {self.__class__.__name__}")
+            self.logger.error(f"Response code: {response.status_code}")
             self.logger.error(response.text)
-            self.logger.error(response.status_code)
             raise Exception("This response code was not allowed/handled.")
 
         return True
