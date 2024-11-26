@@ -55,10 +55,10 @@ class LeakCheckAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         if 'Limit reached' in response.text:
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_endpoint_enabled = False
+            self.is_endpoint_terminated = True
 
     def handle_request(self, **kwargs):
-        if self.is_endpoint_enabled:
+        if not self.is_endpoint_terminated:
             response = super().handle_request(**kwargs)
             if response.status_code != 403:
                 return response

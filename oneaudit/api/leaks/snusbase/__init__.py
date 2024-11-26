@@ -23,7 +23,7 @@ class SnusbaseAPI(LeaksProvider):
             'email', 'username', 'name', 'id', 'uid', 'created', 'updated',
             '_domain', 'url', 'followers',
             'hash', 'salt', 'password', 'lastip',
-            'city', 'country', 'address', 'zip', 'birthdate', 'language', 'phone',
+            'city', 'country', 'state', 'address', 'zip', 'birthdate', 'language', 'phone',
             'company', 'job', 'gender', 'other'
         ]
         self.api_endpoint = 'https://api.snusbase.com/{route}'
@@ -79,10 +79,10 @@ class SnusbaseAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         if 'Rate-limit exceeded.' in response.text:
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_endpoint_enabled = False
+            self.is_endpoint_terminated = True
 
     def handle_request(self, **kwargs):
-        if self.is_endpoint_enabled:
+        if not self.is_endpoint_terminated:
             return super().handle_request(**kwargs)
         else:
             return FakeResponse(204, {"results": {}})

@@ -126,6 +126,7 @@ class DefaultProvider:
 
         self.api_key = api_keys.get(api_name, None)
         self.is_endpoint_enabled = self.api_key is not None
+        self.is_endpoint_terminated = False
 
         self.logger = logging.getLogger('oneaudit')
 
@@ -147,7 +148,7 @@ class DefaultProvider:
             cached = False
             data = self.fetch_result_without_cache(**kwargs)
             # If the endpoint was disabled
-            if not self.is_endpoint_enabled:
+            if not self.is_endpoint_terminated:
                 set_cached_result(self.api_name, cached_result_key, data)
 
         return cached, data
