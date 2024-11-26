@@ -139,34 +139,35 @@ class DefaultProvider:
         else:
             self.logger.info(f"API '{self.api_name}' was enabled.")
 
-    def fetch_results_using_cache(self, variable_key):
+    def fetch_results_using_cache(self, variable_key, **kwargs):
         cached = True
         cached_result_key = self.unique_identifier + variable_key
         data = get_cached_result(self.api_name, cached_result_key)
         if data is None:
             cached = False
-            response = self.handle_request()
-            if response.status_code == 429:
-                self.handle_rate_limit(response)
-                return self.fetch_results_using_cache(variable_key)
-
-            if response.status_code == 401:
-                self.logger.error(f"[!] {self.__class__.__name__}: {response.text}")
-                return True, {}
-
-            if response.status_code not in [200, 201, 204]:
-                self.logger.error(self.__class__.__name__)
-                self.logger.error(response.text)
-                self.logger.error(response.status_code)
-                raise Exception("This response code was not allowed/handled.")
-
-            data = response.json()
-
+            data = self.fetch_result_without_cache(**kwargs)
             set_cached_result(self.api_name, cached_result_key, data)
 
         return cached, data
 
-    def handle_request(self):
+    def fetch_result_without_cache(self, **kwargs):
+        response = self.handle_request(**kwargs)
+        if response.status_code == 429:
+            self.handle_rate_limit(response)
+            return self.fetch_result_without_cache(**kwargs)
+
+        if response.status_code == 401:
+            raise Exception(f"[!] {self.__class__.__name__}: {response.text}")
+
+        if response.status_code not in [200, 201, 204]:
+            self.logger.error(self.__class__.__name__)
+            self.logger.error(response.text)
+            self.logger.error(response.status_code)
+            raise Exception("This response code was not allowed/handled.")
+
+        return response.json()
+
+    def handle_request(self, **kwargs):
         return requests.request(**self.request_args)
 
     def handle_rate_limit(self, response):
