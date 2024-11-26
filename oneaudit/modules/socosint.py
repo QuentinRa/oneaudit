@@ -23,6 +23,14 @@ class OSINTParseLinkedInProgramData:
         self.input_file = args.input
         self.output_file = args.output
 
+class OSINTDownloadLinkedInProgramData:
+    def __init__(self, args):
+        oneaudit.utils.args_parse_parse_verbose(self, args)
+        oneaudit.api.args_parse_api_config(self, args)
+        self.file_source = args.source
+        self.profile_list_id = args.target
+        self.output_file = args.output
+
 
 def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.ArgumentParser):
     submodule_parser = module_parser.add_subparsers(dest='scope', help="Target Social Networks", required=True)
@@ -37,8 +45,15 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     oneaudit.api.args_api_config(linkedin_scrapper)
     oneaudit.utils.args_verbose_config(linkedin_scrapper)
 
+    linkedin_export = linkedin_module_action.add_parser("export", help='Export lists of profiles')
+    linkedin_export.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The target API.", required=True)
+    linkedin_export.add_argument('-t', '--target', dest='target', type=str, help="The target profile list identifier.", required=True)
+    linkedin_export.add_argument('-o', '--output', metavar='output.json', type=str, dest='output', help='Export results as JSON.', required=True)
+    oneaudit.api.args_api_config(linkedin_export)
+    oneaudit.utils.args_verbose_config(linkedin_export)
+
     linkedin_parse = linkedin_module_action.add_parser("parse", help='Parse exported results from OSINT tools into JSON usable by this toolkit.')
-    linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.")
+    linkedin_parse.add_argument('-s', '--source', dest='source', choices=['rocketreach'], help="The input file source.", required=True)
     linkedin_parse.add_argument('-f', '--filter', dest='filter', type=str, help="A case-insensitive string such as 'LinkedIn' to only keep current employees.", required=True)
     linkedin_parse.add_argument('-i', '--input', metavar='export.json', type=str, dest='input', help='Exported results from one of the supported APIs.', required=True)
     linkedin_parse.add_argument('-o', '--output', metavar='output.json', type=str, dest='output', help='Export results as JSON.', required=True)
@@ -66,6 +81,11 @@ def run(parser, module_parser):
             except (FileNotFoundError, json.JSONDecodeError) as e:
                 logger.error(f"[+] Failed to parse results: '{e}'.")
                 return
+        elif args.action == 'export':
+            args = OSINTDownloadLinkedInProgramData(args)
+            provider = oneaudit.api.osint.OSINTProviderManager(args.api_keys)
+            results = provider.export_records(args.file_source, args.profile_list_id)
+            version = 1.0
 
         with open(args.output_file, 'w') as output_file:
             json.dump({

@@ -12,6 +12,13 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only)
         ])
 
+    def export_records(self, source, profile_list_id):
+        for provider in self.providers:
+            result = provider.export_records_from_profile(source, profile_list_id)
+            if result:
+                return result
+        return []
+
     def parse_records(self, file_source, employee_filter, input_file):
         result = []
 
@@ -52,6 +59,9 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
         super().__init__(api_name, request_args, api_keys, show_notice)
 
     def parse_records_from_file(self, file_source, employee_filter, input_file):
+        return []
+
+    def export_records_from_profile(self, source, profile_list_id):
         return []
 
     def fetch_targets_for_company(self, company_name):

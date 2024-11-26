@@ -33,5 +33,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logging.getLogger('oneaudit').error(e)
-        logging.getLogger('oneaudit').error("Program was terminated due to an exception.")
+        logger = logging.getLogger('oneaudit')
+        logger.error(e)
+        logger.error("Program was terminated due to an exception.")
