@@ -119,8 +119,9 @@ class RocketReachAPI(OSINTProvider):
         if not isinstance(file_contents, list):
             file_contents = [file_contents]
 
+        all_employers = set()
         for file_content in file_contents:
-            for entry in file_content["records"]:
+            for entry in file_content["entries"]:
                 emails = []
                 for email in entry['emails']:
                     if email['source'] == "predicted":
@@ -134,6 +135,7 @@ class RocketReachAPI(OSINTProvider):
                     ))
 
                 # If the employee is not part of the target company
+                all_employers.add(entry["current_employer"].lower())
                 if employee_filter not in entry["current_employer"].lower():
                     continue
 
@@ -143,9 +145,17 @@ class RocketReachAPI(OSINTProvider):
                     'emails': emails,
                     'links': {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 })
+
+        self.logger.debug(f"All employers: {all_employers}")
         return targets
 
     def export_records_from_profile(self, source, profile_list_id):
+        if source != "rocketreach":
+            return []
+
+        if not self.session_id:
+            raise Exception(f"{self.api_name}: missing undocumented parameter, check the code.")
+
         # Get Account ID
         self.current_handler = self.handler.account
         _, data = self.fetch_results_using_cache(f'{self.api_name}_profile_id', method='get')

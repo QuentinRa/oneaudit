@@ -18,7 +18,7 @@ WIP
   * Leakcheck returns a lot of them (check the fields)
 * Rocketreach lookups (more important)
 * Rocketreach exports (least important)
-* Multiple filters for company rocketreach export
+* Multiple filters for company rocketreach parse
 * handle github/nubela/descriptions?
 * Fix cache folder parameter
 
