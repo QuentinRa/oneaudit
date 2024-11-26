@@ -16,10 +16,8 @@ WIP
 * Recursive search based on new emails
 * IPs, addresses, usernames, etc.
   * Leakcheck returns a lot of them (check the fields)
-* Dehashed (all in one)
 * Rocketreach lookups (more important)
 * Rocketreach exports (least important)
-* Keep verified even if there are no results
 * Multiple filters for company rocketreach export
 * handle github/nubela/descriptions?
 * Fix cache folder parameter
@@ -233,3 +231,4 @@ The followed APIs are used by the plugin:
 Candidates:
 
 * [hashes.com](https://hashes.com/en/docs): hash identifier (FREE) or Rainbow table (PAID)
+* [DeHashed](https://www.dehashed.com/): Leaked Credentials. Require Platform and API subscriptions.

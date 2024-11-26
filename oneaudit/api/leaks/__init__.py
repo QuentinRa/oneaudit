@@ -108,6 +108,12 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
 
         return data
 
+    def prepare_for_targets(self, emails):
+        for provider in self.providers:
+            if not provider.is_endpoint_enabled and not provider.is_endpoint_enabled_for_cracking:
+                continue
+            provider.prepare_for_targets(emails)
+
     def investigate_domain(self, domain):
         result = {
             'censored_data': [],
@@ -121,6 +127,9 @@ class LeaksProvider(oneaudit.api.DefaultProvider):
     def __init__(self, api_name, request_args, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
         self.is_endpoint_enabled_for_cracking = False
+
+    def prepare_for_targets(self, emails):
+        pass
 
     def fetch_email_results(self, email):
         yield True, {}

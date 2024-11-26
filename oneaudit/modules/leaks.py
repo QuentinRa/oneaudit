@@ -178,6 +178,7 @@ def run(parser, module_parser):
         args = LeaksDownloadProgramData(args)
         provider = oneaudit.api.leaks.LeaksProviderManager(args.api_keys)
         results = {}
+        provider.prepare_for_targets([email for cred in args.data['credentials'] for email in cred['emails']])
         additional_data = provider.investigate_domain(args.company_domain)
         provider.sort_results(additional_data, additional_data)
 
