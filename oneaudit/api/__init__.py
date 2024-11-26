@@ -146,14 +146,16 @@ class DefaultProvider:
         if data is None:
             cached = False
             data = self.fetch_result_without_cache(**kwargs)
-            set_cached_result(self.api_name, cached_result_key, data)
+            # If the endpoint was disabled
+            if not self.is_endpoint_enabled:
+                set_cached_result(self.api_name, cached_result_key, data)
 
         return cached, data
 
     def fetch_result_without_cache(self, **kwargs):
         response = self.handle_request(**kwargs)
         if not self.is_response_valid(response):
-            return self.fetch_results_using_cache(**kwargs)
+            return self.fetch_result_without_cache(**kwargs)
         return response.json()
 
     def is_response_valid(self, response):

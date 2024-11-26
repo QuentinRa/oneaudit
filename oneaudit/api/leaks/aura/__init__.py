@@ -39,4 +39,4 @@ class AuraAPI(LeaksProvider):
         time.sleep(15)
 
     def get_rate(self):
-        return 5
+        return 3

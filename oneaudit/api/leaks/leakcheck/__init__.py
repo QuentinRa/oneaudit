@@ -1,3 +1,4 @@
+from oneaudit.api import FakeResponse
 from oneaudit.api.leaks import LeaksProvider, BreachDataFormat
 
 
@@ -52,7 +53,17 @@ class LeakCheckAPI(LeaksProvider):
             yield cached, results
 
     def handle_rate_limit(self, response):
-        self.is_endpoint_enabled = False
+        if 'Limit reached' in response.text:
+            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
+            self.is_endpoint_enabled = False
+
+    def handle_request(self, **kwargs):
+        if self.is_endpoint_enabled:
+            response = super().handle_request(**kwargs)
+            if response.status_code != 403:
+                return response
+            self.handle_rate_limit(response)
+        return FakeResponse(204, {"result": []})
 
     def get_rate(self):
         return 1

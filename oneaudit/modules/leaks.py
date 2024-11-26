@@ -148,7 +148,7 @@ def parse_args(parser: argparse.ArgumentParser, module_parser: argparse.Argument
     parse_osint.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     parse_osint.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
-    parse_osint.add_argument('--alias', dest='domain_aliases', action='append', help='Alternative domain names that should be investigated.')
+    parse_osint.add_argument('--alias', dest='domain_aliases', default=[], action='append', help='Alternative domain names that should be investigated.')
     oneaudit.utils.args_verbose_config(parse_osint)
 
     clean_leaks = submodule_parser.add_parser('clean', help='Select which passwords to keep.')

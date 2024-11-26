@@ -1,5 +1,5 @@
+from oneaudit.api import FakeResponse
 from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
-import time
 
 
 # https://docs.snusbase.com/
@@ -77,7 +77,15 @@ class SnusbaseAPI(LeaksProvider):
 
 
     def handle_rate_limit(self, response):
-        time.sleep(60)
+        if 'Rate-limit exceeded.' in response.text:
+            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
+            self.is_endpoint_enabled = False
+
+    def handle_request(self, **kwargs):
+        if self.is_endpoint_enabled:
+            return super().handle_request(**kwargs)
+        else:
+            return FakeResponse(204, {"results": {}})
 
     def get_rate(self):
         return 0.5

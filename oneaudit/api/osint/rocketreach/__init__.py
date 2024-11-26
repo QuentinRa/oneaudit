@@ -3,6 +3,7 @@ from oneaudit.api import get_cached_result, set_cached_result
 import json
 import time
 import string
+import random
 import secrets
 import requests
 import rocketreach
@@ -71,12 +72,13 @@ class RocketReachAPI(OSINTProvider):
                 ids_checked = []
             ids_to_check = [value for value in ids if value not in ids_checked]
             if ids_to_check:
-                self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
+                self.logger.warning(f"{self.api_name}: You have to manually fetch {len(ids_to_check)} records.")
 
                 # We can try to fetch the trigger the requests for you, but it's somewhat dirty
                 if self.session_id and self.profile_list_id:
                     csrf_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
                     for i in range(0, len(ids_to_check), 25):
+                        self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
                         batch = ids_to_check[i:i + 25]
                         response = requests.post(
                             url=f'https://rocketreach.co/v1/profileList/{self.profile_list_id}/lookup',
@@ -94,17 +96,18 @@ class RocketReachAPI(OSINTProvider):
 
                         # Check the reply
                         if not self.is_response_valid(response):
-                            self.logger.info(f"{self.api_name}: Rate-limited. Waiting 30 seconds.")
-                            time.sleep(30)
+                            self.logger.info(f"{self.api_name}: Rate-limited. Waiting a minute.")
+                            time.sleep(60)
                             continue
 
                         # Save the status
                         ids_checked.extend(batch)
                         set_cached_result(self.api_name, 'ids_checked', ids_checked)
 
-                        # Wait a minute
-                        self.logger.info(f"{self.api_name}: waiting 60 seconds to respect fair use.")
-                        time.sleep(60)
+                        # Waiting time
+                        wait = random.randint(30, 60)
+                        self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
+                        time.sleep(wait)
         except Exception as e:
             self.logger.error(f"{self.api_name}: Error received: {e}")
 
