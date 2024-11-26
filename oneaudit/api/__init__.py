@@ -44,7 +44,7 @@ def set_cached_result(api_name, key, data):
         }, f)
 
 
-def get_cached_result(api_name, key):
+def get_cached_result(api_name, key, do_not_expire=False):
     global cache_folder
     url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
     url_hash_directory = os.path.dirname(url_hash)
@@ -54,7 +54,7 @@ def get_cached_result(api_name, key):
         with open(url_hash, 'r') as f:
             cached_data = json.load(f)
             timestamp = cached_data['timestamp']
-            if time.time() - timestamp < 7 * 24 * 60 * 60:
+            if do_not_expire or time.time() - timestamp < 7 * 24 * 60 * 60:
                 return cached_data['response']
     return None
 

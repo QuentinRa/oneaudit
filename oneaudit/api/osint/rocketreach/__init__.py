@@ -1,4 +1,5 @@
 from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
+from oneaudit.api import get_cached_result, set_cached_result
 import json
 import time
 import rocketreach
@@ -31,6 +32,7 @@ class RocketReachAPI(OSINTProvider):
         page = 0
         total = -1
         try:
+            ids = []
             while True:
                 targets = []
                 self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
@@ -45,7 +47,8 @@ class RocketReachAPI(OSINTProvider):
                         len(target_emails),
                         {SocialNetworkEnum.get(k): str(v) for k, v in (profile['links'] if profile['links'] else {}).items()}
                     ))
-                    print(profile['id'])
+                    if profile['status'] != "complete":
+                        ids.append(profile['id'])
 
                 yield cached, { self.api_name: targets }
 
@@ -54,6 +57,14 @@ class RocketReachAPI(OSINTProvider):
                     break
                 page += 1
                 total = (pagination['total'] // 100) + 1
+
+            ids_checked = get_cached_result(self.api_name, 'ids_checked', do_not_expire=True)
+            if ids_checked is None:
+                ids_checked = []
+            ids_to_check = [value for value in ids if value not in ids_checked]
+            if ids_to_check:
+                self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
+            set_cached_result(self.api_name, 'ids_checked', ids_checked)
         except Exception as e:
             self.logger.error(f"{self.api_name}: Error received: {e}")
 
