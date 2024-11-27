@@ -27,3 +27,4 @@ if __name__ == "__main__":
         logger = get_project_logger()
         logger.error(e)
         logger.error("Program was terminated due to an exception.")
+        raise e

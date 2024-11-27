@@ -106,9 +106,9 @@ class RocketReachAPI(OSINTProvider):
                                 kill_switch += 1
                                 continue
 
-                            self.logger.info(f"{self.api_name}: Rate-limited. Waiting a minute.")
+                            self.logger.info(f"{self.api_name}: Rate-limited. Waiting five minutes.")
                             kill_switch += 1
-                            time.sleep(60)
+                            time.sleep(300)
                             continue
 
                         # Save the status

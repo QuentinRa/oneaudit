@@ -118,8 +118,10 @@ def run(args):
                 "login": c["login"],
                 "verified": c["verified"],
                 "emails": list(set(c["emails"])),
-                "links": c["links"],
-                "birth_year": c["birth_year"],
+                "extra": {
+                    "links": c["links"],
+                    "birth_year": c["birth_year"],
+                }
             } for c in found.values() if "login" in c
         ]
     })

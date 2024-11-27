@@ -57,7 +57,7 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 }
 ```
 
-After exporting the emails (must be done manually, exporting results using the API is not planned for now), you can prepare them for use with other module with:
+After exporting the emails, you can generate a unified list of targets for use with other module with:
 
 ```bash
 $ # Only keep employees working at LinkedIn
@@ -104,7 +104,7 @@ $ oneaudit leaks parse -i osint.json -i contacts.json -f flast -d example.com -o
 
 ```json
 {
-  "version": 1.1,
+  "version": 1.2,
   "credentials": [
     {
       "login": "johndoe@example.com",
@@ -112,7 +112,13 @@ $ oneaudit leaks parse -i osint.json -i contacts.json -f flast -d example.com -o
       "emails": [
         "johndoe@example.com",
         "johndoe@dev.example.com"
-      ]
+      ],
+      "extra": {
+        "links": {
+          "LINKEDIN": "https://www.linkedin.com/in/john_doe"
+        },
+        "birth_year": 1337
+      }
     }
   ]
 }
