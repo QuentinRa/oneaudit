@@ -79,7 +79,8 @@ class RocketReachAPI(OSINTProvider):
                 if self.session_id and self.profile_list_id:
                     kill_switch = 0
                     csrf_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
-                    for i in range(0, len(ids_to_check), 25):
+                    i = 0
+                    while i < len(ids_to_check):
                         self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
                         batch = ids_to_check[i:i + 25]
                         response = requests.post(
@@ -98,9 +99,12 @@ class RocketReachAPI(OSINTProvider):
 
                         # Check the reply
                         if not self.is_response_valid(response):
-                            if kill_switch == 2:
-                                self.logger.warning(f"{self.api_name}: hit the hourly rate-limit, stopping.")
-                                break
+                            if kill_switch >= 2:
+                                wait = random.randint(1200, 1800)
+                                self.logger.warning(f"{self.api_name}: hit a hard rate-limit, waiting {wait} seconds.")
+                                time.sleep(wait)
+                                kill_switch += 1
+                                continue
 
                             self.logger.info(f"{self.api_name}: Rate-limited. Waiting a minute.")
                             kill_switch += 1
@@ -115,6 +119,9 @@ class RocketReachAPI(OSINTProvider):
                         wait = random.randint(45, 75)
                         self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
                         time.sleep(wait)
+
+                        i += 25
+                        kill_switch = 0
         except Exception as e:
             self.logger.error(f"{self.api_name}: Error received: {e}")
 

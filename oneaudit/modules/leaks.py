@@ -235,10 +235,11 @@ def run(parser, module_parser):
                     lastname = ''.join(words[1:])
 
                 email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain)
-                email = unidecode.unidecode(email.lower().replace(" ", ""))
+                email = unidecode.unidecode(email.lower().replace(" ", "").replace("/", "").strip())
 
-                email_valid = firstname and lastname and "." not in firstname+lastname
-                email_valid = email_valid and "_" not in firstname+lastname
+                email_f, email_l = unidecode.unidecode(firstname).strip(), unidecode.unidecode(lastname).strip()
+                email_valid = email_f and email_l and "." not in email_f+email_l
+                email_valid = email_valid and "_" not in email_f+email_l
                 email_valid = email_valid and args.email_regex.match(email) is not None
                 if not email_valid:
                     if email not in found:

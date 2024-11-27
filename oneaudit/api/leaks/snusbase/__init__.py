@@ -84,7 +84,7 @@ class SnusbaseAPI(LeaksProvider):
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
             self.is_endpoint_enabled = False
             self.is_endpoint_enabled_for_cracking = False
-            raise PaidAPIDisabledException()
+            raise PaidAPIDisabledException(f"{response.text}")
 
     def get_rate(self):
         return 0.5

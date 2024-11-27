@@ -60,7 +60,7 @@ class LeakCheckAPI(LeaksProvider):
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
             self.is_pro_endpoint_enabled = False
             self.is_endpoint_enabled = self.is_public_endpoint_enabled
-            raise PaidAPIDisabledException()
+            raise PaidAPIDisabledException(f"{response.text}")
 
     def handle_request(self, **kwargs):
         response = super().handle_request(**kwargs)
