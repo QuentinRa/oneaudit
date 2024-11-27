@@ -1,38 +1,24 @@
 #!/usr/bin/env python3
-import argparse
-import sys
-import logging
-
+from argparse import ArgumentParser
+from oneaudit.modules import socosint
+from oneaudit.utils import args_call_target, get_project_logger
 
 def main():
-    parser = argparse.ArgumentParser(description="oneaudit utilities")
+    parser = ArgumentParser(description="oneaudit utilities")
+
+    # Load define modules
     module_parser = parser.add_subparsers(dest='module', required=True)
-    leaks_module = module_parser.add_parser('leaks', help='Clean a JSON of leaked passwords.')
-    ntlm_module = module_parser.add_parser('ntlm', help='Generate NTLM hashes from wordlist')
-    socosint_module = module_parser.add_parser('socosint', help='Social Networks OSINT')
+    socosint.define_args(module_parser)
 
-    module = sys.argv[1] if len(sys.argv) >= 2 else None
-    if module is None or module in ["-h"]:
-        parser.parse_known_args()
-
-    if module == 'ntlm':
-        import oneaudit.modules.ntlm
-        oneaudit.modules.ntlm.run(parser, ntlm_module)
-    elif module == 'leaks':
-        import oneaudit.modules.leaks
-        oneaudit.modules.leaks.run(parser, leaks_module)
-    elif module == 'socosint':
-        import oneaudit.modules.socosint
-        oneaudit.modules.socosint.run(parser, socosint_module)
-    else:
-        print(f"No such module: {module}.")
-        sys.exit(2)
+    # Parse args and call the module
+    args = parser.parse_args()
+    args_call_target(globals(), args, 'module', 'run')
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logger = logging.getLogger('oneaudit')
+        logger = get_project_logger()
         logger.error(e)
         logger.error("Program was terminated due to an exception.")
