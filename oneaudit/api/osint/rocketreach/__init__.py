@@ -1,4 +1,4 @@
-from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
+from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTExportedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
 from oneaudit.api import get_cached_result, set_cached_result
 import json
 import time
@@ -161,12 +161,12 @@ class RocketReachAPI(OSINTProvider):
                     all_employers.add(entry["current_employer"].lower())
                     continue
 
-                targets.append({
-                    "first_name": entry["first_name"],
-                    "last_name": entry["last_name"],
-                    'emails': emails,
-                    'links': {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
-                })
+                targets.append(OSINTExportedDataFormat(
+                    entry["first_name"],
+                    entry["last_name"],
+                    emails,
+                    {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
+                ))
 
         self.logger.debug(f"All employers that were skipped: {all_employers}")
         return targets

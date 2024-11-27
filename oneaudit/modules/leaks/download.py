@@ -27,23 +27,26 @@ def run(args):
     additional_data = provider.investigate_domain(args.company_domain)
     provider.sort_results(additional_data, additional_data)
 
-    for credential in credentials:
-        key = credential['login']
-        if key in results:
-            continue
-        results[key] = provider.get_base_data()
-        for email in credential['emails']:
-            was_modified, results[key] = provider.append_data(email, results[key])
-            if was_modified and email == key:
-                credential['verified'] = True
-                logger.debug(f"Email {email} was verified due to leaks associated to it.")
-
-        for login in results[key]["logins"]:
-            if "@" not in login or ':' in login or login in credential['emails']:
+    try:
+        for credential in credentials:
+            key = credential['login']
+            if key in results:
                 continue
-            raise Exception(f"Found new email that was not handled: {login}")
+            results[key] = provider.get_base_data()
+            for email in credential['emails']:
+                was_modified, results[key] = provider.append_data(email, results[key])
+                if was_modified and email == key:
+                    credential['verified'] = True
+                    logger.debug(f"Email {email} was verified due to leaks associated to it.")
 
-        results[key]['verified'] = credential['verified']
+            for login in results[key]["logins"]:
+                if "@" not in login or ':' in login or login in credential['emails']:
+                    continue
+                raise Exception(f"Found new email that was not handled: {login}")
+
+            results[key]['verified'] = credential['verified']
+    except KeyboardInterrupt:
+        logger.info("Stopping leak investigations.")
 
     credentials = []
     for login, data in results.items():

@@ -33,7 +33,8 @@ class AuraAPI(LeaksProvider):
     def handle_request(self):
         s = requests.Session()
         s.post(**self.request_args)
-        del self.request_args['data']
+        if 'data' in self.request_args:
+            del self.request_args['data']
         return s.get(**self.request_args)
 
     def handle_rate_limit(self, response):

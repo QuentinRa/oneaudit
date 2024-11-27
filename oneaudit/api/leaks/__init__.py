@@ -51,27 +51,27 @@ class LeaksProviderManager(oneaudit.api.DefaultProviderManager):
             del data['raw_hashes']
             return data
 
-        md5_sum = lambda p : hashlib.md5(p.encode()).hexdigest()
-        sha1_sum = lambda p : hashlib.sha1(p.encode()).hexdigest()
-        bcrypt_hash = lambda p, s : bcrypt.hashpw(p.encode(), s.encode())
-
         # We need to remove any hash for which we already have the passwords
         # We need to handle cases where the hash is just of checksum of the login
         # (as it happened multiple times for such hashes to be found, such as with gravatar leak, etc.)
         known_hashes = []
         candidates = [login] + data['passwords'] + data['logins']
         for p in candidates:
-            known_hashes.append(md5_sum(p))
-            known_hashes.append(sha1_sum(p))
+            known_hashes.append(hashlib.md5(p.encode()).hexdigest())
+            known_hashes.append(hashlib.sha1(p.encode()).hexdigest())
 
         for crackable_hash in data['raw_hashes']:
+            crackable_hash = crackable_hash.strip()
             if crackable_hash in known_hashes:
                 continue
             match = self.bcrypt_hash_regex.match(crackable_hash)
             if match:
                 salt = match.group(1)
                 for p in candidates:
-                    known_hashes.append(bcrypt_hash(p, salt))
+                    try:
+                        known_hashes.append(bcrypt.hashpw(p.encode(), salt.encode()))
+                    except ValueError:
+                        pass
                 if crackable_hash in known_hashes:
                     continue
 
@@ -151,24 +151,12 @@ class InfoStealerLeakDataFormat:
         # Automatically called after the dataclass __init__ method.
         object.__setattr__(self, 'date_compromised', self.date_compromised[:10])
 
-    def to_dict(self):
-        return {
-            "computer_name": self.computer_name,
-            "operating_system": self.operating_system,
-            "date_compromised": self.date_compromised
-        }
-
 
 @dataclasses.dataclass(frozen=True, order=True)
 class CensoredCredentialsLeakDataFormat:
     censored_username: str
     censored_password: str
 
-    def to_dict(self):
-        return {
-            "censored_username": self.censored_username,
-            "censored_password": self.censored_password,
-        }
 
 @dataclasses.dataclass(frozen=True, order=False)
 class BreachDataFormat:
@@ -205,10 +193,3 @@ class PasswordHashDataFormat:
     plaintext: str|None
     format: str|None
     format_confidence: int
-
-    def to_dict(self):
-        return {
-            "value": self.value,
-            "format": self.format,
-            "format_confidence": self.format_confidence,
-        }

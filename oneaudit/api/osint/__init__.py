@@ -123,7 +123,24 @@ class OSINTScrappedDataFormat:
             "links": {k: v for k, v in self.links.items() if k},
         }
 
+
 @dataclasses.dataclass(frozen=True, order=True)
 class OSINTScrappedEmailDataFormat:
     email: str
     verified: bool
+
+
+@dataclasses.dataclass(frozen=True, order=True)
+class OSINTExportedDataFormat:
+    first_name: str
+    last_name: str
+    emails: list[OSINTScrappedEmailDataFormat]
+    links: typing.Dict[SocialNetworkEnum, str] = dataclasses.field(default_factory=dict)
+
+    def to_dict(self):
+        return {
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "emails": self.emails,
+            "links": {k: v for k, v in self.links.items() if k},
+        }
