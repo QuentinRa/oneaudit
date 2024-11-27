@@ -55,6 +55,8 @@ def run(args):
             lastname = ''.join(words[1:])
         if 'emails' not in target:
             target['emails'] = []
+        if 'birth_year' not in target:
+            target['birth_year'] = None
 
         computed_email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain)
         computed_email = unidecode(computed_email.lower().replace(" ", "").replace("/", "").replace("'", "").strip())
@@ -95,20 +97,29 @@ def run(args):
             found[computed_email] = {
                 "login": computed_email,
                 "verified": verified,
-                "emails": emails
+                "emails": emails,
+                "links": target['links'],
+                "birth_year": target['birth_year']
             }
         else:
             found[computed_email]["verified"] = verified or found[computed_email]["verified"]
+            found[computed_email]["birth_year"] = target['birth_year'] if target['birth_year'] else found[computed_email]["birth_year"]
             found[computed_email]["emails"].extend(emails)
+            for k, v in target['links'].items():
+                if k in found[computed_email]['links']:
+                    continue
+                found[computed_email]['links'][k] = v
     logger.info(f"Found {len(verified_count)} verified logins.")
 
     save_to_json(args.output_file, {
-        'version': 1.1,
+        'version': 1.2,
         'credentials': [
             {
                 "login": c["login"],
                 "verified": c["verified"],
-                "emails": list(set(c["emails"]))
+                "emails": list(set(c["emails"])),
+                "links": c["links"],
+                "birth_year": c["birth_year"],
             } for c in found.values() if "login" in c
         ]
     })
