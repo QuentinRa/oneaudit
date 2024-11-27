@@ -130,6 +130,8 @@ class DefaultProvider:
 
         self.logger = logging.getLogger('oneaudit')
 
+        self.rate_limit_status_codes = [429]
+
         if show_notice:
             self.show_notice()
 
@@ -158,7 +160,7 @@ class DefaultProvider:
         return response.json()
 
     def is_response_valid(self, response):
-        if response.status_code == 429:
+        if response.status_code in self.rate_limit_status_codes:
             self.handle_rate_limit(response)
             return False
 

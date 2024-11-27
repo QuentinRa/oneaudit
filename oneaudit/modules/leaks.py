@@ -235,7 +235,7 @@ def run(parser, module_parser):
                     lastname = ''.join(words[1:])
 
                 email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain)
-                email = unidecode.unidecode(email.lower().replace(" ", "").replace("-", ""))
+                email = unidecode.unidecode(email.lower().replace(" ", ""))
 
                 email_valid = firstname and lastname and "." not in firstname+lastname
                 email_valid = email_valid and "_" not in firstname+lastname

@@ -38,6 +38,7 @@ class RocketReachAPI(OSINTProvider):
 
     def fetch_targets_for_company(self, company_name):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
+        search_handler = search_handler.options(order_by="score")
         page = 0
         total = -1
         try:
@@ -46,7 +47,7 @@ class RocketReachAPI(OSINTProvider):
                 targets = []
                 self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
                 self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
-                cached, data = self.fetch_results_using_cache(f"{company_name}_{page}", method='execute')
+                cached, data = self.fetch_results_using_cache(f"{company_name}_score_{page}", method='execute')
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
@@ -111,7 +112,7 @@ class RocketReachAPI(OSINTProvider):
                         set_cached_result(self.api_name, 'ids_checked', ids_checked)
 
                         # Waiting time
-                        wait = random.randint(30, 60)
+                        wait = random.randint(45, 75)
                         self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
                         time.sleep(wait)
         except Exception as e:

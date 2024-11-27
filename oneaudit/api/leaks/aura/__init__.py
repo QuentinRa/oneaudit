@@ -12,6 +12,7 @@ class AuraAPI(LeaksProvider):
             },
             api_keys=api_keys
         )
+        self.rate_limit_status_codes = [429, 500]
 
     def fetch_email_results(self, email):
         # Update parameters

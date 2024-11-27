@@ -73,6 +73,8 @@ class SocialNetworkEnum(enum.Enum):
     TWITTER = "twitter"
     FACEBOOK = "facebook"
     PINTEREST = "pinterest"
+    INSTAGRAM = "instagram"
+    YOUTUBE = "youtube"
 
     GITHUB = "github"
     STACKOVERFLOW = "stackoverflow"
