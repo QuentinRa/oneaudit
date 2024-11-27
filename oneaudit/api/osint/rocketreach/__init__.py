@@ -116,7 +116,7 @@ class RocketReachAPI(OSINTProvider):
                         set_cached_result(self.api_name, 'ids_checked', ids_checked)
 
                         # Waiting time
-                        wait = random.randint(45, 75)
+                        wait = random.randint(60, 120)
                         self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
                         time.sleep(wait)
 

@@ -31,10 +31,12 @@ class SpyCloudAPI(LeaksProvider):
 
     def compute_date(self, last, last_period):
         current_date = datetime.now()
-        if last_period.lower() in "months":
-            return current_date - relativedelta(months=last)
-        elif last_period.lower() in "days":
+        if last_period.lower() in "days":
             return current_date - relativedelta(days=last)
+        elif last_period.lower() in "weeks":
+            return current_date - relativedelta(weeks=last)
+        elif last_period.lower() in "months":
+            return current_date - relativedelta(months=last)
         elif last_period.lower() in "years":
             return current_date - relativedelta(years=last)
         else:

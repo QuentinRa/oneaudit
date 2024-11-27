@@ -58,7 +58,7 @@ def run(args):
         if 'birth_year' not in target:
             target['birth_year'] = None
 
-        computed_email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain)
+        computed_email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain) if firstname.strip() and lastname.strip() else ""
         computed_email = unidecode(computed_email.lower().replace(" ", "").replace("/", "").replace("'", "").strip())
 
         email_f, email_l = unidecode(firstname).strip(), unidecode(lastname).strip()

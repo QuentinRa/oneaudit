@@ -1,10 +1,18 @@
+import cmd
+import json
+import os
+import time
+import oneaudit.utils.logs
+
+
 class LeaksCleanProgramData:
     def __init__(self, args):
-        oneaudit.utils.args_parse_parse_verbose(self, args)
+        oneaudit.utils.logs.args_parse_parse_verbose(args)
         with open(args.input, 'r') as file_data:
             self.data = json.load(file_data)
         self.output_file = args.output
         self.should_resume_process = args.resume_flag
+
 
 class LeaksCredentialProcessor(cmd.Cmd):
     intro = "Welcome to the leaks credential processor. Type 'help' for a list of commands."
@@ -89,12 +97,13 @@ class LeaksCredentialProcessor(cmd.Cmd):
             print(f"Unknown command or alias: {line}")
 
 
-def r():
-    clean_leaks = submodule_parser.add_parser('clean', help='Select which passwords to keep.')
+def define_args(parent_parser):
+    clean_leaks = parent_parser.add_parser('clean', help='Select which passwords to keep.')
     clean_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with leaked credentials.', required=True)
     clean_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
     clean_leaks.add_argument('-r', action='store_true', dest='resume_flag', help='Start working for the previous output file.')
-    oneaudit.utils.args_verbose_config(clean_leaks)
+    oneaudit.utils.logs.args_verbose_config(clean_leaks)
+
 
 def run(args):
     processor = LeaksCredentialProcessor(LeaksCleanProgramData(args))

@@ -1,5 +1,6 @@
 from oneaudit.api import PaidAPIDisabledException
 from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
+import time
 
 
 # https://docs.snusbase.com/
@@ -22,11 +23,12 @@ class SnusbaseAPI(LeaksProvider):
         self.known_keys = [
             'email', 'username', 'name', 'id', 'uid', 'created', 'updated',
             '_domain', 'url', 'followers',
-            'hash', 'salt', 'password', 'lastip',
+            'hash', 'salt', 'password', 'lastip', 'regip', 'host',
             'city', 'country', 'state', 'address', 'zip', 'birthdate', 'language', 'phone',
-            'company', 'job', 'gender', 'other', 'unparsed', 'regdate', 'regip'
+            'company', 'job', 'gender', 'other', 'unparsed', 'regdate'
         ]
         self.api_endpoint = 'https://api.snusbase.com/{route}'
+        self.rate_limit_status_codes = [429, 502]
 
     def fetch_email_results(self, email):
         # Update parameters
@@ -85,6 +87,8 @@ class SnusbaseAPI(LeaksProvider):
             self.is_endpoint_enabled = False
             self.is_endpoint_enabled_for_cracking = False
             raise PaidAPIDisabledException(f"{response.text}")
+        else:
+            time.sleep(2)
 
     def get_rate(self):
         return 0.5

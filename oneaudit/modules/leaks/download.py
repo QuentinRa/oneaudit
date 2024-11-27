@@ -4,6 +4,7 @@ from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 import json
 
+
 def define_args(parent_parser):
     download_leaks = parent_parser.add_parser('download', description='Download leaks from enabled APIs.')
     download_leaks.add_argument('-i', metavar='input.json', dest='input_file', help='JSON file with known data about targets.', required=True)
