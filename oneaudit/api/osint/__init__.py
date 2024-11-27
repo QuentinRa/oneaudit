@@ -12,30 +12,10 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only)
         ])
 
-    def export_records(self, source, profile_list_id):
-        for provider in self.providers:
-            result = provider.export_records_from_profile(source, profile_list_id)
-            if result:
-                return result
-        return []
-
-    def parse_records(self, file_source, employee_filter, input_file):
-        result = []
-
-        for provider in self.providers:
-            try:
-                result.append({
-                    "source": provider.api_name,
-                    "date": time.time(),
-                    "version": 1.3,
-                    "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
-                })
-            except Exception as e:
-                logging.error(f"Error during parsing of {input_file} by {provider.api_name}: {e}")
-
-        return result
-
     def fetch_records(self, company_name):
+        """
+        Look for users and add them to a list of profiles
+        """
         result = {}
         for provider in self.providers:
             result[provider.api_name] = []
@@ -52,6 +32,35 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
             )
 
         return final_result
+
+    def export_records(self, source, profile_list_id):
+        """
+        Export entries from a platform list of profiles
+        """
+        for provider in self.providers:
+            result = provider.export_records_from_profile(source, profile_list_id)
+            if result:
+                return result
+        return []
+
+    def parse_records(self, file_source, employee_filter, input_file):
+        """
+        Parse exported entries into a list of contacts.
+        """
+        result = []
+
+        for provider in self.providers:
+            try:
+                result.append({
+                    "source": provider.api_name,
+                    "date": time.time(),
+                    "version": 1.3,
+                    "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
+                })
+            except Exception as e:
+                logging.error(f"Error during parsing of {input_file} by {provider.api_name}: {e}")
+
+        return result
 
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
@@ -118,9 +127,3 @@ class OSINTScrappedDataFormat:
 class OSINTScrappedEmailDataFormat:
     email: str
     verified: bool
-
-    def to_dict(self):
-        return {
-            "email": self.email,
-            "verified": self.verified,
-        }

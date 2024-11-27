@@ -15,20 +15,22 @@ def args_api_config(parser: argparse.ArgumentParser):
     parser.add_argument('--cache', metavar='.cache', dest='cache_folder', help='Path to the cache folder used to cache requests.')
 
 
-def args_parse_api_config(obj, args):
+def args_parse_api_config(args):
     config_file = args.api_config if args.api_config else 'config.json'
-    obj.api_keys = {}
+    api_keys = {}
     if os.path.exists(config_file):
         try:
             with open(config_file, 'r') as config_file:
                 keys = json.load(config_file)
                 for api, key in keys.items():
-                    obj.api_keys[api] = key
+                    api_keys[api] = key
         except json.JSONDecodeError:
             pass
 
     global cache_folder
     cache_folder = args.cache_folder if args.cache_folder else cache_folder
+
+    return api_keys
 
 
 def set_cached_result(api_name, key, data):

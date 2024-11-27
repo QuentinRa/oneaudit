@@ -12,4 +12,4 @@ class GenericObjectEncoder(json.JSONEncoder):
 
 def save_to_json(output_file, obj):
     with open(output_file, 'w', encoding='utf-8') as output_file:
-        json.dump(obj, output_file, indent=4)
+        json.dump(obj, output_file, cls=GenericObjectEncoder, indent=4)

@@ -1,5 +1,5 @@
 from oneaudit.api.osint import OSINTProviderManager
-from oneaudit.utils import args_verbose_config, args_parse_parse_verbose
+from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 from logging import getLogger
 import json
 
