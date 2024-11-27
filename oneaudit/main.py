@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from oneaudit.modules import socosint
+from oneaudit.modules import socosint, leaks
 from oneaudit.utils import args_call_target
 from oneaudit.utils.logs import get_project_logger
+
 
 def main():
     parser = ArgumentParser(description="oneaudit utilities")
@@ -10,6 +11,7 @@ def main():
     # Load define modules
     module_parser = parser.add_subparsers(dest='module', required=True)
     socosint.define_args(module_parser)
+    leaks.define_args(module_parser)
 
     # Parse args
     args = parser.parse_args()
