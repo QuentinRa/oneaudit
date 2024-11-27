@@ -1,31 +1,32 @@
-class LeaksDownloadProgramData:
-    def __init__(self, args):
-        oneaudit.utils.args_parse_parse_verbose(self, args)
-        oneaudit.api.args_parse_api_config(self, args)
-        with open(args.input, 'r') as file_data:
-            self.data = json.load(file_data)
-        self.output_file = args.output
-        self.company_domain = args.company_domain
+from oneaudit.api import args_api_config, args_parse_api_config
+from oneaudit.api.leaks import LeaksProviderManager
+from oneaudit.utils.io import save_to_json
+from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
+import json
 
-
-def xxx():
-    download_leaks = submodule_parser.add_parser('download', description='Download leaks from enabled APIs.')
-    download_leaks.add_argument('-i', metavar='input.json', dest='input', help='JSON file with known data about targets.', required=True)
+def define_args(parent_parser):
+    download_leaks = parent_parser.add_parser('download', description='Download leaks from enabled APIs.')
+    download_leaks.add_argument('-i', metavar='input.json', dest='input_file', help='JSON file with known data about targets.', required=True)
     download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
-    download_leaks.add_argument('-o', metavar='output.json', dest='output', help='Export results as JSON.', required=True)
-    oneaudit.api.args_api_config(download_leaks)
-    oneaudit.utils.args_verbose_config(download_leaks)
+    download_leaks.add_argument('-o', metavar='output.json', dest='output_file', help='Export results as JSON.', required=True)
+    args_api_config(download_leaks)
+    args_verbose_config(download_leaks)
 
 
 def run(args):
-    args = LeaksDownloadProgramData(args)
-    provider = oneaudit.api.leaks.LeaksProviderManager(args.api_keys)
+    args_parse_parse_verbose(args)
+    api_keys = args_parse_api_config(args)
     results = {}
-    provider.prepare_for_targets([email for cred in args.data['credentials'] for email in cred['emails']])
+    logger = get_project_logger()
+    with open(args.input_file, 'r') as file_data:
+        credentials = json.load(file_data)['credentials']
+
+    provider = LeaksProviderManager(api_keys)
+    provider.prepare_for_targets([email for cred in credentials for email in cred['emails']])
     additional_data = provider.investigate_domain(args.company_domain)
     provider.sort_results(additional_data, additional_data)
 
-    for credential in args.data['credentials']:
+    for credential in credentials:
         key = credential['login']
         if key in results:
             continue
@@ -46,20 +47,15 @@ def run(args):
     credentials = []
     for login, data in results.items():
         final_data = {'login': login}
-
         # Attempt to crack hashes
         data = provider.investigate_hashes(login, data)
-
         # Sort results
         provider.sort_results(data, final_data)
-
         # Add
         credentials.append(final_data)
 
-    result = {
+    save_to_json(args.output_file, {
         'version': 1.3,
         'credentials': credentials,
         "additional": additional_data,
-    }
-    with open(args.output_file, 'w') as output_file:
-        json.dump(result, output_file, cls=oneaudit.modules.GenericObjectEncoder,  indent=4)
+    })

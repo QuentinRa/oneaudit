@@ -1,4 +1,5 @@
 from oneaudit.modules.leaks import parse
+from oneaudit.modules.leaks import download
 from oneaudit.utils import args_call_target
 
 
@@ -8,6 +9,7 @@ def define_args(parent_parser):
     # Add actions we can perform related to leaks
     leaks_module_action = leaks_module.add_subparsers(dest='action', help="Action to perform.", required=True)
     parse.define_args(leaks_module_action)
+    download.define_args(leaks_module_action)
 
 
 def run(args):
