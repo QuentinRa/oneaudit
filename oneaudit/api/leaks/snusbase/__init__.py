@@ -1,4 +1,4 @@
-from oneaudit.api import FakeResponse
+from oneaudit.api import PaidAPIDisabledException
 from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
 
 
@@ -34,30 +34,33 @@ class SnusbaseAPI(LeaksProvider):
         self.request_args['json']['terms'] = [email]
         self.request_args['json']['types'] = ['email']
         # Send the request
-        cached, data = self.fetch_results_using_cache(f"search_{email}")
-        results = {
-            'logins': [],
-            'passwords': [],
-            'raw_hashes': []
-        }
-        # city, country, zip, company, address, url
-        for breach_data in data['results'].values():
-            results['verified'] = True
-            for entry in breach_data:
-                for k, v in [
-                    ('username', 'logins'),
-                    ('name', 'logins'),
-                    ('password', 'passwords'),
-                    ('hash', 'raw_hashes'),
-                ]:
-                    if k in entry:
-                        results[v].append(entry[k])
+        try:
+            cached, data = self.fetch_results_using_cache(f"search_{email}")
+            results = {
+                'logins': [],
+                'passwords': [],
+                'raw_hashes': []
+            }
+            # city, country, zip, company, address, url
+            for breach_data in data['results'].values():
+                results['verified'] = True
+                for entry in breach_data:
+                    for k, v in [
+                        ('username', 'logins'),
+                        ('name', 'logins'),
+                        ('password', 'passwords'),
+                        ('hash', 'raw_hashes'),
+                    ]:
+                        if k in entry:
+                            results[v].append(entry[k])
 
-                for k in entry.keys():
-                    if k not in self.known_keys:
-                        raise Exception(f'{self.api_name}: Unknown key "{k}" with value "{entry[k]}" for "{email}"')
+                    for k in entry.keys():
+                        if k not in self.known_keys:
+                            raise Exception(f'{self.api_name}: Unknown key "{k}" with value "{entry[k]}" for "{email}"')
 
-        yield cached, results
+            yield cached, results
+        except PaidAPIDisabledException:
+            yield False, {}
 
     def fetch_plaintext_from_hash(self, crackable_hash):
         # Update parameters
@@ -79,13 +82,9 @@ class SnusbaseAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         if 'Rate-limit exceeded.' in response.text:
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_endpoint_terminated = True
-
-    def handle_request(self, **kwargs):
-        if not self.is_endpoint_terminated:
-            return super().handle_request(**kwargs)
-        else:
-            return FakeResponse(204, {"results": {}})
+            self.is_endpoint_enabled = False
+            self.is_endpoint_enabled_for_cracking = False
+            raise PaidAPIDisabledException()
 
     def get_rate(self):
         return 0.5

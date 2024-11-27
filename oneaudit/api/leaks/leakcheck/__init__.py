@@ -1,4 +1,4 @@
-from oneaudit.api import FakeResponse
+from oneaudit.api import PaidAPIDisabledException
 from oneaudit.api.leaks import LeaksProvider, BreachDataFormat
 
 
@@ -41,29 +41,32 @@ class LeakCheckAPI(LeaksProvider):
         if self.is_pro_endpoint_enabled:
             self.request_args['headers']['X-API-Key'] = self.api_key
             self.request_args['url'] = f'https://leakcheck.io/api/v2/query/{email}'
-            cached, data = self.fetch_results_using_cache(f"pro_{email}")
-            if 'result' not in data:
-                raise Exception(f"Unexpected result for {self.api_name}: {data}")
-            sources = [entry['source'] for entry in data['result'] if 'source' in entry]
-            results = {
-                'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
-                'breaches': [BreachDataFormat(source["name"], source["breach_date"])
-                             for source in sources if source['name'] != "Unknown"],
-            }
-            yield cached, results
+            try:
+                cached, data = self.fetch_results_using_cache(f"pro_{email}")
+                if 'result' not in data:
+                    raise Exception(f"Unexpected result for {self.api_name}: {data}")
+                sources = [entry['source'] for entry in data['result'] if 'source' in entry]
+                results = {
+                    'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
+                    'breaches': [BreachDataFormat(source["name"], source["breach_date"])
+                                 for source in sources if source['name'] != "Unknown"],
+                }
+                yield cached, results
+            except PaidAPIDisabledException:
+                yield False, {}
 
     def handle_rate_limit(self, response):
         if 'Limit reached' in response.text:
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_endpoint_terminated = True
+            self.is_pro_endpoint_enabled = False
+            self.is_endpoint_enabled = self.is_public_endpoint_enabled
+            raise PaidAPIDisabledException()
 
     def handle_request(self, **kwargs):
-        if not self.is_endpoint_terminated:
-            response = super().handle_request(**kwargs)
-            if response.status_code != 403:
-                return response
-            self.handle_rate_limit(response)
-        return FakeResponse(204, {"result": []})
+        response = super().handle_request(**kwargs)
+        if response.status_code != 403:
+            return response
+        self.handle_rate_limit(response)
 
     def get_rate(self):
         return 1

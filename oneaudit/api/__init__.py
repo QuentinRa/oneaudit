@@ -147,9 +147,7 @@ class DefaultProvider:
         if data is None:
             cached = False
             data = self.fetch_result_without_cache(**kwargs)
-            # If the endpoint was disabled
-            if not self.is_endpoint_terminated:
-                set_cached_result(self.api_name, cached_result_key, data)
+            set_cached_result(self.api_name, cached_result_key, data)
 
         return cached, data
 
@@ -195,3 +193,6 @@ class FakeResponse:
 
     def json(self):
         return self._response_data
+
+class PaidAPIDisabledException(Exception):
+    pass
