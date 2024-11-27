@@ -128,7 +128,7 @@ class RocketReachAPI(OSINTProvider):
     def handle_request(self, method):
         return getattr(self.current_handler, method)().response
 
-    def parse_records_from_file(self, file_source, employee_filter, input_file):
+    def parse_records_from_file(self, file_source, employee_filters, input_file):
         targets = []
         if file_source != 'rocketreach':
             return targets
@@ -151,9 +151,14 @@ class RocketReachAPI(OSINTProvider):
                         self.email_verified_mapper[email['validity']]
                     ))
 
-                # If the employee is not part of the target company
-                all_employers.add(entry["current_employer"].lower())
-                if employee_filter not in entry["current_employer"].lower():
+                should_skip = True
+                for employee_filter in employee_filters:
+                    if employee_filter in entry["current_employer"].lower():
+                        should_skip = False
+                        break
+                if should_skip:
+                    # If the employee is not part of the target company
+                    all_employers.add(entry["current_employer"].lower())
                     continue
 
                 targets.append({
@@ -163,7 +168,7 @@ class RocketReachAPI(OSINTProvider):
                     'links': {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 })
 
-        self.logger.debug(f"All employers: {all_employers}")
+        self.logger.debug(f"All employers that were skipped: {all_employers}")
         return targets
 
     def export_records_from_profile(self, source, profile_list_id):

@@ -43,7 +43,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                 return result
         return []
 
-    def parse_records(self, file_source, employee_filter, input_file):
+    def parse_records(self, file_source, employee_filters, input_file):
         """
         Parse exported entries into a list of contacts.
         """
@@ -55,7 +55,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
                     "source": provider.api_name,
                     "date": time.time(),
                     "version": 1.3,
-                    "targets": provider.parse_records_from_file(file_source, employee_filter, input_file)
+                    "targets": provider.parse_records_from_file(file_source, employee_filters, input_file)
                 })
             except Exception as e:
                 logging.error(f"Error during parsing of {input_file} by {provider.api_name}: {e}")
@@ -67,7 +67,7 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
     def __init__(self, request_args, api_name, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
 
-    def parse_records_from_file(self, file_source, employee_filter, input_file):
+    def parse_records_from_file(self, file_source, employee_filters, input_file):
         return []
 
     def export_records_from_profile(self, source, profile_list_id):
