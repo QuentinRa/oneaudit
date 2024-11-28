@@ -1,7 +1,9 @@
 from dataclasses import asdict, is_dataclass
-import json
+from json import JSONEncoder, dump
+from os.path import isabs, join, abspath
+from os import getcwd
 
-class GenericObjectEncoder(json.JSONEncoder):
+class GenericObjectEncoder(JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'to_dict'):
             return obj.to_dict()
@@ -12,4 +14,10 @@ class GenericObjectEncoder(json.JSONEncoder):
 
 def save_to_json(output_file, obj):
     with open(output_file, 'w', encoding='utf-8') as output_file:
-        json.dump(obj, output_file, cls=GenericObjectEncoder, indent=4)
+        dump(obj, output_file, cls=GenericObjectEncoder, indent=4)
+
+
+def to_absolute_path(filepath):
+    if not isabs(filepath):
+        filepath = join(getcwd(), filepath)
+    return abspath(filepath)
