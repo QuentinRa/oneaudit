@@ -14,6 +14,7 @@ class OneAuditBaseProvider:
     def __init__(self, api_name, request_args, api_keys):
         # API Identifiers
         self.api_name = api_name
+        self.api_key = api_keys.get(self.api_name)
         self.unique_identifier = f'{api_name}_'
 
         # Setting User-Agent
@@ -26,7 +27,7 @@ class OneAuditBaseProvider:
         self.logger = get_project_logger()
 
         # What can the endpoint do? Was it enabled ?
-        self.capabilities = self._init_capabilities(api_keys.get(self.api_name), api_keys)
+        self.capabilities = self._init_capabilities(self.api_key, api_keys)
         self.is_endpoint_enabled = len(self.capabilities) > 0
 
         # API status codes
