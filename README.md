@@ -18,15 +18,16 @@ WIP
 * IPs, addresses, usernames, etc.
   * Leakcheck returns a lot of them (check the fields)
 * Add Nubela? Apollo?
-* Fix cache folder parameter
-* Inform the user of the score of verified emails for each email format
 * Allow verified from the target domain even if the format is different
-* Add API capabilities
-* Rework on the generic API code
-* Using public proxies
-* Request rate as a parameter?
 * Remove RocketReach dependency?
 * Test only one email per domain
+* Add proxy support
+* Work again on domain search
+
+Undocumented
+
+* `-r` for leaks
+* `--log-file` for logs
 
 ## SocOSINT
 

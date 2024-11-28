@@ -28,6 +28,7 @@
 .idea/**/shelf
 
 .idea
+app.log
 config.json
 .cache
 data
