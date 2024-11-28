@@ -19,6 +19,7 @@ class OneAuditBaseAPIManager:
         self.last_called = {}
         self.providers = providers
         self.logger = get_project_logger()
+        self.can_use_cache_even_if_disabled = False
 
     # Result is a dictionary such as { 'toto': [] }
     # And we will append results inside after invoking each provider
@@ -54,8 +55,10 @@ class OneAuditBaseAPIManager:
         for provider in self.providers:
             if provider.is_endpoint_enabled and capability in provider.capabilities:
                 provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
-            else:
+            elif self.can_use_cache_even_if_disabled:
                 provider.only_use_cache = True
+            else:
+                continue
 
             # Call each provider
             try:

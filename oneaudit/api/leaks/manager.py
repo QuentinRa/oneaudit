@@ -11,7 +11,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
     """
     APIs related to leaks
     """
-    def __init__(self, api_keys):
+    def __init__(self, api_keys, can_use_cache_even_if_disabled):
         super().__init__([
             # FREE
             aura.AuraAPI(api_keys),
@@ -26,6 +26,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             leakcheck.LeakCheckAPI(api_keys),
             snusbase.SnusbaseAPI(api_keys),
         ])
+        self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
 
     def investigate_leaks(self, credentials):
         results = {}
