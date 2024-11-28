@@ -1,9 +1,11 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.leaks import LeaksAPICapability
+from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel
-
+from hashlib import sha1, md5
+from bcrypt import hashpw
+from re import compile
 
 class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
     """
@@ -27,54 +29,119 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
     def investigate_leaks(self, credentials):
         results = {}
+        bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
-        for credential in credentials:
-            key = credential['login']
-            if key in results:
-                print(key)
-                continue
+        try:
+            for credential in credentials:
+                key = credential['login']
+                if key in results:
+                    raise Exception(f"Key {key} is present twice")
 
-            results[key] = {
-                'logins': [],
-                'passwords': [],
-                'censored_logins': [],
-                'censored_passwords': [],
-                'raw_hashes': [],
-                'info_stealers': [],
-                'breaches': [],
-                'verified': False,
-            }
+                results[key] = {
+                    'logins': [],
+                    'passwords': [],
+                    'censored_logins': [],
+                    'censored_passwords': [],
+                    'raw_hashes': [],
+                    'info_stealers': [],
+                    'breaches': [],
+                    'verified': False,
+                }
 
-            # Get the leaks per email, and save them in the record associated with the login
-            for email in credential['emails']:
-                was_modified, results[key] = self._call_all_providers_dict(
-                    heading="Investigate leaks",
-                    capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
-                    stop_when_modified=False,
-                    method_name='investigate_leaks_by_email',
-                    result=results[key],
-                    args=(email,)
-                )
-                if was_modified and email == key:
-                    credential['verified'] = True
-                    self.logger.debug(f"Email {email} was verified due to leaks associated to it.")
+                # Get the leaks per email, and save them in the record associated with the login
+                for email in credential['emails']:
+                    was_modified, results[key] = self._call_all_providers_dict(
+                        heading="Investigate leaks",
+                        capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
+                        stop_when_modified=False,
+                        method_name='investigate_leaks_by_email',
+                        result=results[key],
+                        args=(email,)
+                    )
+                    if was_modified and email == key:
+                        credential['verified'] = True
+                        self.logger.debug(f"Email {email} was verified due to leaks associated to it.")
 
-            # fixme: handle new logins
+                # Handle new logins
+                for login in results[key]["logins"]:
+                    if "@" not in login or ':' in login or login in credential['emails']:
+                        continue
+                    raise Exception(f"Found new email that was not handled: {login}")
+                results[key]['logins'].extend(credential['emails'])
 
-            # Use the value in credential that may have been updated
-            results[key]['verified'] = credential['verified']
+                # Use the value in credential that may have been updated
+                results[key]['verified'] = credential['verified']
 
-            # fixme: attempt to crack hashes
+                # Attempt to crack hashes
+                uncracked_hashes = []
+                if results[key]['raw_hashes']:
+                    # We need to remove any hash for which we already have the passwords
+                    # We need to handle cases where the hash is just of checksum of the login
+                    # (as it happened multiple times for such hashes to be found, such as with gravatar leak, etc.)
+                    known_hashes = []
+                    candidates = [key] + results[key]['passwords'] + results[key]['logins']
+                    for password in candidates:
+                        known_hashes.append(md5(password.encode()).hexdigest())
+                        known_hashes.append(sha1(password.encode()).hexdigest())
 
-            # Sort every value and remove duplicates
-            for k, v in results[key].items():
-                if isinstance(v, list):
-                    results[key][k] = sorted([e for e in set(v) if e])
-                elif isinstance(v, bool):
-                    results[key][k] = v
-                else:
-                    self.logger.error(f"Unexpected type for: k={k} v={v}")
-                    continue
+                    for hash_to_crack in results[key]['raw_hashes']:
+                        hash_to_crack = hash_to_crack.strip()
+                        hash_data = PasswordHashDataFormat(hash_to_crack, None, None, -1)
+
+                        # No need to crack these
+                        if hash_to_crack in known_hashes:
+                            continue
+
+                        # Generate bcrypt hashes if needed
+                        match = bcrypt_hash_regex.match(hash_to_crack)
+                        if match:
+                            salt = match.group(1)
+                            for password in candidates:
+                                try:
+                                    known_hashes.append(hashpw(password.encode(), salt.encode()))
+                                except ValueError:
+                                    pass
+                            if hash_to_crack in known_hashes:
+                                continue
+
+                        # Now, we need to crack it, or at least, investigate it
+                        for api_result in self._call_all_providers(
+                                    heading="Attempt to find plaintext from hash",
+                                    capability=LeaksAPICapability.INVESTIGATE_CRACKED_HASHES,
+                                    method_name='lookup_plaintext_from_hash',
+                                    args=(hash_to_crack,)):
+                            hash_data = PasswordHashDataFormat(
+                                hash_to_crack,
+                                api_result.plaintext if api_result.plaintext else hash_data.plaintext,
+                                api_result.format if hash_data.format_confidence < api_result.format_confidence else hash_data.format,
+                                api_result.format_confidence if hash_data.format_confidence < api_result.format_confidence else hash_data.format_confidence,
+                            )
+                            if hash_data.plaintext:
+                                break
+
+                        # If uncracked, add the hash to the list, otherwise
+                        # Add the password to the list
+                        if hash_data.plaintext is None:
+                            uncracked_hashes.append(hash_data)
+                        else:
+                            known_hashes.append(md5(hash_data.plaintext.encode()).hexdigest())
+                            known_hashes.append(sha1(hash_data.plaintext.encode()).hexdigest())
+                            results[key]['passwords'].append(hash_data.plaintext)
+
+                results[key]['hashes'] = uncracked_hashes
+                del results[key]['raw_hashes']
+
+                # Sort every value and remove duplicates
+                for k, v in results[key].items():
+                    if isinstance(v, list):
+                        results[key][k] = sorted([e for e in set(v) if e])
+                    elif isinstance(v, bool):
+                        results[key][k] = v
+                    else:
+                        self.logger.error(f"Unexpected type for: k={k} v={v}")
+                        continue
+        except KeyboardInterrupt:
+            pass
 
         return [{"login": key, **value} for key, value in results.items()]
 
