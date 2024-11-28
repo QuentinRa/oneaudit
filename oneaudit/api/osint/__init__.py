@@ -11,7 +11,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
         import oneaudit.api.osint.verifyemailaddress
         super().__init__([
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only),
-            oneaudit.api.osint.verifyemailaddress.VerifyEmailAddressAPI(api_keys, cache_only)
+            oneaudit.api.osint.verifyemailaddress.VerifyEmailAddressAPI(api_keys)
         ])
 
     def fetch_records(self, company_name):
@@ -64,30 +64,24 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
 
         return result
 
-    # # For emails, we will not use providers because we only have one email checker.
-    # def get_single_email(self, single_email):
-    #     result = []
-    #     answer = self.verify_one_email(single_email)
-    #     result_api = False
-    #     if answer == "exists":
-    #         result_api = True
-    #     elif answer == "error_http":
-    #         logging.error(f"Error while verifying {single_email}: {e}")
-    #     result.append(OSINTScrappedEmailDataFormat(
-    #         single_email.lower(),
-    #         result_api
-    #     )
-    #     )
-
     def verify_emails(self, emails):
-        result = []
+        results = {}
 
         for email in emails:
-            _, result = self._call_method_on_each_provider(result, 'verify_one_email', email)
-            print(email)
-            print(result)
+            for provider in self.providers:
+                if not provider.is_endpoint_enabled:
+                    continue
+                self.logger.info(f"Verifying emails on {provider.api_name} (args={email,})")
+                cached, result = provider.is_email_valid(email)
+                if not cached:
+                    self.trigger(provider.__class__.__name__, provider.get_rate())
 
-        return result
+                results[email] = result
+                if result.verified:
+                    self.logger.debug(f"Email {email} was marked as valid.")
+                    break
+
+        return list(results.values())
 
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
@@ -103,8 +97,8 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
     def fetch_targets_for_company(self, company_name):
         return []
 
-    def verify_one_email(self, mail_string):
-        return []
+    def is_email_valid(self, email):
+        return True, OSINTScrappedEmailDataFormat(email, False)
 
 
 class SocialNetworkEnum(enum.Enum):
