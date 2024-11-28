@@ -6,12 +6,21 @@ import json
 import re
 
 email_formats = {
-    'first.last': '{firstname}.{lastname}@{domain}',
-    'first_last': '{firstname}_{lastname}@{domain}',
+    'first': '{firstname}@{domain}',
+    'last': '{firstname}@{domain}',
+
     'firstlast': '{firstname}{lastname}@{domain}',
-    'last.first': '{lastname}{firstname}@{domain}',
+    'lastfirst': '{lastname}{firstname}@{domain}',
+
+    'first.last': '{firstname}.{lastname}@{domain}',
+    'last.first': '{lastname}.{firstname}@{domain}',
+
+    'first_last': '{firstname}_{lastname}@{domain}',
+    'last_first': '{firstname}_{lastname}@{domain}',
+
     'f.last': '{firstname[0]}.{lastname}@{domain}',
     'flast': '{firstname[0]}{lastname}@{domain}',
+    'fl': '{firstname[0]}{lastname[0]}@{domain}',
 }
 
 
@@ -28,10 +37,9 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
     args.domain_aliases = [args.domain] + args.domain_aliases
-    args.email_format = email_formats[args.email_format]
     email_regex = re.compile(r'\b[A-Za-z0-9.-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
     targets, found = [], {}
-    verified_count = set()
+    verified_count = {}
     logger = get_project_logger()
 
     # Read all entries
@@ -42,6 +50,10 @@ def run(args):
                 targets.extend([target for entry in entries for target in entry['targets']])
         except JSONDecodeError as e:
             raise Exception(f"Error when reading 'targets' in {file}: {e}")
+
+    # For statistics
+    for email_format_id in email_formats.keys():
+        verified_count[email_format_id] = set()
 
     # Parse them
     logger.info(f"Parsing {len(targets)} entries.")
@@ -58,9 +70,14 @@ def run(args):
         if 'birth_year' not in target:
             target['birth_year'] = None
 
-        computed_email = args.email_format.format(firstname=firstname, lastname=lastname, domain=args.domain) if firstname.strip() and lastname.strip() else ""
-        computed_email = unidecode(computed_email.lower().replace(" ", "").replace("/", "").replace("'", "").strip())
+        # Generate email using all formats
+        candidates = {}
+        for email_format_id, email_format in email_formats.items():
+            computed_email = email_format.format(firstname=firstname, lastname=lastname, domain=args.domain) if firstname.strip() and lastname.strip() else ""
+            computed_email = unidecode(computed_email.lower().replace(" ", "").replace("/", "").replace("'", "").strip())
+            candidates[email_format_id] = computed_email
 
+        computed_email = candidates[args.email_format]
         email_f, email_l = unidecode(firstname).strip(), unidecode(lastname).strip()
         email_valid = email_f and email_l and "." not in email_f+email_l
         email_valid = email_valid and "_" not in email_f+email_l
@@ -82,8 +99,10 @@ def run(args):
             allowed = [domain for domain in args.domain_aliases if target_email.endswith(domain)] == []
             if allowed:
                 emails.add(target_email.lower())
-            if verified:
-                verified_count.add(computed_email)
+            elif is_target_email_verified:
+                email_format_id = [email_format_id for email_format_id, candidate in candidates.items() if candidate == target_email]
+                if email_format_id:
+                    verified_count[email_format_id[0]].add(target_email)
 
         for target_domain in args.domain_aliases:
             if target_domain == args.domain:
@@ -109,7 +128,10 @@ def run(args):
                 if k in found[computed_email]['links']:
                     continue
                 found[computed_email]['links'][k] = v
-    logger.info(f"Found {len(verified_count)} verified logins.")
+
+    logger.info(f"Found the following verified logins.")
+    for email_format_id, verified_count_per_format in verified_count.items():
+        logger.info(f"     Format: {email_format_id:20} -> Result: {len(verified_count_per_format):5}")
 
     save_to_json(args.output_file, {
         'version': 1.2,

@@ -1,10 +1,10 @@
 from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTExportedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
 from oneaudit.api import get_cached_result, set_cached_result
+from string import digits, ascii_letters
+from secrets import choice
+from random import randint
+from time import sleep
 import json
-import time
-import string
-import random
-import secrets
 import requests
 import rocketreach
 
@@ -47,6 +47,9 @@ class RocketReachAPI(OSINTProvider):
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
+                    if not profile["name"]:
+                        self.logger.warning(f"{self.api_name}: we found an employee with a blank name. We will skip it for now.")
+                        continue
                     targets.append(OSINTScrappedDataFormat(
                         profile["name"],
                         profile['birth_year'],
@@ -74,7 +77,7 @@ class RocketReachAPI(OSINTProvider):
                 # We can try to fetch the trigger the requests for you, but it's somewhat dirty
                 if self.session_id and target_profile_list_id:
                     kill_switch = 0
-                    csrf_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+                    csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
                     i = 0
                     while i < len(ids_to_check):
                         self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
@@ -96,15 +99,15 @@ class RocketReachAPI(OSINTProvider):
                         # Check the reply
                         if not self.is_response_valid(response):
                             if kill_switch >= 2:
-                                wait = random.randint(1200, 1800)
+                                wait = randint(1200, 1800)
                                 self.logger.warning(f"{self.api_name}: hit a hard rate-limit, waiting {wait} seconds.")
-                                time.sleep(wait)
+                                sleep(wait)
                                 kill_switch += 1
                                 continue
 
                             self.logger.info(f"{self.api_name}: Rate-limited. Waiting five minutes.")
                             kill_switch += 1
-                            time.sleep(300)
+                            sleep(300)
                             continue
 
                         # Save the status
@@ -112,9 +115,9 @@ class RocketReachAPI(OSINTProvider):
                         set_cached_result(self.api_name, 'ids_checked', ids_checked)
 
                         # Waiting time
-                        wait = random.randint(60, 120)
+                        wait = randint(60, 120)
                         self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
-                        time.sleep(wait)
+                        sleep(wait)
 
                         i += 25
                         kill_switch = 0
@@ -160,7 +163,7 @@ class RocketReachAPI(OSINTProvider):
                 targets.append(OSINTExportedDataFormat(
                     entry["first_name"],
                     entry["last_name"],
-                    emails,
+                    list(set(emails)),
                     {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 ))
 
@@ -217,7 +220,7 @@ class RocketReachAPI(OSINTProvider):
             set_cached_result(self.api_name, f'export_profile_{profile_list_id}', result)
 
             self.logger.info(f"{self.api_name}: waiting 30 seconds to respect fair use.")
-            time.sleep(30)
+            sleep(30)
 
             if data['num_pages'] == page:
                 break
@@ -230,7 +233,7 @@ class RocketReachAPI(OSINTProvider):
     def handle_rate_limit(self, response):
         wait = int(response.headers["retry-after"] if "retry-after" in response.headers else 2)
         self.logger.warning(f"{self.api_name}: Rate-limited. Waiting for {wait} seconds.")
-        time.sleep(wait)
+        sleep(wait)
 
     def get_rate(self):
         return 5
