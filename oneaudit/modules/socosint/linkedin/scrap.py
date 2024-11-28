@@ -1,5 +1,5 @@
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
-from oneaudit.api.osint import OSINTProviderManager
+from oneaudit.api.socosint.linkedin import OneAuditLinkedInAPIManager
 from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 
@@ -16,7 +16,7 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
     api_keys = args_parse_api_config(args)
-    provider = OSINTProviderManager(api_keys)
+    provider = OneAuditLinkedInAPIManager(api_keys)
     save_to_json(args.output_file, {
         "version": 1.1,
         "entries": provider.fetch_records(args.company_name),

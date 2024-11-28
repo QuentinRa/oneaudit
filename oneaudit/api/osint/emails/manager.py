@@ -32,10 +32,12 @@ class OneAuditEmailsAPIManager(OneAuditBaseAPIManager):
                     capability=EmailAPICapability.EMAIL_VERIFICATION,
                     method_name='is_email_valid',
                     args=(email,)):
+                # Deal with each result they return
                 email_data = api_result
                 if email_data.verified:
                     break
 
+            # Handle the final result
             if email_data:
                 if email_data.verified:
                     self.logger.info(f"Found valid email: {email}")

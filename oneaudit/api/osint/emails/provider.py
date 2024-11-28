@@ -1,4 +1,4 @@
-from oneaudit.api.osint.data import VerifiableEmail
+from oneaudit.api.osint import VerifiableEmail
 from oneaudit.api.provider import OneAuditBaseProvider
 
 

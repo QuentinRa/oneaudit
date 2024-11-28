@@ -1,5 +1,5 @@
 from oneaudit.api import APIRateLimitException
-from oneaudit.api.osint.data import VerifiableEmail
+from oneaudit.api.osint import VerifiableEmail
 from oneaudit.api.osint.emails import EmailAPICapability
 from oneaudit.api.osint.emails.provider import OneAuditEmailsAPIProvider
 from requests.exceptions import ReadTimeout
