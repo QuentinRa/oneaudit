@@ -18,4 +18,11 @@ class OneAuditLinkedInAPIProvider(OneAuditBaseProvider):
         """
         Export as JSON profiles from a profile list
         """
-        yield True, []
+        return []
+
+    def parse_records_from_export(self, employee_filters, input_file):
+        """
+        Parse an export of JSON profiles (as results can be exported using multiple means aside from the script,
+        such as using webhook, or the website for RocketReach).
+        """
+        return []

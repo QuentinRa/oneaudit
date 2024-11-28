@@ -37,3 +37,9 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             if provider.api_name == api_name:
                 return provider.export_profiles_from_profile_list(target_profile_list_id)
         raise Exception(f"Invalid {api_name} given to export_profiles_from_profile_list")
+
+    def parse_records_from_export(self, api_name, employee_filters, input_file):
+        for provider in self.providers:
+            if provider.api_name == api_name:
+                return provider.parse_records_from_export(employee_filters, input_file)
+        raise Exception(f"Invalid {api_name} given to parse_records_from_export")

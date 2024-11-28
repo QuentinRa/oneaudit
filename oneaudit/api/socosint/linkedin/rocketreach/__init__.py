@@ -1,13 +1,15 @@
-from oneaudit.api.socosint import SocialNetworkEnum, UserProfileRawData
+from oneaudit.api.socosint import SocialNetworkEnum, UserProfileRawData, UserProfileData
 from oneaudit.api.socosint.linkedin.provider import OneAuditLinkedInAPIProvider
 from oneaudit.api.socosint.linkedin import LinkedInAPICapability
 from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 from rocketreach import Gateway, GatewayConfig
+from oneaudit.api.osint import VerifiableEmail
 from string import digits, ascii_letters
 from requests import get, post
 from secrets import choice
 from random import randint
 from time import sleep
+from json import load
 
 class RocketReachAPI(OneAuditLinkedInAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
@@ -208,3 +210,44 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
         self.logger.info("Export done.")
         return result['entries']
+
+    def parse_records_from_export(self, employee_filters, input_file):
+        targets = []
+        file_contents = load(input_file)
+        if not isinstance(file_contents, list):
+            file_contents = [file_contents]
+
+        all_employers = set()
+        for file_content in file_contents:
+            for entry in file_content["entries"]:
+                emails = []
+                for email in entry['emails']:
+                    if email['source'] == "predicted":
+                        if email['format_probability'] and email['format_probability'] < 35:
+                            continue
+                        if email['confidence'] < 50:
+                            continue
+                    emails.append(VerifiableEmail(
+                        email['email'].lower(),
+                        self.email_verified_mapper[email['validity']]
+                    ))
+
+                should_skip = True
+                for employee_filter in employee_filters:
+                    if employee_filter in entry["current_employer"].lower():
+                        should_skip = False
+                        break
+                if should_skip:
+                    # If the employee is not part of the target company
+                    all_employers.add(entry["current_employer"].lower())
+                    continue
+
+                targets.append(UserProfileData(
+                    entry["first_name"],
+                    entry["last_name"],
+                    list(set(emails)),
+                    {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
+                ))
+
+        self.logger.debug(f"All employers that were not allowed due to filtering: {all_employers}")
+        return targets
