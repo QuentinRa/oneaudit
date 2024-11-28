@@ -1,8 +1,36 @@
-from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, BreachDataFormat
+from oneaudit.api import APIRateLimitException
+from oneaudit.api.leaks import BreachData, LeaksAPICapability
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 
 
 # https://wiki.leakcheck.io/en/api
 class LeakCheckAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        capabilities = set()
+        if api_key is not None:
+            capabilities.add(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
+            capabilities.add(LeaksAPICapability.FREE_ENDPOINT)
+        api_key = api_keys.get('leakcheck_pro')
+        if api_key is not None:
+            capabilities.add(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
+            capabilities.add(LeaksAPICapability.PAID_ENDPOINT)
+        return list(capabilities)
+
+    def handle_rate_limit(self, response):
+        if 'Limit reached' in response.text:
+            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
+            self.capabilities.remove(LeaksAPICapability.PAID_ENDPOINT)
+            raise APIRateLimitException(f"{response.text}")
+
+    def handle_request(self, **kwargs):
+        response = super().handle_request(**kwargs)
+        if response.status_code != 403:
+            return response
+        self.handle_rate_limit(response)
+
+    def get_request_rate(self):
+        return 1
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='leakcheck',
@@ -14,14 +42,9 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             },
             api_keys=api_keys
         )
-        self.api_key = api_keys.get('leakcheck_pro', None)
-        self.is_public_endpoint_enabled = self.is_endpoint_enabled
-        self.is_pro_endpoint_enabled = self.api_key is not None
-        self.is_endpoint_enabled = self.is_public_endpoint_enabled or self.is_pro_endpoint_enabled
-        self.show_notice()
 
-    def fetch_email_results(self, email):
-        if self.is_public_endpoint_enabled:
+    def investigate_leaks_by_email(self, email):
+        if LeaksAPICapability.FREE_ENDPOINT in self.capabilities:
             # Update parameters
             self.request_args['headers']['X-API-Key'] = ''
             self.request_args['url'] = 'https://leakcheck.io/api/public'
@@ -30,13 +53,11 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             cached, data = self.fetch_results_using_cache(f"public_{email}")
             sources = data['sources'] if 'sources' in data else []
             results = {
-                'breaches': [BreachDataFormat(source["name"], source["date"]) for source in sources]
+                'breaches': [BreachData(source["name"], source["date"]) for source in sources]
             }
             yield cached, results
-            if not sources:
-                return True, {}
 
-        if self.is_pro_endpoint_enabled:
+        if LeaksAPICapability.PAID_ENDPOINT in self.capabilities:
             self.request_args['headers']['X-API-Key'] = self.api_key
             self.request_args['url'] = f'https://leakcheck.io/api/v2/query/{email}'
             try:
@@ -46,25 +67,9 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
                 sources = [entry['source'] for entry in data['result'] if 'source' in entry]
                 results = {
                     'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
-                    'breaches': [BreachDataFormat(source["name"], source["breach_date"])
+                    'breaches': [BreachData(source["name"], source["breach_date"])
                                  for source in sources if source['name'] != "Unknown"],
                 }
                 yield cached, results
-            except PaidAPIDisabledException:
-                yield False, {}
-
-    def handle_rate_limit(self, response):
-        if 'Limit reached' in response.text:
-            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_pro_endpoint_enabled = False
-            self.is_endpoint_enabled = self.is_public_endpoint_enabled
-            raise PaidAPIDisabledException(f"{response.text}")
-
-    def handle_request(self, **kwargs):
-        response = super().handle_request(**kwargs)
-        if response.status_code != 403:
-            return response
-        self.handle_rate_limit(response)
-
-    def get_request_rate(self):
-        return 1
+            except APIRateLimitException:
+                yield True, {}

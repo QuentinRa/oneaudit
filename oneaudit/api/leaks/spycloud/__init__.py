@@ -15,7 +15,7 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
         )
         self.api_endpoint = 'https://portal.spycloud.com/endpoint/enriched-stats/{email}'
 
-    def fetch_email_results(self, email):
+    def investigate_leaks_by_email(self, email):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(email=email)
         # Send the request
