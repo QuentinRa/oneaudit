@@ -25,8 +25,12 @@ def run(args):
 
     # Inspect them
     provider = OneAuditLeaksAPIManager(api_keys, args.can_use_cache_even_if_disabled)
+    domain_data = provider.investigate_domain(args.company_domain)
+    credentials = provider.investigate_leaks(credentials, domain_data['emails'])
+    del domain_data['emails']
+
     save_to_json(args.output_file, {
         'version': 1.3,
-        'credentials': provider.investigate_leaks(credentials),
-        "additional": provider.investigate_domain(args.company_domain),
+        'credentials': credentials,
+        "additional": domain_data,
     })

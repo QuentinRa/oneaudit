@@ -7,7 +7,8 @@ from time import sleep
 # https://docs.snusbase.com/
 class SnusbaseAPI(OneAuditLeaksAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL, LeaksAPICapability.INVESTIGATE_CRACKED_HASHES] if api_key is not None else []
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL, LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN,
+                LeaksAPICapability.INVESTIGATE_CRACKED_HASHES] if api_key is not None else []
 
     def handle_rate_limit(self, response):
         if 'Rate-limit exceeded.' in response.text:
@@ -80,7 +81,7 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
         self.request_args['json']['terms'] = [crackable_hash]
         self.request_args['json']['types'] = ['hash']
 
-        cached, data = self.fetch_results_using_cache(crackable_hash, default={'results': {}})
+        cached, data = self.fetch_results_using_cache(key=crackable_hash, default={'results': {}})
         passwords = [entry['password'] for breach_data in data['results'].values() for entry in breach_data if 'password' in entry]
 
         yield cached, PasswordHashDataFormat(
@@ -89,3 +90,13 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
             format=None,
             format_confidence=-1
         )
+
+    def investigate_leaks_by_domain(self, domain):
+        self.request_args['url'] = self.api_endpoint.format(route='data/search')
+        self.request_args['json']['terms'] = [domain]
+        self.request_args['json']['types'] = ['_domain']
+        cached, data = self.fetch_results_using_cache(key=domain, default={'results': {}})
+        results = {
+            'emails': [entry['email'] for user_data in data['results'].values() for entry in user_data if 'email' in entry]
+        }
+        yield cached, results

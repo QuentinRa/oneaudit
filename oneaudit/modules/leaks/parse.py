@@ -1,3 +1,4 @@
+from oneaudit.api.leaks import LeakTarget
 from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from unidecode import unidecode
@@ -139,14 +140,14 @@ def run(args):
     save_to_json(args.output_file, {
         'version': 1.2,
         'credentials': [
-            {
-                "login": c["login"],
-                "verified": c["verified"],
-                "emails": list(set(c["emails"])),
-                "extra": {
+            LeakTarget(
+                c["login"],
+                c["verified"],
+                list(set(c["emails"])),
+                {
                     "links": c["links"],
                     "birth_year": c["birth_year"],
                 }
-            } for c in found.values() if "login" in c
+            ) for c in found.values() if "login" in c
         ]
     })

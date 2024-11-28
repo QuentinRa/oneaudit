@@ -11,6 +11,14 @@ class LeaksAPICapability(Enum):
 
 
 @dataclass(frozen=True, order=True)
+class LeakTarget:
+    login: str
+    verified: bool
+    emails: list[str]
+    extra: dict
+
+
+@dataclass(frozen=True, order=True)
 class PasswordHashDataFormat:
     value: str
     plaintext: str|None

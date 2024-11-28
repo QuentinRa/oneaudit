@@ -1,11 +1,13 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat
+from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel
+from dataclasses import asdict
 from hashlib import sha1, md5
 from bcrypt import hashpw
 from re import compile
+
 
 class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
     """
@@ -28,15 +30,16 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         ])
         self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
 
-    def investigate_leaks(self, credentials):
+    def investigate_leaks(self, credentials, candidates):
         results = {}
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
         try:
-            for credential in credentials:
+            domain_candidates = [asdict(LeakTarget(email, True, [email], {})) for email in candidates]
+            for credential in credentials + domain_candidates:
                 key = credential['login']
                 if key in results:
-                    raise Exception(f"Key {key} is present twice")
+                    continue
 
                 results[key] = {
                     'logins': [],
@@ -143,6 +146,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         results = {
             'leaked_urls': [],
             'censored_data': [],
+            'emails': [],
         }
         if not domain:
             return results
