@@ -16,7 +16,7 @@ class SnusbaseAPI(LeaksProvider):
             show_notice=False
         )
         self.request_args['headers']['Auth'] = self.api_key
-        self.is_endpoint_enabled  = len(self.api_key) > 0 and self.api_key.startswith("sb")
+        self.is_endpoint_enabled  = self.api_key and len(self.api_key) > 0 and self.api_key.startswith("sb")
         self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
         self.show_notice()
 

@@ -33,12 +33,15 @@ class AuraAPI(LeaksProvider):
     def handle_request(self):
         s = requests.Session()
         s.post(**self.request_args)
-        if 'data' in self.request_args:
-            del self.request_args['data']
+        if 'data' not in self.request_args:
+            self.logger.error(f"{self.api_name}: unexpected answer to POST request. Trying again after a delay.")
+            self.handle_rate_limit(None)
+            return self.handle_request()
+        del self.request_args['data']
         return s.get(**self.request_args)
 
     def handle_rate_limit(self, response):
         time.sleep(15)
 
     def get_rate(self):
-        return 4
+        return 5
