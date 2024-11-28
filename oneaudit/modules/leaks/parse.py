@@ -48,7 +48,7 @@ def run(args):
         try:
             with open(file, 'r') as file_data:
                 entries = json.load(file_data)['entries']
-                targets.extend([target for entry in entries for target in entry['targets']])
+                targets.extend(entries)
         except JSONDecodeError as e:
             raise Exception(f"Error when reading 'targets' in {file}: {e}")
 

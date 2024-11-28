@@ -16,7 +16,7 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
     args.filters = [f.lower() for f in args.filters if f]
-    provider = OneAuditLinkedInAPIManager({})
+    provider = OneAuditLinkedInAPIManager({args.api_name: "sb0"})
     try:
         with open(args.input_file, 'r', encoding='utf-8') as input_file:
             save_to_json(args.output_file, {

@@ -6,9 +6,8 @@ import logging
 _project_logger = None
 
 def args_verbose_config(parser: ArgumentParser):
-    verbose = parser.add_mutually_exclusive_group()
-    verbose.add_argument('-v', dest='is_debug', action='store_true', help='Debug verbosity level.')
-    verbose.add_argument('--log-file', dest='log_file', type=str, help='Log file to write logs.')
+    parser.add_argument('-v', dest='is_debug', action='store_true', help='Debug verbosity level.')
+    parser.add_argument('--log-file', dest='log_file', type=str, help='Log file to write logs.')
 
 
 def args_parse_parse_verbose(args):

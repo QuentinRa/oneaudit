@@ -17,7 +17,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             LinkedInAPICapability.SEARCH_EMPLOYEES_BY_DOMAIN,
             LinkedInAPICapability.EXPORT_PROFILE_LIST,
             LinkedInAPICapability.PARSE_EXPORTED_PROFILE_LIST,
-        ] if api_key is not None else [LinkedInAPICapability.PARSE_EXPORTED_PROFILE_LIST]
+        ] if api_key is not None else []
 
     def handle_request(self, method):
         # RocketReach uses a handler to wrap the "requests" API
@@ -68,7 +68,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                 targets = []
                 self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
                 self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
-                cached, data = self.fetch_results_using_cache(f"{company_domain}_score_{page}", method='execute')
+                cached, data = self.fetch_results_using_cache(f"{company_domain}_score_{page}", default=None, method='execute')
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
@@ -166,7 +166,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
         # Get Account ID
         self.current_handler = self.handler.account
-        _, data = self.fetch_results_using_cache(f'{self.api_name}_profile_id', method='get')
+        _, data = self.fetch_results_using_cache(f'{self.api_name}_profile_id', default=None, method='get')
         account_id = data['id']
 
         # Get Count
