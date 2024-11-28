@@ -32,3 +32,8 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             "targets": result[provider.api_name]
         } for provider in self.providers]
 
+    def export_profiles_from_profile_list(self, api_name, target_profile_list_id):
+        for provider in self.providers:
+            if provider.api_name == api_name:
+                return provider.export_profiles_from_profile_list(target_profile_list_id)
+        raise Exception(f"Invalid {api_name} given to export_profiles_from_profile_list")

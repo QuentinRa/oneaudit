@@ -65,7 +65,7 @@ class OneAuditBaseAPIManager:
                 for cached, api_result in getattr(provider, method_name)(*args):
                     # Handle rate-limit
                     if not cached:
-                        self.handle_rate_limit(provider.__class__.__name__, provider.get_rate())
+                        self.handle_rate_limit(provider.__class__.__name__, provider.get_request_rate())
 
                     # Update result
                     yield api_result

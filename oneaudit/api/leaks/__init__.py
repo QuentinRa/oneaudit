@@ -84,7 +84,7 @@ class LeaksProviderManager(OneAuditBaseAPIManager):
                 provider.logger.info(f"Attempting to crack hashes using {provider.api_name} (args={crackable_hash})")
                 cached, api_result = provider.fetch_plaintext_from_hash(crackable_hash)
                 if not cached:
-                    self.trigger(provider.__class__.__name__, provider.get_rate())
+                    self.trigger(provider.__class__.__name__, provider.get_request_rate())
 
                 result = PasswordHashDataFormat(
                     crackable_hash,

@@ -13,3 +13,9 @@ class OneAuditLinkedInAPIProvider(OneAuditBaseProvider):
         Each API will return a list of employees
         """
         yield True, { self.api_name: [] }
+
+    def export_profiles_from_profile_list(self, target_profile_list_id):
+        """
+        Export as JSON profiles from a profile list
+        """
+        yield True, []

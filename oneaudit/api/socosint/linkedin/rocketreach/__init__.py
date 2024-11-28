@@ -4,7 +4,7 @@ from oneaudit.api.socosint.linkedin import LinkedInAPICapability
 from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 from rocketreach import Gateway, GatewayConfig
 from string import digits, ascii_letters
-from requests import post
+from requests import get, post
 from secrets import choice
 from random import randint
 from time import sleep
@@ -37,6 +37,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
         # Load the session id if any
         self.session_id = api_keys.get('rocketreach_session')
+        self.session_id = self.session_id if self.session_id and len(self.session_id) > 0 else None
 
         # Emails may have a status among these
         self.email_verified_mapper = {
@@ -87,6 +88,10 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             self.logger.error(f"{self.api_name}: Error received: {e}")
 
     def _add_to_profile_list(self, target_profile_list_id, ids):
+        """
+        Add profiles (from their IDs) to the target_profile_list.
+        Use a long delay between requests.
+        """
         ids_checked = get_cached_result(self.api_name, 'ids_checked', do_not_expire=True)
         if ids_checked is None:
             ids_checked = []
@@ -145,3 +150,61 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
             i += 25
             kill_switch = 0
+
+    def export_profiles_from_profile_list(self, target_profile_list_id):
+        if not self.session_id:
+            raise Exception(f"{self.api_name}: add a valid 'rocketreach_session' in your configuration file.")
+
+        # Get Account ID
+        self.current_handler = self.handler.account
+        _, data = self.fetch_results_using_cache(f'{self.api_name}_profile_id', method='get')
+        account_id = data['id']
+
+        # Get Count
+        headers = {
+            'Cookie': f'sessionid-20191028={self.session_id}; selected_profile_list_id_{account_id}={target_profile_list_id}',
+            'User-Agent': self.request_args["headers"]['User-Agent'],
+        }
+        response = get(
+            f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/profiles?page=1&order_by=-create_time&limit=1',
+            headers=headers
+        )
+        if not self.is_response_valid(response):
+            raise Exception(f"{self.api_name} cannot handle a rate-limit inside self.export_records_from_profile")
+        response_count = response.json()['count']
+
+        cached_response = get_cached_result(self.api_name, f'export_profile_{target_profile_list_id}', do_not_expire=True)
+        result = {
+            'count': cached_response['count'] if cached_response else 0,
+            'entries': cached_response['entries'] if cached_response else []
+        }
+        page = 1
+        missing_entries = response_count - result['count']
+        while missing_entries > 0:
+            self.logger.debug(f"{self.api_name}: Missing {missing_entries} entries from profile={target_profile_list_id}")
+
+            limit = 100 if missing_entries > 100 else missing_entries
+            response = get(
+                url=f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/profiles?page={page}&order_by=-create_time&limit={limit}',
+                headers=headers
+            )
+
+            if not self.is_response_valid(response):
+                raise Exception(f"{self.api_name} cannot handle a rate-limit inside self.export_records_from_profile")
+
+            data = response.json()
+            result['entries'].extend(data['records'])
+            result['count'] += len(data['records'])
+            set_cached_result(self.api_name, f'export_profile_{target_profile_list_id}', result)
+
+            self.logger.info(f"{self.api_name}: waiting 30 seconds to respect fair use.")
+            sleep(30)
+
+            if data['num_pages'] == page:
+                break
+
+            page += 1
+            missing_entries = response_count - result['count']
+
+        self.logger.info("Export done.")
+        return result['entries']

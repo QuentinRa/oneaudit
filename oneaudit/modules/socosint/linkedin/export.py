@@ -19,5 +19,5 @@ def run(args):
     provider = OneAuditLinkedInAPIManager(api_keys)
     save_to_json(args.output_file, {
         "version": 1.0,
-        "entries": provider.export_records(args.file_source, args.profile_list_id),
+        "entries": provider.export_profiles_from_profile_list(args.file_source, args.profile_list_id),
     })
