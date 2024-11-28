@@ -1,5 +1,5 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.osint.emails.data import EmailAPICapability
+from oneaudit.api.osint.emails import EmailAPICapability
 
 
 class OneAuditEmailsAPIManager(OneAuditBaseAPIManager):
@@ -16,6 +16,9 @@ class OneAuditEmailsAPIManager(OneAuditBaseAPIManager):
         ])
 
     def verify_emails(self, emails):
+        """
+        Indicates for each email if the email is verified or not.
+        """
         results = {}
         for email in emails:
             # Handling duplicates
@@ -23,18 +26,19 @@ class OneAuditEmailsAPIManager(OneAuditBaseAPIManager):
                 continue
 
             # Query all email APIs that can verify emails
-            valid_result = None
+            email_data = None
             for api_result in self._call_all_providers(
                     heading="Verifying emails",
                     capability=EmailAPICapability.EMAIL_VERIFICATION,
                     method_name='is_email_valid',
                     args=(email,)):
-                if api_result.verified:
-                    valid_result = api_result
+                email_data = api_result
+                if email_data.verified:
                     break
 
-            if valid_result:
-                self.logger.info(f"Found valid email: {email}")
-                results[email] = valid_result
+            if email_data:
+                if email_data.verified:
+                    self.logger.info(f"Found valid email: {email}")
+                results[email] = email_data
 
         return list(results.values())

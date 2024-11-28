@@ -1,5 +1,7 @@
-from random import randint
+from oneaudit.api.osint.data import VerifiableEmail
+from oneaudit.api.osint.emails import EmailAPICapability
 from oneaudit.api.osint.emails.provider import OneAuditEmailsAPIProvider
+from random import randint
 
 
 class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
@@ -20,16 +22,15 @@ class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
            api_keys=api_keys
         )
 
-    def is_email_valid(self, email):
-        # todo: verify using pattern
+    def _init_capabilities(self, api_key, api_keys):
+        return [
+            EmailAPICapability.EMAIL_VERIFICATION
+        ] if api_key is not None else []
 
-        # Use the API
-        self.request_args['data']['email'] = email
-        cached, data = self.fetch_results_using_cache(email)
-        return cached, OSINTScrappedEmailDataFormat(
-            email,
-            data['status'] == "valid"
-        )
-
-    def get_rate(self):
+    def get_request_rate(self):
         return 5
+
+    def is_email_valid(self, email):
+        self.request_args['data']['email'] = email
+        cached, data = self.fetch_results_using_cache(key=email)
+        yield cached, VerifiableEmail(email, data['status'] == "valid")

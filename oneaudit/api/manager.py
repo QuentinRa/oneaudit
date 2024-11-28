@@ -1,3 +1,4 @@
+from oneaudit.api import APIRateLimitException
 from oneaudit.utils.logs import get_project_logger
 from time import time, sleep
 
@@ -37,6 +38,8 @@ class OneAuditBaseAPIManager:
                         result[k] = result[k] or v
                     else:
                         raise Exception(f"Unexpected type for {k}: {type(v)}")
+            elif api_result:
+                raise Exception(f"Unexpected type '{type(api_result)}' for api_result: {api_result}")
 
             if stop_when_modified:
                 break
@@ -58,14 +61,16 @@ class OneAuditBaseAPIManager:
             provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
 
             # Call each provider
-            for cached, api_result in getattr(provider, method_name)(*args):
+            try:
+                for cached, api_result in getattr(provider, method_name)(*args):
+                    # Handle rate-limit
+                    if not cached:
+                        self.handle_rate_limit(provider.__class__.__name__, provider.get_rate())
 
-                # Handle rate-limit
-                if not cached:
-                    self.handle_rate_limit(provider.__class__.__name__, provider.get_rate())
-
-                # Update result
-                yield api_result
+                    # Update result
+                    yield api_result
+            except APIRateLimitException:
+                pass
 
     # We apply the rate limit only if the calls to other APIs (e.g., API B, C, etc.) between two calls
     # to the same API (e.g., API A) occur too quickly, not allowing sufficient time to pass.
