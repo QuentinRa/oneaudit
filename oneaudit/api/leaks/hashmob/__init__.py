@@ -7,7 +7,6 @@ class HashMobAPI(OneAuditLeaksAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [LeaksAPICapability.INVESTIGATE_CRACKED_HASHES] if api_key is not None else []
 
-    # Minimum rate is "0.2" for 5 requests/second
     def get_request_rate(self):
         return 1
 

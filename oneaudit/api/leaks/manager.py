@@ -1,6 +1,6 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.leaks import LeaksAPICapability
-from oneaudit.api.leaks import aura, hashmob
+from oneaudit.api.leaks import aura, hashmob, hudsonrocks
 
 
 # from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
@@ -18,7 +18,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             # nth.NameThatHashAPI(api_keys),
             # proxynova.ProxyNovaAPI(api_keys),
             # FREEMIUM
-            # hudsonrocks.HudsonRocksAPI(api_keys),
+            hudsonrocks.HudsonRocksAPI(api_keys),
             hashmob.HashMobAPI(api_keys),
             # spycloud.SpyCloudAPI(api_keys),
             # whiteintel.WhiteIntelAPI(api_keys),
@@ -68,7 +68,15 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
             # fixme: attempt to crack hashes
 
-            # fixme: sort
+            # Sort every value and remove duplicates
+            for k, v in results[key].items():
+                if isinstance(v, list):
+                    results[key][k] = sorted([e for e in set(v) if e])
+                elif isinstance(v, bool):
+                    results[key][k] = v
+                else:
+                    self.logger.error(f"Unexpected type for: k={k} v={v}")
+                    continue
 
         return [{"login": key, **value} for key, value in results.items()]
 

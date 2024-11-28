@@ -14,3 +14,13 @@ class PasswordHashDataFormat:
     plaintext: str|None
     format: str|None
     format_confidence: int
+
+
+@dataclass(frozen=True, order=True)
+class InfoStealer:
+    computer_name: str
+    operating_system: str
+    date_compromised: str
+
+    def __post_init__(self):
+        object.__setattr__(self, 'date_compromised', self.date_compromised[:10])
