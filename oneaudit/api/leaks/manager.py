@@ -1,5 +1,6 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.leaks import aura, LeaksAPICapability
+from oneaudit.api.leaks import LeaksAPICapability
+from oneaudit.api.leaks import aura, hashmob
 
 
 # from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
@@ -18,7 +19,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             # proxynova.ProxyNovaAPI(api_keys),
             # FREEMIUM
             # hudsonrocks.HudsonRocksAPI(api_keys),
-            # hashmob.HashMobAPI(api_keys),
+            hashmob.HashMobAPI(api_keys),
             # spycloud.SpyCloudAPI(api_keys),
             # whiteintel.WhiteIntelAPI(api_keys),
             # PAID
@@ -67,12 +68,12 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
             # fixme: attempt to crack hashes
 
-            print(results[key])
-            break
+            # fixme: sort
 
-        return []
+        return [{"login": key, **value} for key, value in results.items()]
 
     def investigate_domain(self, domain):
+        if not domain:
+            return []
         print(domain)
-
         return []

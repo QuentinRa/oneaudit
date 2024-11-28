@@ -83,6 +83,7 @@ class OneAuditBaseProvider:
 
     def is_response_valid(self, response):
         if response.status_code in self.rate_limit_status_codes:
+            self.logger.warning(f"Hit rate-limit for {self.api_name}.")
             self.handle_rate_limit(response)
             return False
 
