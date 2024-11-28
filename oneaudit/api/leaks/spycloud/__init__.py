@@ -1,10 +1,21 @@
-from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, BreachDataFormat
+from oneaudit.api.leaks import LeaksAPICapability, BreachData
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from time import sleep
 
 
 # https://spycloud.com/
 class SpyCloudAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
+
+    def handle_rate_limit(self, response):
+        sleep(30)
+
+    def get_request_rate(self):
+        return 2
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='spycloud',
@@ -23,7 +34,7 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
         records, last, last_period = data['you']["records"], data['you']["discovered"], data['you']["discovered_unit"]
         result = {
             'breaches': [
-                BreachDataFormat(f"SpyCloud [{records}]", self.compute_date(last, last_period).strftime('%Y-%m'))
+                BreachData(f"SpyCloud [{records}]", self.compute_date(last, last_period).strftime('%Y-%m'))
             ]
         } if records != 0 else {}
 
@@ -41,10 +52,3 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
             return current_date - relativedelta(years=last)
         else:
             raise ValueError(f"Unsupported unit: {last_period}")
-
-
-    def handle_rate_limit(self, response):
-        self.is_endpoint_enabled = False
-
-    def get_request_rate(self):
-        return 2

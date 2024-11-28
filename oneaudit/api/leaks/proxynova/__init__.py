@@ -1,10 +1,35 @@
+from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from oneaudit.api import FakeResponse
-import time
-import requests
+from requests import request
+from time import sleep
 
 # https://www.proxynova.com/tools/comb
 class ProxyNovaAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
+
+    def handle_request(self):
+        response = request(**self.request_args)
+        if response.status_code == 400 or response.status_code == 502:
+            if self.kill_switch < 3:
+                self.logger.debug(f"{self.api_name} was rate-limited, waiting a few seconds.")
+                self.handle_rate_limit(response)
+                if response.status_code != 502:
+                    self.kill_switch += 1
+                return self.handle_request()
+            else:
+                self.logger.error(f"{self.api_name} could not process '{self.request_args["url"]}'.")
+                return FakeResponse(204, {"lines": []})
+        self.kill_switch = 0
+        return response
+
+    def handle_rate_limit(self, response):
+        sleep(2)
+
+    def get_request_rate(self):
+        return 0.5
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='proxynova',
@@ -37,24 +62,3 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
                 result['passwords'].append(password)
 
         yield cached, result
-
-    def handle_request(self):
-        response = requests.request(**self.request_args)
-        if response.status_code == 400 or response.status_code == 502:
-            if self.kill_switch < 3:
-                self.logger.debug(f"{self.api_name} was rate-limited, waiting a few seconds.")
-                self.handle_rate_limit(response)
-                if response.status_code != 502:
-                    self.kill_switch += 1
-                return self.handle_request()
-            else:
-                self.logger.error(f"{self.api_name} could not process '{self.request_args["url"]}'.")
-                return FakeResponse(204, {"lines": []})
-        self.kill_switch = 0
-        return response
-
-    def handle_rate_limit(self, response):
-        time.sleep(2)
-
-    def get_request_rate(self):
-        return 0.5

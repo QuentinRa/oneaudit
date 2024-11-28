@@ -20,6 +20,9 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
         if 'Limit reached' in response.text:
             self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
             self.capabilities.remove(LeaksAPICapability.PAID_ENDPOINT)
+            # If the PAID endpoint was the only one, we disable INVESTIGATE_LEAKS_BY_EMAIL
+            if len(self.capabilities) == 1:
+                self.capabilities = []
             raise APIRateLimitException(f"{response.text}")
 
     def handle_request(self, **kwargs):

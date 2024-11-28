@@ -1,9 +1,19 @@
-from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, CensoredCredentialsLeakDataFormat
+from oneaudit.api.leaks import CensoredCredentials, LeaksAPICapability
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 import time
 
 
 # https://docs.whiteintel.io/whiteintel-api-doc
 class WhiteIntelAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN] if api_key is not None else []
+
+    def handle_rate_limit(self, response):
+        time.sleep(30)
+
+    def get_request_rate(self):
+        return 1
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='whiteintel',
@@ -18,7 +28,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
         )
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
-    def fetch_domain_results(self, domain):
+    def investigate_leaks_by_domain(self, domain):
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
         self.request_args['json'] = {
@@ -54,7 +64,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
 
                 yield cached, {
                     'leaked_urls': [format_url(leak['URL']) for leak in data['credentials']],
-                    'censored_data': [CensoredCredentialsLeakDataFormat(
+                    'censored_data': [CensoredCredentials(
                         leak['username'],
                         leak['password'],
                     ) for leak in data['credentials']]
@@ -62,11 +72,6 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
 
         yield cached, {}
 
-    def handle_rate_limit(self, response):
-        time.sleep(30)
-
-    def get_request_rate(self):
-        return 1
 
 def format_url(URL):
     return URL if "://" in URL else f"https://{URL}"

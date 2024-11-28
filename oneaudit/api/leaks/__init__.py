@@ -19,6 +19,12 @@ class PasswordHashDataFormat:
 
 
 @dataclass(frozen=True, order=True)
+class CensoredCredentials:
+    censored_username: str
+    censored_password: str
+
+
+@dataclass(frozen=True, order=True)
 class InfoStealer:
     computer_name: str
     operating_system: str

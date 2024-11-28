@@ -1,10 +1,25 @@
-from oneaudit.api import PaidAPIDisabledException
+from oneaudit.api import APIRateLimitException
+from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
-import time
+from time import sleep
 
 
 # https://docs.snusbase.com/
-class SnusbaseAPI(LeaksProvider):
+class SnusbaseAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL, LeaksAPICapability.INVESTIGATE_CRACKED_HASHES] if api_key is not None else []
+
+    def handle_rate_limit(self, response):
+        if 'Rate-limit exceeded.' in response.text:
+            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit on search.")
+            self.capabilities.remove(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
+            raise APIRateLimitException(f"{response.text}")
+        else:
+            sleep(2)
+
+    def get_request_rate(self):
+        return 0.5
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='snusbase',
@@ -12,14 +27,9 @@ class SnusbaseAPI(LeaksProvider):
                 'method': 'POST',
                 'json': {}
             },
-            api_keys=api_keys,
-            show_notice=False
+            api_keys=api_keys
         )
         self.request_args['headers']['Auth'] = self.api_key
-        self.is_endpoint_enabled  = self.api_key and len(self.api_key) > 0 and self.api_key.startswith("sb")
-        self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
-        self.show_notice()
-
         self.known_keys = [
             'email', 'username', 'name', 'id', 'uid', 'created', 'updated',
             '_domain', 'url', 'followers',
@@ -61,10 +71,10 @@ class SnusbaseAPI(LeaksProvider):
                             raise Exception(f'{self.api_name}: Unknown key "{k}" with value "{entry[k]}" for "{email}"')
 
             yield cached, results
-        except PaidAPIDisabledException:
-            yield False, {}
+        except APIRateLimitException:
+            yield True, {}
 
-    def fetch_plaintext_from_hash(self, crackable_hash):
+    def lookup_plaintext_from_hash(self, crackable_hash):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(route='tools/hash-lookup')
         self.request_args['json']['terms'] = [crackable_hash]
@@ -74,21 +84,8 @@ class SnusbaseAPI(LeaksProvider):
         passwords = [entry['password'] for breach_data in data['results'].values() for entry in breach_data if 'password' in entry]
 
         return cached, PasswordHashDataFormat(
-            crackable_hash,
-            None if not passwords else passwords[0],
-            None,
-            -1
+            value=crackable_hash,
+            plaintext=None if not passwords else passwords[0],
+            format=None,
+            format_confidence=-1
         )
-
-
-    def handle_rate_limit(self, response):
-        if 'Rate-limit exceeded.' in response.text:
-            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit.")
-            self.is_endpoint_enabled = False
-            self.is_endpoint_enabled_for_cracking = False
-            raise PaidAPIDisabledException(f"{response.text}")
-        else:
-            time.sleep(2)
-
-    def get_request_rate(self):
-        return 0.5
