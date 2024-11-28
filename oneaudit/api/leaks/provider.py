@@ -7,3 +7,9 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
     """
     def __init__(self, api_name, request_args, api_keys):
         super().__init__(api_name, request_args, api_keys)
+
+    def investigate_leaks_by_email(self, email):
+        yield True, []
+
+    def investigate_leaks_by_domain(self, domain):
+        yield True, []

@@ -1,9 +1,30 @@
+from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
-import time
-import requests
+from requests import Session
+from time import sleep
+
 
 # https://scan.aura.com/
 class AuraAPI(OneAuditLeaksAPIProvider):
+    def _init_capabilities(self, api_key, api_keys):
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
+
+    def get_request_rate(self):
+        return 5
+
+    def handle_request(self):
+        s = Session()
+        s.post(**self.request_args)
+        if 'data' not in self.request_args:
+            self.logger.error(f"{self.api_name}: unexpected answer to POST request. Trying again after a delay.")
+            self.handle_rate_limit(None)
+            return self.handle_request()
+        del self.request_args['data']
+        return s.get(**self.request_args)
+
+    def handle_rate_limit(self, response):
+        sleep(15)
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='aura',
@@ -14,7 +35,7 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         )
         self.rate_limit_status_codes = [429, 500]
 
-    def fetch_email_results(self, email):
+    def investigate_leaks_by_email(self, email):
         # Update parameters
         self.request_args['data'] = {'email': email}
         # Send the request
@@ -29,19 +50,3 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         }
 
         yield cached, results
-
-    def handle_request(self):
-        s = requests.Session()
-        s.post(**self.request_args)
-        if 'data' not in self.request_args:
-            self.logger.error(f"{self.api_name}: unexpected answer to POST request. Trying again after a delay.")
-            self.handle_rate_limit(None)
-            return self.handle_request()
-        del self.request_args['data']
-        return s.get(**self.request_args)
-
-    def handle_rate_limit(self, response):
-        time.sleep(15)
-
-    def get_request_rate(self):
-        return 5
