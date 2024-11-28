@@ -26,7 +26,10 @@ class LeaksCredentialProcessor(cmd.Cmd):
                     with open(self.output_file, 'r') as file_data:
                         data = json.load(file_data)
                         for entry in data['credentials']:
-                            self.new_credentials[entry['login']] = entry['passwords']
+                            self.new_credentials[entry['login']] = {
+                                'passwords': entry['passwords'],
+                                'rules': entry['rules'] if 'rules' in entry else [],
+                            }
                         self.index = int(data.get("index", 0))
                 except json.JSONDecodeError as e:
                     self.logger.warning("Could not resume from output file")
@@ -39,7 +42,7 @@ class LeaksCredentialProcessor(cmd.Cmd):
         if self.index < len(self.credentials):
             self.index += 1
             credential = self.credentials[self.index]
-            passwords = credential['passwords']+credential['censored_logins']
+            passwords = credential['passwords']+credential['censored_passwords']
             if not passwords:
                 return self.do_next(arg)
             print(f"Processing {credential['login']}")
@@ -49,6 +52,39 @@ class LeaksCredentialProcessor(cmd.Cmd):
         else:
             print("No more credentials to skip.")
 
+    def do_trail(self, arg):
+        if 0 <= self.index < len(self.credentials):
+            credential = self.credentials[self.index]
+            key = credential['login']
+            if key not in self.new_credentials:
+                self.new_credentials[key] = { 'passwords': [], 'rules': [] }
+            self.new_credentials[key]['rules'].append(f"{{password}}{arg}")
+            print("Rules:", self.new_credentials[key]['rules'])
+            return False
+        return False
+
+    def do_toggle(self, _):
+        if 0 <= self.index < len(self.credentials):
+            credential = self.credentials[self.index]
+            key = credential['login']
+            if key not in self.new_credentials:
+                self.new_credentials[key] = { 'passwords': [], 'rules': [] }
+            self.new_credentials[key]['rules'].append(f"{{password[0].upper()+password[1:]}}")
+            print("Rules:", self.new_credentials[key]['rules'])
+            return False
+        return False
+
+    def do_caps(self, _):
+        if 0 <= self.index < len(self.credentials):
+            credential = self.credentials[self.index]
+            key = credential['login']
+            if key not in self.new_credentials:
+                self.new_credentials[key] = { 'passwords': [], 'rules': [] }
+            self.new_credentials[key]['rules'].append(f"{{password.upper()}}")
+            print("Rules:", self.new_credentials[key]['rules'])
+            return False
+        return False
+
     def do_exit(self, _):
         save_to_json(self.output_file, {
             "version": 1.0,
@@ -56,9 +92,10 @@ class LeaksCredentialProcessor(cmd.Cmd):
             "credentials": [
                 {
                     "login": email,
-                    "passwords": passwords
+                    "passwords": data['passwords'],
+                    "rules": data['rules'],
                 }
-                for email, passwords in self.new_credentials.items()
+                for email, data in self.new_credentials.items()
             ]
         })
         return True
@@ -66,20 +103,22 @@ class LeaksCredentialProcessor(cmd.Cmd):
     def _keep_password(self, index):
         if 0 <= self.index < len(self.credentials):
             credential = self.credentials[self.index]
-            passwords = credential['passwords']+credential['censored_logins']
+            passwords = credential['passwords']+credential['censored_passwords']
             index = index - 1
             if index < len(passwords):
                 key = credential['login']
                 if key not in self.new_credentials:
-                    self.new_credentials[key] = []
-                self.new_credentials[key].append(passwords[index])
-                print("Kept:", self.new_credentials[key])
-                return
+                    self.new_credentials[key] = { 'passwords': [], 'rules': [] }
+                self.new_credentials[key]['passwords'].append(passwords[index])
+                print("Kept:", self.new_credentials[key]['passwords'])
+                return True
 
         print("Invalid index")
+        return False
 
     def default(self, line):
         aliases = {
+            'all': '_',
             'n': 'next',
             's': 'next',
             'q': 'exit',
@@ -90,8 +129,16 @@ class LeaksCredentialProcessor(cmd.Cmd):
         if command:
             return self.onecmd(command)
         elif line.isnumeric():
-            return self._keep_password(int(line))
+            self._keep_password(int(line))
+            return False
         else:
+            if ',' in line:
+                numbers = [e.strip() for e in line.split(",") if e.strip().isnumeric()]
+                for number in numbers:
+                    if not self._keep_password(int(number)):
+                        break
+                return False
+
             print(f"Unknown command or alias: {line}")
 
 
