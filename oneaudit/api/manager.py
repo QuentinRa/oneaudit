@@ -22,25 +22,11 @@ class OneAuditBaseAPIManager:
     # Result is a dictionary such as { 'toto': [] }
     # And we will append results inside after invoking each provider
     # if 'stop_when_modified', we stop at the first provider that returned a result
-    def _call_all_providers(self, result, heading, capability, stop_when_modified, method_name, args):
+    def _call_all_providers_dict(self, heading, capability, stop_when_modified, method_name, result, args):
         was_modified = False
-        for provider in self.providers:
-            if not provider.is_endpoint_enabled:
-                continue
-
-            if capability not in provider.capabilities:
-                continue
-
-            provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
-
-            # Call each provider
-            for cached, api_result in getattr(provider, method_name, None)(*args):
-
-                # Handle rate-limit
-                if not cached:
-                    self.handle_rate_limit(provider.__class__.__name__, provider.get_rate())
-
-                # Update result
+        for api_result in self._call_all_providers(heading, capability, method_name, args):
+            # Update result
+            if isinstance(api_result, dict):
                 for k, v in api_result.items():
                     if not v:
                         continue
@@ -56,6 +42,30 @@ class OneAuditBaseAPIManager:
                 break
 
         return was_modified, result
+
+    def _call_all_providers(self, heading, capability, method_name, args):
+        """
+        Call a method on each provider and "yield" each result so that we can choose
+        whether we want to continue invoking APIs or exit.
+        """
+        for provider in self.providers:
+            if not provider.is_endpoint_enabled:
+                continue
+
+            if capability not in provider.capabilities:
+                continue
+
+            provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
+
+            # Call each provider
+            for cached, api_result in getattr(provider, method_name)(*args):
+
+                # Handle rate-limit
+                if not cached:
+                    self.handle_rate_limit(provider.__class__.__name__, provider.get_rate())
+
+                # Update result
+                yield api_result
 
     # We apply the rate limit only if the calls to other APIs (e.g., API B, C, etc.) between two calls
     # to the same API (e.g., API A) occur too quickly, not allowing sufficient time to pass.
