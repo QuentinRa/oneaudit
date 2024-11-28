@@ -28,6 +28,7 @@ Undocumented
 
 * `-r` for leaks
 * `--log-file` for logs
+* email verification
 
 ## SocOSINT
 
@@ -204,7 +205,7 @@ Create a JSON file called `config.json` or specify any file using `--config`. Yo
 $ oneaudit [...] --config config.json --cache .cache
 ```
 
-The expected format is:
+The expected format **without any comments** is:
 
 ```json
 {

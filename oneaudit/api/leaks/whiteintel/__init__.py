@@ -29,14 +29,13 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
     def investigate_leaks_by_domain(self, domain):
-        raise Exception("No default")
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
         self.request_args['json'] = {
             'domain': domain,
             'page': 1, 'per_page': 25
         }
-        cached, data = self.fetch_results_using_cache(f"attack_surface_{domain}")
+        cached, data = self.fetch_results_using_cache(f"attack_surface_{domain}", default={'leak_urls_customer': []})
         yield cached, {'leaked_urls': [leak['url'] for leak in data['leak_urls_customer']]}
 
         # Fetching Info Stealer And Comb Credentials
@@ -51,7 +50,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
                 'type': domain,
                 'page': 1, 'per_page': 25
             }
-            cached, data = self.fetch_results_using_cache(f"{get_key(endpoint_url)}_{domain}_page1")
+            cached, data = self.fetch_results_using_cache(f"{get_key(endpoint_url)}_{domain}_page1", default={'data': []})
             yield cached, {}
 
             for element in data['data']:
@@ -61,7 +60,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
                     'id': element['log_id']
                 }
 
-                cached, data = self.fetch_results_using_cache(f"{get_key(details_url)}_{domain}_{element['log_id']}")
+                cached, data = self.fetch_results_using_cache(f"{get_key(details_url)}_{domain}_{element['log_id']}", default={'credentials': []})
 
                 yield cached, {
                     'leaked_urls': [format_url(leak['URL']) for leak in data['credentials']],

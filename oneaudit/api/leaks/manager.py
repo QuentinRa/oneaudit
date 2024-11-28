@@ -133,21 +133,37 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                 del results[key]['raw_hashes']
 
                 # Sort every value and remove duplicates
-                for k, v in results[key].items():
-                    if isinstance(v, list):
-                        results[key][k] = sorted([e for e in set(v) if e])
-                    elif isinstance(v, bool):
-                        results[key][k] = v
-                    else:
-                        self.logger.error(f"Unexpected type for: k={k} v={v}")
-                        continue
+                results[key] = self.sort_dict(results[key])
         except KeyboardInterrupt:
             pass
 
         return [{"login": key, **value} for key, value in results.items()]
 
     def investigate_domain(self, domain):
+        results = {
+            'leaked_urls': [],
+            'censored_data': [],
+        }
         if not domain:
-            return []
-        print(domain)
-        return []
+            return results
+        _, results = self._call_all_providers_dict(
+            heading="Investigate domain",
+            capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN,
+            stop_when_modified=False,
+            method_name='investigate_leaks_by_domain',
+            result=results,
+            args=(domain,)
+        )
+        return self.sort_dict(results)
+
+    def sort_dict(self, results):
+        # Sort every value and remove duplicates
+        for k, v in results.items():
+            if isinstance(v, list):
+                results[k] = sorted([e for e in set(v) if e])
+            elif isinstance(v, bool):
+                results[k] = v
+            else:
+                self.logger.error(f"Unexpected type for: k={k} v={v}")
+                continue
+        return results

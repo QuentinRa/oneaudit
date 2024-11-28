@@ -32,5 +32,5 @@ class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
     def is_email_valid(self, email):
         # Ask the API to check if an email is valid
         self.request_args['data']['email'] = email
-        cached, data = self.fetch_results_using_cache(key=email)
+        cached, data = self.fetch_results_using_cache(key=email, default={'status': 'unknown'})
         yield cached, VerifiableEmail(email, data['status'] == "valid")
