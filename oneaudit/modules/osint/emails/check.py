@@ -1,5 +1,5 @@
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
-from oneaudit.api.osint import OSINTProviderManager
+from oneaudit.api.osint.emails.manager import OneAuditEmailsAPIManager
 from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 from argparse import ArgumentError
@@ -22,15 +22,15 @@ def run(args):
     if not args.input_email and not args.input_file:
         raise ArgumentError(None, "the following arguments are required: -e/--email or -f/--file.")
 
-    # Generate a list of targets emails to validate
+    # Generate a list of emails to validate
     # Fixme: in practice, we don't use wordlists, we use JSON as input
-    targets = [args.input_email] if args.input_email else []
+    emails = [args.input_email] if args.input_email else []
     if args.input_file:
         with open(args.input_file, 'r') as input_file:
-            targets.append([email.strip() for email in input_file.readlines() if email.strip()])
+            emails.extend([email.strip() for email in input_file.readlines() if email.strip()])
 
-    provider = OSINTProviderManager(api_keys)
+    manager = OneAuditEmailsAPIManager(api_keys)
     save_to_json(args.output_file, {
         'version': 1.0,
-        'entries': provider.verify_emails(targets)
+        'entries': manager.verify_emails(emails)
     })

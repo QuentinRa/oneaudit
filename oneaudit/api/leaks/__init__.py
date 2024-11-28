@@ -1,4 +1,4 @@
-from oneaudit.api.manager import DefaultProviderManager
+from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.provider import DefaultProvider
 import dataclasses
 import hashlib
@@ -6,7 +6,7 @@ import bcrypt
 import re
 
 
-class LeaksProviderManager(DefaultProviderManager):
+class LeaksProviderManager(OneAuditBaseAPIManager):
     def __init__(self, api_keys):
         import oneaudit.api.leaks.aura
         import oneaudit.api.leaks.hashmob

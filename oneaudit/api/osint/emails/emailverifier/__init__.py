@@ -2,10 +2,10 @@ from random import randint
 from oneaudit.api.osint import OSINTProvider, OSINTScrappedEmailDataFormat
 
 # fixme: add back delete code
-class VerifyEmailAddressAPI(OSINTProvider):
+class EmailVerifiedOnlineAPI(OSINTProvider):
     def __init__(self, api_keys):
        super().__init__(
-           api_name='verifyemailaddress',
+           api_name='emailverifieronline',
            request_args={
                'method': 'POST',
                'url': 'https://check.emailverifier.online/bulk-verify-email/functions/quick_mail_verify_no_session.php',

@@ -3,16 +3,16 @@ import enum
 import time
 import typing
 import dataclasses
-from oneaudit.api.manager import DefaultProviderManager
+from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.provider import DefaultProvider
 
-class OSINTProviderManager(DefaultProviderManager):
+class OSINTProviderManager(OneAuditBaseAPIManager):
     def __init__(self, api_keys, cache_only=False):
         import oneaudit.api.osint.rocketreach
         import oneaudit.api.osint.verifyemailaddress
         super().__init__([
             oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only),
-            oneaudit.api.osint.verifyemailaddress.VerifyEmailAddressAPI(api_keys)
+            oneaudit.api.osint.verifyemailaddress.EmailVerifiedOnlineAPI(api_keys)
         ])
 
     def fetch_records(self, company_name):
