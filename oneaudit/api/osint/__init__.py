@@ -8,8 +8,10 @@ import oneaudit.api
 class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
     def __init__(self, api_keys, cache_only=False):
         import oneaudit.api.osint.rocketreach
+        import oneaudit.api.osint.verifyemailaddress
         super().__init__([
-            oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only)
+            oneaudit.api.osint.rocketreach.RocketReachAPI(api_keys, cache_only),
+            oneaudit.api.osint.verifyemailaddress.VerifyEmailAddressAPI(api_keys, cache_only)
         ])
 
     def fetch_records(self, company_name):
@@ -62,6 +64,31 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
 
         return result
 
+    # For emails, we will not use providers because we only have one email checker.
+    def get_single_email(self, single_email):
+        result = []
+        answer = self.verify_one_email(single_email)
+        result_api = False
+        if answer == "exists":
+            result_api = True
+        elif answer == "error_http":
+            logging.error(f"Error while verifying {single_email}: {e}")
+        result.append(OSINTScrappedEmailDataFormat(
+            single_email.lower(),
+            result_api
+        )
+        )
+
+    def get_mulitple_email(self, email_list):
+        # email_list est déjà ouvert
+        result = []
+
+        for line in mail_list:
+            mail = line.strip()
+            result.append(get_single_email(mail))
+
+        return result
+
 
 class OSINTProvider(oneaudit.api.DefaultProvider):
     def __init__(self, request_args, api_name, api_keys, show_notice=True):
@@ -74,6 +101,9 @@ class OSINTProvider(oneaudit.api.DefaultProvider):
         return []
 
     def fetch_targets_for_company(self, company_name):
+        return []
+
+    def verify_one_email(self, mail_string):
         return []
 
 
