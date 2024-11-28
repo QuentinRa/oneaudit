@@ -29,6 +29,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
     def investigate_leaks_by_domain(self, domain):
+        raise Exception("No default")
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
         self.request_args['json'] = {

@@ -39,7 +39,7 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         # Update parameters
         self.request_args['data'] = {'email': email}
         # Send the request
-        cached, data = self.fetch_results_using_cache(email)
+        cached, data = self.fetch_results_using_cache(email, default={'results': []})
         if 'results' not in data:
             self.logger.error(f"Unexpected response for {self.api_name}: {data}.")
             return cached, {}

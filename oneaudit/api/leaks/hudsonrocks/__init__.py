@@ -28,7 +28,7 @@ class HudsonRocksAPI(OneAuditLeaksAPIProvider):
         # Update parameters
         self.request_args['params'] = {'email': email}
         # Send the request
-        cached, data = self.fetch_results_using_cache(email)
+        cached, data = self.fetch_results_using_cache(email, default={'stealers': []})
         result = {
             'info_stealers': [],
             'censored_logins': [],

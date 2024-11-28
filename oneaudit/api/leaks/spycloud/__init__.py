@@ -1,3 +1,5 @@
+from email.policy import default
+
 from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from datetime import datetime
@@ -30,7 +32,9 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(email=email)
         # Send the request
-        cached, data = self.fetch_results_using_cache(f"public_{email}")
+        cached, data = self.fetch_results_using_cache(f"public_{email}", default={
+            'you': { 'records': 0, 'discovered': None, 'discovered_unit': None }
+        })
         records, last, last_period = data['you']["records"], data['you']["discovered"], data['you']["discovered_unit"]
         result = {
             'breaches': [

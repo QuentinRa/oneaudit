@@ -29,6 +29,7 @@ class OneAuditBaseProvider:
         # What can the endpoint do? Was it enabled ?
         self.capabilities = self._init_capabilities(self.api_key, api_keys)
         self.is_endpoint_enabled = len(self.capabilities) > 0
+        self.only_use_cache = False
 
         # API status codes
         self.rate_limit_status_codes = [429]
@@ -51,14 +52,17 @@ class OneAuditBaseProvider:
         """
         raise NotImplementedError("API didn't define which capabilities were enabled.")
 
-    def fetch_results_using_cache(self, key, **kwargs):
+    def fetch_results_using_cache(self, key, default, **kwargs):
         cached = True
         cached_result_key = self.unique_identifier + key
         data = get_cached_result(self.api_name, cached_result_key)
         if data is None:
-            cached = False
-            data = self.fetch_result_without_cache(**kwargs)
-            set_cached_result(self.api_name, cached_result_key, data)
+            if self.only_use_cache:
+                data = default
+            else:
+                cached = False
+                data = self.fetch_result_without_cache(**kwargs)
+                set_cached_result(self.api_name, cached_result_key, data)
         return cached, data
 
     def fetch_result_without_cache(self, **kwargs):

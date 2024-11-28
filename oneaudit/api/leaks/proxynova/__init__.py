@@ -45,7 +45,7 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(email=email)
         # Send the request
-        cached, data = self.fetch_results_using_cache(email)
+        cached, data = self.fetch_results_using_cache(email, default=None)
         result = {
             'passwords': []
         }

@@ -25,13 +25,14 @@ class HashMobAPI(OneAuditLeaksAPIProvider):
 
     def lookup_plaintext_from_hash(self, hash_to_crack):
         self.request_args['json']['hashes'] = [hash_to_crack]
-        cached, data = self.fetch_results_using_cache(hash_to_crack)
+        cached, data = self.fetch_results_using_cache(hash_to_crack, default={'data': {'found': []}})
+
         if 'data' not in data and 'found' not in data['data']:
             raise Exception(f"Unexpected answer for {self.api_name}: {data}")
 
         found = data['data']['found']
 
-        return cached, PasswordHashDataFormat(
+        yield cached, PasswordHashDataFormat(
             value=hash_to_crack,
             plaintext=None if len(found) == 0 else found[0]['plain'],
             format=None,

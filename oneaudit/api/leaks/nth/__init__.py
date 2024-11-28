@@ -22,7 +22,7 @@ class NameThatHashAPI(OneAuditLeaksAPIProvider):
         output = [mode for prototype in hashes.prototypes if prototype.regex.match(chash) for mode in prototype.modes]
         output = [i for i in output if i.name in self.popular] + [i for i in output if i.name not in self.popular]
 
-        return True, PasswordHashDataFormat(
+        yield True, PasswordHashDataFormat(
             value=hash_to_crack,
             plaintext=None,
             format=output[0].name if len(output) > 0 else None,

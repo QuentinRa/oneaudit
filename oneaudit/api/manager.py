@@ -52,13 +52,10 @@ class OneAuditBaseAPIManager:
         whether we want to continue invoking APIs or exit.
         """
         for provider in self.providers:
-            if not provider.is_endpoint_enabled:
-                continue
-
-            if capability not in provider.capabilities:
-                continue
-
-            provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
+            if provider.is_endpoint_enabled and capability in provider.capabilities:
+                provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
+            else:
+                provider.only_use_cache = True
 
             # Call each provider
             try:

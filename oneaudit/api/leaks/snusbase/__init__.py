@@ -47,7 +47,7 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
         self.request_args['json']['types'] = ['email']
         # Send the request
         try:
-            cached, data = self.fetch_results_using_cache(f"search_{email}")
+            cached, data = self.fetch_results_using_cache(f"search_{email}", default={'results': {}})
             results = {
                 'logins': [],
                 'passwords': [],
@@ -80,10 +80,10 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
         self.request_args['json']['terms'] = [crackable_hash]
         self.request_args['json']['types'] = ['hash']
 
-        cached, data = self.fetch_results_using_cache(crackable_hash)
+        cached, data = self.fetch_results_using_cache(crackable_hash, default={'results': {}})
         passwords = [entry['password'] for breach_data in data['results'].values() for entry in breach_data if 'password' in entry]
 
-        return cached, PasswordHashDataFormat(
+        yield cached, PasswordHashDataFormat(
             value=crackable_hash,
             plaintext=None if not passwords else passwords[0],
             format=None,

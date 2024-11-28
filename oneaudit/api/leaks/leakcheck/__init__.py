@@ -53,7 +53,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             self.request_args['url'] = 'https://leakcheck.io/api/public'
             self.request_args['params'] = {'check': email}
             # Send the request
-            cached, data = self.fetch_results_using_cache(f"public_{email}")
+            cached, data = self.fetch_results_using_cache(f"public_{email}", default={})
             sources = data['sources'] if 'sources' in data else []
             results = {
                 'breaches': [BreachData(source["name"], source["date"]) for source in sources]
@@ -64,7 +64,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             self.request_args['headers']['X-API-Key'] = self.api_key
             self.request_args['url'] = f'https://leakcheck.io/api/v2/query/{email}'
             try:
-                cached, data = self.fetch_results_using_cache(f"pro_{email}")
+                cached, data = self.fetch_results_using_cache(f"pro_{email}", default={'result': []})
                 if 'result' not in data:
                     raise Exception(f"Unexpected result for {self.api_name}: {data}")
                 sources = [entry['source'] for entry in data['result'] if 'source' in entry]
