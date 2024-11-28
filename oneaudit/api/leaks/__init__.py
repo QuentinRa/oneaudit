@@ -1,5 +1,5 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.provider import DefaultProvider
+from oneaudit.api.provider import OneAuditBaseProvider
 import dataclasses
 import hashlib
 import bcrypt
@@ -124,7 +124,7 @@ class LeaksProviderManager(OneAuditBaseAPIManager):
         return result if domain is None else self._call_method_on_each_provider(result, 'fetch_domain_results', domain)[1]
 
 
-class LeaksProvider(DefaultProvider):
+class LeaksProvider(OneAuditBaseProvider):
     def __init__(self, api_name, request_args, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
         self.is_endpoint_enabled_for_cracking = False

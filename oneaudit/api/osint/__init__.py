@@ -4,7 +4,7 @@ import time
 import typing
 import dataclasses
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.provider import DefaultProvider
+from oneaudit.api.provider import OneAuditBaseProvider
 
 class OSINTProviderManager(OneAuditBaseAPIManager):
     def __init__(self, api_keys, cache_only=False):
@@ -65,27 +65,8 @@ class OSINTProviderManager(OneAuditBaseAPIManager):
 
         return result
 
-    def verify_emails(self, emails):
-        results = {}
 
-        for email in emails:
-            for provider in self.providers:
-                if not provider.is_endpoint_enabled:
-                    continue
-                self.logger.info(f"Verifying emails on {provider.api_name} (args={email,})")
-                cached, result = provider.is_email_valid(email)
-                if not cached:
-                    self.trigger(provider.__class__.__name__, provider.get_rate())
-
-                results[email] = result
-                if result.verified:
-                    self.logger.debug(f"Email {email} was marked as valid.")
-                    break
-
-        return list(results.values())
-
-
-class OSINTProvider(DefaultProvider):
+class OSINTProvider(OneAuditBaseProvider):
     def __init__(self, request_args, api_name, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
 

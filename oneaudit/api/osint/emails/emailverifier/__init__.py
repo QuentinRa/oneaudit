@@ -1,8 +1,8 @@
 from random import randint
-from oneaudit.api.osint import OSINTProvider, OSINTScrappedEmailDataFormat
+from oneaudit.api.osint.emails.provider import OneAuditEmailsAPIProvider
 
-# fixme: add back delete code
-class EmailVerifiedOnlineAPI(OSINTProvider):
+
+class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
     def __init__(self, api_keys):
        super().__init__(
            api_name='emailverifieronline',
