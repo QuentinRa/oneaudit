@@ -3,19 +3,18 @@ import urllib3
 import os.path
 from oneaudit.api.osint import OSINTProvider
 
-#from oneaudit.api.osint import OSINTProvider
-
-#class VerifyEmailAddressAPI(OSINTProvider):
 class VerifyEmailAddressAPI(OSINTProvider):
     def __init__(self, api_keys, cache_only):
        super().__init__(
            api_name='verifyemailaddress',
            request_args={},
-           api_keys=api_keys,
-           show_notice=False
+           api_keys=api_keys
         )
 
     def verify_one_email(self, mail_string):
+        yield True, {}
+
+    def old_verify(self, mail_string):
 
         # Return types:
         # exists <- email valid

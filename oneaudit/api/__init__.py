@@ -97,6 +97,9 @@ class DefaultProviderManager:
                 continue
 
     def _call_method_on_each_provider(self, result, method_name, *args):
+        return self._call_method_on_each_provider_once(result, method_name, False, *args)
+
+    def _call_method_on_each_provider_once(self, result, method_name, stop_when_modified, *args):
         was_modified = False
         for provider in self.providers:
             if not provider.is_endpoint_enabled:
@@ -115,6 +118,8 @@ class DefaultProviderManager:
                         result[k] = result[k] or v
                     else:
                         raise Exception(f"Unexpected type for {k}: {type(v)}")
+            if stop_when_modified and was_modified:
+                break
 
         return was_modified, result
 

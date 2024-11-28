@@ -64,28 +64,28 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
 
         return result
 
-    # For emails, we will not use providers because we only have one email checker.
-    def get_single_email(self, single_email):
-        result = []
-        answer = self.verify_one_email(single_email)
-        result_api = False
-        if answer == "exists":
-            result_api = True
-        elif answer == "error_http":
-            logging.error(f"Error while verifying {single_email}: {e}")
-        result.append(OSINTScrappedEmailDataFormat(
-            single_email.lower(),
-            result_api
-        )
-        )
+    # # For emails, we will not use providers because we only have one email checker.
+    # def get_single_email(self, single_email):
+    #     result = []
+    #     answer = self.verify_one_email(single_email)
+    #     result_api = False
+    #     if answer == "exists":
+    #         result_api = True
+    #     elif answer == "error_http":
+    #         logging.error(f"Error while verifying {single_email}: {e}")
+    #     result.append(OSINTScrappedEmailDataFormat(
+    #         single_email.lower(),
+    #         result_api
+    #     )
+    #     )
 
-    def get_mulitple_email(self, email_list):
-        # email_list est déjà ouvert
+    def verify_emails(self, emails):
         result = []
 
-        for line in mail_list:
-            mail = line.strip()
-            result.append(get_single_email(mail))
+        for email in emails:
+            _, result = self._call_method_on_each_provider(result, 'verify_one_email', email)
+            print(email)
+            print(result)
 
         return result
 
