@@ -1,7 +1,7 @@
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
 from oneaudit.api.leaks.manager import OneAuditLeaksAPIManager
 from oneaudit.utils.io import save_to_json
-from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
+from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 import json
 
 
