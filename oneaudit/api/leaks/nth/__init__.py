@@ -1,9 +1,9 @@
-from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
 from name_that_hash import hashes, hash_info
 
 
 # https://github.com/HashPals/Name-That-Hash
-class NameThatHashAPI(LeaksProvider):
+class NameThatHashAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='nth',

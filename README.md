@@ -26,6 +26,7 @@ WIP
 * Using public proxies
 * Request rate as a parameter?
 * Remove RocketReach dependency?
+* Test only one email per domain
 
 ## SocOSINT
 

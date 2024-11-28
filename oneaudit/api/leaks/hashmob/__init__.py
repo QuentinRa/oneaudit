@@ -1,9 +1,9 @@
-from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
 import time
 
 
 # https://hashmob.net/api/v2/documentation
-class HashMobAPI(LeaksProvider):
+class HashMobAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='hashmob',
@@ -13,8 +13,7 @@ class HashMobAPI(LeaksProvider):
                 'json': {},
                 'headers': {}
             },
-            api_keys=api_keys,
-            show_notice=False
+            api_keys=api_keys
         )
         self.is_endpoint_enabled_for_cracking = self.is_endpoint_enabled
         self.is_endpoint_enabled = False
@@ -40,5 +39,5 @@ class HashMobAPI(LeaksProvider):
         time.sleep(300)
 
     # Minimum rate is "0.2" for 5 requests/second
-    def get_rate(self):
+    def get_request_rate(self):
         return 1

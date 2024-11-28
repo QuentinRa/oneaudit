@@ -1,9 +1,9 @@
-from oneaudit.api.leaks import LeaksProvider
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 import time
 import requests
 
 # https://scan.aura.com/
-class AuraAPI(LeaksProvider):
+class AuraAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='aura',
@@ -43,5 +43,5 @@ class AuraAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         time.sleep(15)
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 5

@@ -1,5 +1,5 @@
 from oneaudit.api import PaidAPIDisabledException
-from oneaudit.api.leaks import LeaksProvider, PasswordHashDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
 import time
 
 
@@ -90,5 +90,5 @@ class SnusbaseAPI(LeaksProvider):
         else:
             time.sleep(2)
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 0.5

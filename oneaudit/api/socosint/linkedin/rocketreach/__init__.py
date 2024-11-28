@@ -26,6 +26,13 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
     def get_request_rate(self):
         return 5
 
+    def handle_rate_limit(self, response):
+        """API v2 returns retry-after. For v1, you are expected to handle it yourself."""
+        wait = int(response.headers["retry-after"] if "retry-after" in response.headers else 0)
+        if wait > 0:
+            self.logger.warning(f"{self.api_name}: Rate-limited. Waiting for {wait} seconds.")
+            sleep(wait)
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='rocketreach',

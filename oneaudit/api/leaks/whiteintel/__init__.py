@@ -1,9 +1,9 @@
-from oneaudit.api.leaks import LeaksProvider, CensoredCredentialsLeakDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, CensoredCredentialsLeakDataFormat
 import time
 
 
 # https://docs.whiteintel.io/whiteintel-api-doc
-class WhiteIntelAPI(LeaksProvider):
+class WhiteIntelAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='whiteintel',
@@ -65,7 +65,7 @@ class WhiteIntelAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         time.sleep(30)
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 1
 
 def format_url(URL):

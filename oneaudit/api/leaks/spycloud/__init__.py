@@ -1,10 +1,10 @@
-from oneaudit.api.leaks import LeaksProvider, BreachDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, BreachDataFormat
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
 # https://spycloud.com/
-class SpyCloudAPI(LeaksProvider):
+class SpyCloudAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='spycloud',
@@ -46,5 +46,5 @@ class SpyCloudAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         self.is_endpoint_enabled = False
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 2

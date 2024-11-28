@@ -1,9 +1,8 @@
-from oneaudit.api import PaidAPIDisabledException
-from oneaudit.api.leaks import LeaksProvider, BreachDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, BreachDataFormat
 
 
 # https://wiki.leakcheck.io/en/api
-class LeakCheckAPI(LeaksProvider):
+class LeakCheckAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='leakcheck',
@@ -13,8 +12,7 @@ class LeakCheckAPI(LeaksProvider):
                     'X-API-Key': ''
                 }
             },
-            api_keys=api_keys,
-            show_notice=False
+            api_keys=api_keys
         )
         self.api_key = api_keys.get('leakcheck_pro', None)
         self.is_public_endpoint_enabled = self.is_endpoint_enabled
@@ -68,5 +66,5 @@ class LeakCheckAPI(LeaksProvider):
             return response
         self.handle_rate_limit(response)
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 1

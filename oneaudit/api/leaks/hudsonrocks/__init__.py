@@ -1,9 +1,9 @@
-from oneaudit.api.leaks import LeaksProvider, InfoStealerLeakDataFormat
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, InfoStealerLeakDataFormat
 import time
 
 
 # https://cavalier.hudsonrock.com/docs
-class HudsonRocksAPI(LeaksProvider):
+class HudsonRocksAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='hudsonrocks',
@@ -39,5 +39,5 @@ class HudsonRocksAPI(LeaksProvider):
         time.sleep(60)
 
     # Minimum rate is "0.2" for 5 requests/second
-    def get_rate(self):
+    def get_request_rate(self):
         return 0.5

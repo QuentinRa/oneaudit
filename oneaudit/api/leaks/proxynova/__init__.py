@@ -1,10 +1,10 @@
-from oneaudit.api.leaks import LeaksProvider
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from oneaudit.api import FakeResponse
 import time
 import requests
 
 # https://www.proxynova.com/tools/comb
-class ProxyNovaAPI(LeaksProvider):
+class ProxyNovaAPI(OneAuditLeaksAPIProvider):
     def __init__(self, api_keys):
         super().__init__(
             api_name='proxynova',
@@ -56,5 +56,5 @@ class ProxyNovaAPI(LeaksProvider):
     def handle_rate_limit(self, response):
         time.sleep(2)
 
-    def get_rate(self):
+    def get_request_rate(self):
         return 0.5
