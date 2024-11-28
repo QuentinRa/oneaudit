@@ -3,9 +3,10 @@ import enum
 import time
 import typing
 import dataclasses
-import oneaudit.api
+from oneaudit.api.manager import DefaultProviderManager
+from oneaudit.api.provider import DefaultProvider
 
-class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
+class OSINTProviderManager(DefaultProviderManager):
     def __init__(self, api_keys, cache_only=False):
         import oneaudit.api.osint.rocketreach
         import oneaudit.api.osint.verifyemailaddress
@@ -84,7 +85,7 @@ class OSINTProviderManager(oneaudit.api.DefaultProviderManager):
         return list(results.values())
 
 
-class OSINTProvider(oneaudit.api.DefaultProvider):
+class OSINTProvider(DefaultProvider):
     def __init__(self, request_args, api_name, api_keys, show_notice=True):
         super().__init__(api_name, request_args, api_keys, show_notice)
 

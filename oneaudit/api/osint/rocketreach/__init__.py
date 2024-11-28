@@ -1,5 +1,5 @@
 from oneaudit.api.osint import OSINTProvider, OSINTScrappedDataFormat, OSINTExportedDataFormat, OSINTScrappedEmailDataFormat, SocialNetworkEnum
-from oneaudit.api import get_cached_result, set_cached_result
+from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 from string import digits, ascii_letters
 from secrets import choice
 from random import randint

@@ -30,3 +30,6 @@ class VerifyEmailAddressAPI(OSINTProvider):
             email,
             data['status'] == "valid"
         )
+
+    def get_rate(self):
+        return 5

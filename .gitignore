@@ -28,6 +28,9 @@
 .idea/**/shelf
 
 .idea
+config.json
+.cache
+data
 
 # AWS User-specific
 .idea/**/aws.xml
