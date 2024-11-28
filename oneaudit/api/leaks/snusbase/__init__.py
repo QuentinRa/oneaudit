@@ -25,7 +25,7 @@ class SnusbaseAPI(LeaksProvider):
             '_domain', 'url', 'followers',
             'hash', 'salt', 'password', 'lastip', 'regip', 'host',
             'city', 'country', 'state', 'address', 'zip', 'birthdate', 'language', 'phone',
-            'company', 'job', 'gender', 'other', 'unparsed', 'regdate'
+            'company', 'job', 'gender', 'other', 'unparsed', 'regdate', 'date'
         ]
         self.api_endpoint = 'https://api.snusbase.com/{route}'
         self.rate_limit_status_codes = [429, 502]

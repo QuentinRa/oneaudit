@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from oneaudit.modules import socosint, leaks
+from oneaudit.modules import socosint, leaks, osint, utils
 from oneaudit.utils import args_call_target
 from oneaudit.utils.logs import get_project_logger
 
@@ -10,8 +10,10 @@ def main():
 
     # Load define modules
     module_parser = parser.add_subparsers(dest='module', required=True)
-    socosint.define_args(module_parser)
     leaks.define_args(module_parser)
+    osint.define_args(module_parser)
+    socosint.define_args(module_parser)
+    utils.define_args(module_parser)
 
     # Parse args
     args = parser.parse_args()
@@ -27,4 +29,4 @@ if __name__ == "__main__":
         logger = get_project_logger()
         logger.error(e)
         logger.error("Program was terminated due to an exception.")
-        raise e
+        #raise e
