@@ -10,8 +10,8 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
         if api_key is not None:
             capabilities.add(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
             capabilities.add(LeaksAPICapability.FREE_ENDPOINT)
-        api_key = api_keys.get('leakcheck_pro')
-        if api_key is not None:
+        self.api_key = api_keys.get('leakcheck_pro')
+        if self.api_key is not None:
             capabilities.add(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
             capabilities.add(LeaksAPICapability.PAID_ENDPOINT)
         return list(capabilities)
