@@ -8,6 +8,9 @@ class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [EmailAPICapability.EMAIL_VERIFICATION] if api_key is not None else []
 
+    def get_request_rate(self):
+        return 5
+
     def __init__(self, api_keys):
        super().__init__(
            api_name='emailverifieronline',
@@ -31,6 +34,3 @@ class EmailVerifiedOnlineAPI(OneAuditEmailsAPIProvider):
         self.request_args['data']['email'] = email
         cached, data = self.fetch_results_using_cache(key=email)
         yield cached, VerifiableEmail(email, data['status'] == "valid")
-
-    def get_request_rate(self):
-        return 5

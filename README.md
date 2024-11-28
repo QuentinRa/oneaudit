@@ -25,6 +25,7 @@ WIP
 * Rework on the generic API code
 * Using public proxies
 * Request rate as a parameter?
+* Remove RocketReach dependency?
 
 ## SocOSINT
 

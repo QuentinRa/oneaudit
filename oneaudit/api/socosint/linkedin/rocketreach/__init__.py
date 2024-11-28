@@ -17,6 +17,13 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             LinkedInAPICapability.PARSE_EXPORTED_PROFILE_LIST,
         ] if api_key is not None else [LinkedInAPICapability.PARSE_EXPORTED_PROFILE_LIST]
 
+    def handle_request(self, method):
+        # RocketReach uses a handler to wrap the "requests" API
+        return getattr(self.current_handler, method)().response
+
+    def get_request_rate(self):
+        return 5
+
     def __init__(self, api_keys):
         super().__init__(
             api_name='rocketreach',
@@ -84,56 +91,57 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         if ids_checked is None:
             ids_checked = []
         ids_to_check = [value for value in ids if value not in ids_checked]
-        if ids_to_check:
-            self.logger.warning(f"{self.api_name}: You have to manually fetch {len(ids_to_check)} records.")
+        if not ids_to_check:
+            return
 
-            # We can try to fetch the trigger the requests for you, but it's somewhat dirty
-            if self.session_id and target_profile_list_id:
-                kill_switch = 0
-                csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
-                i = 0
-                while i < len(ids_to_check):
-                    self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
-                    batch = ids_to_check[i:i + 25]
-                    response = post(
-                        url=f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/lookup',
-                        headers={
-                            'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
-                            'User-Agent': self.request_args["headers"]['User-Agent'],
-                            "X-CSRFToken": csrf_token,
-                            'referer': 'https://rocketreach.co/person'
-                        },
-                        json={
-                            "profile_ids": batch,
-                            "linkedin_urls": [],
-                        }
-                    )
+        self.logger.warning(f"{self.api_name}: You have to manually fetch {len(ids_to_check)} records.")
 
-                    # Check the reply
-                    if not self.is_response_valid(response):
-                        if kill_switch >= 2:
-                            wait = randint(1200, 1800)
-                            self.logger.warning(f"{self.api_name}: hit a hard rate-limit, waiting {wait} seconds.")
-                            sleep(wait)
-                            kill_switch += 1
-                            continue
+        # We can try to fetch the trigger the requests for you, but it's somewhat dirty
+        if not self.session_id or not target_profile_list_id:
+            return
 
-                        self.logger.info(f"{self.api_name}: Rate-limited. Waiting five minutes.")
-                        kill_switch += 1
-                        sleep(300)
-                        continue
+        kill_switch = 0
+        csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
+        i = 0
+        while i < len(ids_to_check):
+            self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
+            batch = ids_to_check[i:i + 25]
+            response = post(
+                url=f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/lookup',
+                headers={
+                    'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
+                    'User-Agent': self.request_args["headers"]['User-Agent'],
+                    "X-CSRFToken": csrf_token,
+                    'referer': 'https://rocketreach.co/person'
+                },
+                json={
+                    "profile_ids": batch,
+                    "linkedin_urls": [],
+                }
+            )
 
-                    # Save the status
-                    ids_checked.extend(batch)
-                    set_cached_result(self.api_name, 'ids_checked', ids_checked)
-
-                    # Waiting time
-                    wait = randint(60, 120)
-                    self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
+            # Check the reply
+            if not self.is_response_valid(response):
+                if kill_switch >= 2:
+                    wait = randint(1200, 1800)
+                    self.logger.warning(f"{self.api_name}: hit a hard rate-limit, waiting {wait} seconds.")
                     sleep(wait)
+                    kill_switch += 1
+                    continue
 
-                    i += 25
-                    kill_switch = 0
+                self.logger.info(f"{self.api_name}: Rate-limited. Waiting five minutes.")
+                kill_switch += 1
+                sleep(300)
+                continue
 
-    def get_request_rate(self):
-        return 5
+            # Save the status
+            ids_checked.extend(batch)
+            set_cached_result(self.api_name, 'ids_checked', ids_checked)
+
+            # Waiting time
+            wait = randint(60, 120)
+            self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
+            sleep(wait)
+
+            i += 25
+            kill_switch = 0
