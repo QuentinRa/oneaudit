@@ -13,14 +13,13 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 WIP
 
 * Clean censored passwords
+* Show API stats
 * Recursive search based on new emails
 * IPs, addresses, usernames, etc.
   * Leakcheck returns a lot of them (check the fields)
-* Rocketreach lookups (more important)
-* Rocketreach exports (least important)
-* Multiple filters for company rocketreach parse
-* handle github/nubela/descriptions?
+* Add Nubela? Apollo?
 * Fix cache folder parameter
+* Inform the user of the score of verified emails for each email format
 
 ## SocOSINT
 
@@ -31,7 +30,7 @@ WIP
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
 ```bash
-$ oneaudit socosint linkedin scrap -d example.com -o osint.json
+$ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 ```
 
 ```json
@@ -60,8 +59,8 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json
 After exporting the emails, you can generate a unified list of targets for use with other module with:
 
 ```bash
-$ # Only keep employees working at LinkedIn
-$ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json
+$ # Only keep employees working at "LinkedIn" (can use multiple filters)
+$ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
 ```
 
 ```json
@@ -99,7 +98,7 @@ $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s roc
 We can compute a list of targets from OSINT results.
 
 ```bash
-$ oneaudit leaks parse -i osint.json -i contacts.json -f flast -d example.com -o targets.json
+$ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 ```
 
 ```json
@@ -151,7 +150,7 @@ $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d 
         "jo*******1"
       ],
       "censored_passwords": [
-        "h***o"
+        "he***!"
       ],
       "info_stealers": [
         {

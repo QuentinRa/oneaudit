@@ -39,6 +39,8 @@ def set_cached_result(api_name, key, data):
     url_hash_directory = os.path.dirname(url_hash)
     if not os.path.exists(url_hash_directory):
         os.mkdir(url_hash_directory)
+    if data is None:
+        raise ValueError(f"Trying to save null data '{data}' for '{key}'")
     with open(url_hash, 'w') as f:
         json.dump({
             "timestamp": time.time(),
@@ -56,7 +58,7 @@ def get_cached_result(api_name, key, do_not_expire=False):
         with open(url_hash, 'r') as f:
             cached_data = json.load(f)
             timestamp = cached_data['timestamp']
-            if do_not_expire or time.time() - timestamp < 30 * 24 * 60 * 60:
+            if cached_data['response'] and (do_not_expire or time.time() - timestamp < 30 * 24 * 60 * 60):
                 return cached_data['response']
     return None
 
@@ -159,7 +161,14 @@ class DefaultProvider:
         response = self.handle_request(**kwargs)
         if not self.is_response_valid(response):
             return self.fetch_result_without_cache(**kwargs)
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            self.logger.error(f"Provider: {self.__class__.__name__}")
+            self.logger.error(f"Request: {self.request_args}")
+            self.logger.error(f"Response code: {response.status_code}")
+            self.logger.error(response.text)
+            raise Exception(f"Unexpected response. Could not parse JSON.")
 
     def is_response_valid(self, response):
         if response.status_code in self.rate_limit_status_codes:

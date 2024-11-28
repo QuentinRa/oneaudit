@@ -21,7 +21,7 @@ class AuraAPI(LeaksProvider):
         cached, data = self.fetch_results_using_cache(email)
         if 'results' not in data:
             self.logger.error(f"Unexpected response for {self.api_name}: {data}.")
-            yield cached, {}
+            return cached, {}
 
         results = {
             'logins': [result['username'] for result in data['results'] if 'username' in result],
@@ -41,4 +41,4 @@ class AuraAPI(LeaksProvider):
         time.sleep(15)
 
     def get_rate(self):
-        return 3
+        return 4

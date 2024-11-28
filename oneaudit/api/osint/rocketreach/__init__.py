@@ -21,11 +21,7 @@ class RocketReachAPI(OSINTProvider):
             self.handler = rocketreach.Gateway(rocketreach.GatewayConfig(self.api_key))
             self.current_handler = None
             self.show_notice()
-
-            # Undocumented
-            rocketreach_session = api_keys.get('rocketreach_session', {})
-            self.session_id = rocketreach_session.get("session_id", None)
-            self.profile_list_id = rocketreach_session.get("profile_list_id", None)
+            self.session_id = api_keys.get('rocketreach_session', None)
 
         self.email_verified_mapper = {
             "accept_all": False,
@@ -36,7 +32,7 @@ class RocketReachAPI(OSINTProvider):
         }
 
 
-    def fetch_targets_for_company(self, company_name):
+    def fetch_targets_for_company(self, company_name, target_profile_list_id=None):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_name}\"')
         search_handler = search_handler.options(order_by="score")
         page = 0
@@ -76,7 +72,7 @@ class RocketReachAPI(OSINTProvider):
                 self.logger.warning(f"{self.api_name}: You have to manually fetch {len(ids_to_check)} records.")
 
                 # We can try to fetch the trigger the requests for you, but it's somewhat dirty
-                if self.session_id and self.profile_list_id:
+                if self.session_id and target_profile_list_id:
                     kill_switch = 0
                     csrf_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
                     i = 0
@@ -84,7 +80,7 @@ class RocketReachAPI(OSINTProvider):
                         self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
                         batch = ids_to_check[i:i + 25]
                         response = requests.post(
-                            url=f'https://rocketreach.co/v1/profileList/{self.profile_list_id}/lookup',
+                            url=f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/lookup',
                             headers={
                                 'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
                                 'User-Agent': self.request_args["headers"]['User-Agent'],
