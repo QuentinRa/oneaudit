@@ -18,7 +18,6 @@ WIP
 * IPs, addresses, usernames, etc.
   * Leakcheck returns a lot of them (check the fields)
 * Add Nubela? Apollo?
-* Allow verified from the target domain even if the format is different
 * Remove RocketReach dependency?
 * Test only one email per domain
 * Add proxy support

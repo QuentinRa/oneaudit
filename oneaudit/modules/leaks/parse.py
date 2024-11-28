@@ -100,6 +100,9 @@ def run(args):
             if allowed:
                 emails.add(target_email.lower())
             elif is_target_email_verified:
+                # Always add verified emails, regardless of any rule
+                emails.add(target_email.lower())
+                # Compute stats
                 email_format_id = [email_format_id for email_format_id, candidate in candidates.items() if candidate == target_email]
                 if email_format_id:
                     verified_count[email_format_id[0]].add(target_email)
