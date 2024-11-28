@@ -1,5 +1,5 @@
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
-from oneaudit.api.socosint.linkedin import OneAuditLinkedInAPIManager
+from oneaudit.api.socosint.linkedin.manager import OneAuditLinkedInAPIManager
 from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 

@@ -1,6 +1,7 @@
 from oneaudit.api import APIRateLimitException
 from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 from oneaudit.utils.logs import get_project_logger
+from requests.exceptions import ReadTimeout
 from fake_useragent import UserAgent
 from requests import request
 from json import JSONDecodeError
@@ -73,7 +74,11 @@ class OneAuditBaseProvider:
             raise Exception(f"Unexpected response. Could not parse JSON.")
 
     def handle_request(self, **kwargs):
-        return request(**self.request_args)
+        try:
+            return request(**self.request_args)
+        except ReadTimeout:
+            self.logger.error(f"API {self.api_name} is unresponsive. It was disabled.")
+            self.handle_api_shutdown()
 
     def is_response_valid(self, response):
         if response.status_code in self.rate_limit_status_codes:
@@ -89,6 +94,14 @@ class OneAuditBaseProvider:
         return True
 
     def handle_rate_limit(self, response):
+        """
+        Some APIs are returning information about the time
+        to wait in their headers. Some API may not have any credits,
+        so they must be disabled here.
+        """
+        self.handle_api_shutdown()
+
+    def handle_api_shutdown(self):
         """
         Some APIs are returning information about the time
         to wait in their headers. Some API may not have any credits,

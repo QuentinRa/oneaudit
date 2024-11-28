@@ -1,4 +1,4 @@
-from oneaudit.api.osint import OSINTProviderManager
+from oneaudit.api.socosint.linkedin.manager import OneAuditLinkedInAPIManager
 from oneaudit.utils.io import save_to_json
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from json import JSONDecodeError
@@ -12,10 +12,11 @@ def define_args(parent_parser):
     linkedin_parse.add_argument('-o', '--output', metavar='output.json', type=str, dest='output_file', help='Export results as JSON.', required=True)
     args_verbose_config(linkedin_parse)
 
+
 def run(args):
     args_parse_parse_verbose(args)
     args.filters = [f.lower() for f in args.filters if f]
-    provider = OSINTProviderManager({}, cache_only=True)
+    provider = OneAuditLinkedInAPIManager({}, parsing_only=True)
     try:
         with open(args.input_file, 'r', encoding='utf-8') as input_file:
             save_to_json(args.output_file, {

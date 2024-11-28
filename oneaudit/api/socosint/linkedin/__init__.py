@@ -1,2 +1,0 @@
-class OneAuditLinkedInAPIManager:
-    pass

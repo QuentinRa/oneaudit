@@ -24,6 +24,7 @@ WIP
 * Add API capabilities
 * Rework on the generic API code
 * Using public proxies
+* Request rate as a parameter?
 
 ## SocOSINT
 
