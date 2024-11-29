@@ -5,8 +5,11 @@ import hashlib
 import json
 import os
 import time
+import sqlite3
 
 cache_folder = ".cache"
+sqlite_connection = {}
+sqlite_cursor = {}
 
 
 def args_api_config(parser: argparse.ArgumentParser):
@@ -41,31 +44,66 @@ def args_parse_api_config(args):
     return api_keys
 
 
-def set_cached_result(api_name, key, data):
-    global cache_folder
-    url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
-    url_hash_directory = os.path.dirname(url_hash)
-    if not os.path.exists(url_hash_directory):
-        os.makedirs(url_hash_directory, exist_ok=True)
+def set_cached_result(api_name, key, data, from_timestamp=None):
+    conn, cursor = create_cache_database(api_name)
+    json_response = json.dumps(data)
+    timestamp = int(time.time()) if not from_timestamp else from_timestamp
     if data is None:
         raise ValueError(f"Trying to save null data '{data}' for '{key}'")
-    with open(url_hash, 'w') as f:
-        json.dump({
-            "timestamp": time.time(),
-            "response": data
-        }, f)
+    cursor.execute('''
+        INSERT OR REPLACE INTO cache (response_key, json_response, timestamp)
+        VALUES (?, ?, ?)
+    ''', (key, json_response, timestamp))
+    conn.commit()
+
+
+def create_cache_database(api_name):
+    global sqlite_connection, sqlite_cursor
+    # Already opened
+    if api_name in sqlite_connection:
+        return sqlite_connection[api_name], sqlite_cursor[api_name]
+    # Create/Load
+    database_file = f"{cache_folder}/{api_name}.sqlite"
+    database_folder = os.path.dirname(database_file)
+    if not os.path.exists(database_folder):
+        os.makedirs(database_folder, exist_ok=True)
+    sqlite_connection[api_name] = sqlite3.connect(database_file)
+    sqlite_cursor[api_name] = sqlite_connection[api_name].cursor()
+    sqlite_cursor[api_name].execute('''
+        CREATE TABLE IF NOT EXISTS cache (
+            id INTEGER PRIMARY KEY,
+            response_key TEXT UNIQUE,
+            json_response TEXT,
+            timestamp INTEGER
+        )
+    ''')
+    sqlite_connection[api_name].commit()
+    return sqlite_connection[api_name], sqlite_cursor[api_name]
 
 
 def get_cached_result(api_name, key, do_not_expire=False):
-    global cache_folder
-    url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
-    url_hash_directory = os.path.dirname(url_hash)
-    if not os.path.exists(url_hash_directory):
-        os.makedirs(url_hash_directory, exist_ok=True)
-    if os.path.exists(url_hash):
+    conn, cursor = create_cache_database(api_name)
+    cursor.execute('SELECT json_response, timestamp FROM cache WHERE response_key = ?', (key,))
+    row = cursor.fetchone()
+    if row:
+        json_response, timestamp = row
+        current_time = int(time.time())
+        if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
+            return json.loads(json_response)
+    else:
+        # Backward capabilities
+        url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
+        url_hash_directory = os.path.dirname(url_hash)
+        if not os.path.exists(url_hash_directory):
+            return None
+
+        if not os.path.exists(url_hash):
+            return None
+
         with open(url_hash, 'r') as f:
             cached_data = json.load(f)
             timestamp = cached_data['timestamp']
-            if cached_data['response'] and (do_not_expire or time.time() - timestamp < 30 * 24 * 60 * 60):
-                return cached_data['response']
+            set_cached_result(api_name, key, cached_data['response'], timestamp)
+        os.rename(url_hash, url_hash+".migrated")
+        return get_cached_result(api_name, key, do_not_expire)
     return None

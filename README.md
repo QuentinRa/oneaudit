@@ -21,6 +21,7 @@ WIP
 * Remove RocketReach dependency?
 * Test only one email per domain
 * Add proxy support
+* Remove backward compatibility caching code
 
 Undocumented
 
