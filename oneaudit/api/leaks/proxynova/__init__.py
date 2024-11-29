@@ -38,7 +38,7 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
             },
             api_keys=api_keys
         )
-        self.api_endpoint = 'https://api.proxynova.com/comb?query={email}&start=0&limit=100'
+        self.api_endpoint = 'https://api.proxynova.com/comb?query={email}&start=0&limit=20'
         self.kill_switch = 0
 
     def investigate_leaks_by_email(self, email):

@@ -26,7 +26,7 @@ class OneAuditBaseAPIManager:
     # if 'stop_when_modified', we stop at the first provider that returned a result
     def _call_all_providers_dict(self, heading, capability, stop_when_modified, method_name, result, args):
         was_modified = False
-        for api_result in self._call_all_providers(heading, capability, method_name, args):
+        for _, api_result in self._call_all_providers(heading, capability, method_name, args):
             # Update result
             if isinstance(api_result, dict):
                 for k, v in api_result.items():
@@ -69,7 +69,7 @@ class OneAuditBaseAPIManager:
                         self.handle_rate_limit(provider.__class__.__name__, provider.get_request_rate())
 
                     # Update result
-                    yield api_result
+                    yield provider, api_result
             except APIRateLimitException:
                 pass
 

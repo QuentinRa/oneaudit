@@ -15,11 +15,8 @@ WIP
 * Clean censored passwords
 * Show API stats
 * Recursive search based on new emails
-* IPs, addresses, usernames, etc.
-  * Leakcheck returns a lot of them (check the fields)
 * Add Nubela? Apollo?
-* Remove RocketReach dependency?
-* Test only one email per domain
+* Test only one email per domain with verifying emails
 * Add proxy support
 * Remove backward compatibility caching code
 

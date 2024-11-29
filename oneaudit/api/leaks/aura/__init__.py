@@ -1,3 +1,4 @@
+from oneaudit.api import APIRateLimitException
 from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from requests import Session
@@ -16,9 +17,10 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         s = Session()
         s.post(**self.request_args)
         if 'data' not in self.request_args:
-            self.logger.error(f"{self.api_name}: unexpected answer to POST request. Trying again after a delay.")
+            # We should way a bit and move to another request
+            self.logger.error(f"{self.api_name}: unexpected answer to POST request.")
             self.handle_rate_limit(None)
-            return self.handle_request()
+            raise APIRateLimitException()
         del self.request_args['data']
         return s.get(**self.request_args)
 
@@ -39,14 +41,17 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         # Update parameters
         self.request_args['data'] = {'email': email}
         # Send the request
-        cached, data = self.fetch_results_using_cache(email, default={'results': []})
-        if 'results' not in data:
-            self.logger.error(f"Unexpected response for {self.api_name}: {data}.")
-            return cached, {}
+        try:
+            cached, data = self.fetch_results_using_cache(email, default={'results': []})
+            if 'results' not in data:
+                self.logger.error(f"Unexpected response for {self.api_name}: {data}.")
+                return cached, {}
 
-        results = {
-            'logins': [result['username'] for result in data['results'] if 'username' in result],
-            'censored_passwords': [result['password'] for result in data['results'] if 'password' in result]
-        }
+            results = {
+                'logins': [result['username'] for result in data['results'] if 'username' in result],
+                'censored_passwords': [result['password'] for result in data['results'] if 'password' in result]
+            }
 
-        yield cached, results
+            yield cached, results
+        except APIRateLimitException:
+            yield True, {}

@@ -27,7 +27,7 @@ class OneAuditEmailsAPIManager(OneAuditBaseAPIManager):
 
             # Query all email APIs that can verify emails
             email_data = None
-            for api_result in self._call_all_providers(
+            for _, api_result in self._call_all_providers(
                     heading="Verifying emails",
                     capability=EmailAPICapability.EMAIL_VERIFICATION,
                     method_name='is_email_valid',
