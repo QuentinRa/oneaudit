@@ -7,4 +7,4 @@ fake-useragent~=1.5.1
 colorlog~=6.9.0
 bcrypt~=4.2.1
 python-dateutil~=2.9.0
-name-that-hash~=1.11.0
+prettytable~=3.12.0

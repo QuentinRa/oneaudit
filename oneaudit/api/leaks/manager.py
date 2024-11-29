@@ -1,5 +1,5 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget
+from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget, CredentialStat
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel
@@ -29,6 +29,63 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             snusbase.SnusbaseAPI(api_keys),
         ])
         self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
+
+    def compute_stats(self, credentials):
+        credentials = credentials[5:]
+        stats = {
+            'passwords': {},
+            'censored_passwords': {},
+            'hashes': {},
+            'info_stealers': {},
+            'breaches': {},
+        }
+        for credential in credentials:
+            for login in credential['logins']:
+                # While not necessary, it will reduce the number of queries
+                # to the cache, as we won't look for logins that are not emails
+                if "@" not in login or " " in login or ":" in login:
+                    continue
+
+                for api_provider, api_result in self._call_all_providers(
+                        heading="Investigate leaks",
+                        capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
+                        method_name='investigate_leaks_by_email',
+                        args=(login,)):
+                    for key, entries in api_result.items():
+                        if key == 'raw_hashes':
+                            entries = [list(api_provider.lookup_plaintext_from_hash(entry))[0][1] for entry in entries]
+                            key = 'hashes'
+                        if key in ['breaches', 'hashes', 'info_stealers']:
+                            entries = [asdict(entry) for entry in entries]
+                        if key not in stats:
+                            continue
+
+                        for entry in entries:
+                            if entry not in credential[key]:
+                                continue
+                            entry = f"{login}.{entry}"
+                            if entry not in stats[key]:
+                                stats[key][entry] = []
+                            stats[key][entry].append(api_provider.api_name)
+
+        final_stats = {}
+        for attribute_name, entries in stats.items():
+            stats_per_provider = {provider.api_name:{'all': 0, 'exclusive': 0} for provider in self.providers}
+
+            # Compute the exclusive/all values for each provider for this specific attribute
+            for identifier, values in entries.items():
+                values = list(set(values))
+                if len(values) == 1:
+                    stats_per_provider[values[0]]['exclusive'] += 1
+                    stats_per_provider[values[0]]['all'] += 1
+                else:
+                    for value in values:
+                        stats_per_provider[value]['all'] += 1
+
+            final_stats[attribute_name] = (stats_per_provider, len(entries))
+
+        return final_stats
+
 
     def investigate_leaks(self, credentials, candidates):
         results = {}
@@ -98,7 +155,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             continue
 
                         # We need to crack it, or at least, investigate it
-                        for api_result in self._call_all_providers(
+                        for _, api_result in self._call_all_providers(
                                     heading="Attempt to find plaintext from hash",
                                     capability=LeaksAPICapability.INVESTIGATE_CRACKED_HASHES,
                                     method_name='lookup_plaintext_from_hash',

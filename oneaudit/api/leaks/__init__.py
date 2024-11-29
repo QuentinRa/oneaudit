@@ -33,6 +33,12 @@ class CensoredCredentials:
 
 
 @dataclass(frozen=True, order=True)
+class CredentialStat:
+    identifier: str
+    provider: str
+
+
+@dataclass(frozen=True, order=True)
 class InfoStealer:
     computer_name: str
     operating_system: str
