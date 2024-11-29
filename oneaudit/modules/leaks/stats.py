@@ -27,7 +27,7 @@ def run(args):
     print()
 
     table = PrettyTable()
-    table.field_names = ["field \\ api_name"] + [f'{name:8}' for (t, _) in list(stats.values())[:1] for name in t.keys()]
+    table.field_names = ["field \\ provider"] + [f'{name}' for (t, _) in list(stats.values())[:1] for name in t.keys()]
 
     for attribute, (attribute_stats, total_count) in stats.items():
         table_data = [attribute]
@@ -37,10 +37,13 @@ def run(args):
                 table_data.append("x")
                 continue
             percent1, percent2 = (all_stats / total_count) * 100, (exclusive / total_count) * 100
-            table_data.append(
-                (str(percent1) if percent1.is_integer() else f'{percent1:.1f}') + '/' + (str(percent2) if percent2.is_integer() else f"{percent2:.1f}") + '%'
-            )
-            #logger.info(f'{provider_name:20} provided {all_stats}/{total_count} ({int((all_stats / total_count) * 100)}%) --- of which --- {exclusive}/{total_count} were exclusive ({int((exclusive / total_count) * 100)}%)')
+            message = (str(int(percent1)) if percent1.is_integer() else f'{percent1:.1f}') + '%'
+            if percent2 != percent1:
+                message += " (☆ " + (str(int(percent2)) if percent2.is_integer() else f"{percent2:.1f}") + '%)'
+            table_data.append(message)
+
         table.add_row(table_data)
 
     print(table)
+    print()
+    print("Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.")
