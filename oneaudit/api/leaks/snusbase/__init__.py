@@ -54,11 +54,11 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
                 'passwords': [],
                 'raw_hashes': []
             }
-            # city, country, zip, company, address, url
+            # Parse useful fields
             for breach_data in data['results'].values():
-                results['verified'] = True
                 for entry in breach_data:
                     for k, v in [
+                        ('name', 'logins'),
                         ('username', 'logins'),
                         ('name', 'logins'),
                         ('password', 'passwords'),

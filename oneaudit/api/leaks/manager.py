@@ -35,7 +35,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
         try:
-            domain_candidates = [asdict(LeakTarget(email, True, [email], {})) for email in candidates]
+            domain_candidates = [asdict(LeakTarget(email.strip().lower(), True, [email.strip().lower()], {})) for email in candidates]
             for credential in credentials + domain_candidates:
                 key = credential['login']
                 if key in results:
@@ -68,6 +68,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
                 # Handle new logins
                 for login in results[key]["logins"]:
+                    login = login.strip().lower()
                     if "@" not in login or ':' in login or login in credential['emails']:
                         continue
                     raise Exception(f"Found new email that was not handled: {login}")
@@ -96,19 +97,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         if hash_to_crack in known_hashes:
                             continue
 
-                        # Generate bcrypt hashes if needed
-                        match = bcrypt_hash_regex.match(hash_to_crack)
-                        if match:
-                            salt = match.group(1)
-                            for password in candidates:
-                                try:
-                                    known_hashes.append(hashpw(password.encode(), salt.encode()))
-                                except ValueError:
-                                    pass
-                            if hash_to_crack in known_hashes:
-                                continue
-
-                        # Now, we need to crack it, or at least, investigate it
+                        # We need to crack it, or at least, investigate it
                         for api_result in self._call_all_providers(
                                     heading="Attempt to find plaintext from hash",
                                     capability=LeaksAPICapability.INVESTIGATE_CRACKED_HASHES,
@@ -126,6 +115,18 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         # If uncracked, add the hash to the list, otherwise
                         # Add the password to the list
                         if hash_data.plaintext is None:
+                            # At the very list, try to check if we don't already have the password
+                            match = bcrypt_hash_regex.match(hash_to_crack)
+                            if match:
+                                salt = match.group(1)
+                                for password in results[key]['passwords']:
+                                    try:
+                                        known_hashes.append(hashpw(password.encode(), salt.encode()))
+                                    except ValueError:
+                                        pass
+                                if hash_to_crack in known_hashes:
+                                    continue
+
                             uncracked_hashes.append(hash_data)
                         else:
                             known_hashes.append(md5(hash_data.plaintext.encode()).hexdigest())

@@ -47,7 +47,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
         )
 
     def investigate_leaks_by_email(self, email):
-        if LeaksAPICapability.FREE_ENDPOINT in self.capabilities:
+        if LeaksAPICapability.FREE_ENDPOINT in self.capabilities or self.only_use_cache:
             # Update parameters
             self.request_args['headers']['X-API-Key'] = ''
             self.request_args['url'] = 'https://leakcheck.io/api/public'
@@ -60,7 +60,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             }
             yield cached, results
 
-        if LeaksAPICapability.PAID_ENDPOINT in self.capabilities:
+        if LeaksAPICapability.PAID_ENDPOINT in self.capabilities or self.only_use_cache:
             self.request_args['headers']['X-API-Key'] = self.api_key
             self.request_args['url'] = f'https://leakcheck.io/api/v2/query/{email}'
             try:

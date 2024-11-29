@@ -47,7 +47,7 @@ def args_parse_api_config(args):
 def set_cached_result(api_name, key, data, from_timestamp=None):
     conn, cursor = create_cache_database(api_name)
     json_response = json.dumps(data)
-    timestamp = int(time.time()) if not from_timestamp else from_timestamp
+    timestamp = int(time.time()) if not from_timestamp else int(from_timestamp)
     if data is None:
         raise ValueError(f"Trying to save null data '{data}' for '{key}'")
     cursor.execute('''
@@ -88,6 +88,7 @@ def get_cached_result(api_name, key, do_not_expire=False):
     if row:
         json_response, timestamp = row
         current_time = int(time.time())
+        timestamp = int(timestamp)
         if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
             return json.loads(json_response)
     else:
