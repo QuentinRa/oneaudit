@@ -220,7 +220,7 @@ Note: Percentages marked with a star (☆) are representing the percentage of re
 
 Some passwords in the leaks may be irrelevant, such as overly short or long ones, or hashes that are mistakenly labeled as passwords by certain providers. Additionally, we may want to handle censored passwords by identifying and removing as many of them as possible using known password patterns. However, this approach carries the risk of incorrectly adding some passwords.
 
-```powershell
+```
 $ oneaudit leaks clean -i leaks.json -o pwned.json
 $ oneaudit leaks stats -i pwned.json --cache .cache
 

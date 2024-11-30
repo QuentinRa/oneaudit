@@ -30,7 +30,7 @@ def run(args):
     del domain_data['emails']
 
     save_to_json(args.output_file, {
-        'version': 1.3,
+        'version': 1.4,
         'credentials': credentials,
         "additional": domain_data,
     })

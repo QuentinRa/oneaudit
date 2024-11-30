@@ -211,7 +211,8 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
     def investigate_domain(self, domain):
         results = {
             'leaked_urls': [],
-            'censored_data': [],
+            'censored_creds': [],
+            'censored_stealers': [],
             'emails': [],
         }
         if not domain:

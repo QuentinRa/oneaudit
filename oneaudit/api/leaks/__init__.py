@@ -33,6 +33,11 @@ class CensoredCredentials:
 
 
 @dataclass(frozen=True, order=True)
+class CensoredInfoStealers:
+    device_identifier: str
+    infection_date: str
+
+@dataclass(frozen=True, order=True)
 class CredentialStat:
     identifier: str
     provider: str

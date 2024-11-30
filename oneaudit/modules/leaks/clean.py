@@ -38,7 +38,8 @@ def run(args):
     logger = get_project_logger()
 
     with open(args.input_file, 'r') as file_data:
-        credentials = json.load(file_data)['credentials']
+        data = json.load(file_data)
+        credentials = data['credentials']
 
     # Passwords too long or too short are unlikely to be of any use
     # (some are junk/most likely from very old breaches, or even censored hashes)
@@ -83,8 +84,5 @@ def run(args):
             for unknown_censored_password in unknown_censored_passwords:
                 logger.warning(f"Uknown censored password {unknown_censored_password} for {credential['passwords']}")
 
-    save_to_json(args.output_file, {
-        "version": 1.0,
-        "index": 0,
-        "credentials": credentials
-    })
+    data['credentials'] = credentials
+    save_to_json(args.output_file, data)

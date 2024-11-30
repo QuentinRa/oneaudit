@@ -1,4 +1,4 @@
-from oneaudit.api.leaks import CensoredCredentials, LeaksAPICapability
+from oneaudit.api.leaks import CensoredCredentials, CensoredInfoStealers, LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 import time
 
@@ -64,10 +64,14 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
 
                 yield cached, {
                     'leaked_urls': [format_url(leak['URL']) for leak in data['credentials']],
-                    'censored_data': [CensoredCredentials(
+                    'censored_creds': [CensoredCredentials(
                         leak['username'],
                         leak['password'],
-                    ) for leak in data['credentials']]
+                    ) for leak in data['credentials']],
+                    'censored_stealers': [CensoredInfoStealers(
+                        element['device_id'],
+                        element['breach_date'],
+                    ) ] if 'device_id' in element else []
                 }
 
         yield cached, {}
