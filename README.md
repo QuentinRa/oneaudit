@@ -16,12 +16,7 @@ WIP
 * Test only one email per domain with verifying emails
 * Add proxy support
 * Remove backward compatibility caching code
-
-Undocumented
-
-* `-r` for leaks
-* `--log-file` for logs
-* email verification
+* email verification documentation
 
 ## SocOSINT
 
@@ -31,7 +26,7 @@ Undocumented
 
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
-```
+```powershell
 oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 ```
 
@@ -60,13 +55,13 @@ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 
 If the API support it and you have enough export credits, you can export a list of profiles with:
 
-```shell
-$ oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
+```powershell
+oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
 After exporting the emails, you can generate a unified list of targets for use with other module with:
 
-```
+```powershell
 # Only keep employees working at "LinkedIn" (you can use multiple filters).
 # When using '-v' you can view which companies were excluded from the list.
 oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
@@ -107,7 +102,7 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 We can compute a list of targets from OSINT results.
 
 ```powershell
-$ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
+oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 ```
 
 ```json
@@ -136,7 +131,7 @@ $ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.co
 
 You can download leaks and dark web data using the following module.
 
-```
+```powershell
 # one domain
 oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
 # multiple domains
@@ -206,6 +201,7 @@ After download leaks for each user, you can compute statistics for each API prov
 
 ```
 $ oneaudit leaks stats -i leaks.json --cache .cache
+
 |  field \ provider  |   proxynova    | hudsonrocks |    leakcheck    |    snusbase    |
 +--------------------+----------------+-------------+-----------------+----------------+
 |     passwords      | 58.0% (☆ 1.0%) |      x      | 95.7% (☆ 32.9%) | 17.6% (☆ 3.2%)|
@@ -222,7 +218,7 @@ Note: Percentages marked with a star (☆) are representing the percentage of re
 
 Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
 
-```
+```powershell
 oneaudit [...] --config config.json --cache .cache
 ```
 
