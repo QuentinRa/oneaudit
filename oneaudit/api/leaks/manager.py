@@ -1,5 +1,5 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget, CredentialStat
+from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel

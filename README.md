@@ -102,7 +102,10 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 We can compute a list of targets from OSINT results.
 
 ```powershell
+# one domain
 oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
+# multiple domains
+oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com --alias dev.example.com -o targets.json -v
 ```
 
 ```json
@@ -132,10 +135,10 @@ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com 
 You can download leaks and dark web data using the following module.
 
 ```powershell
-# one domain
+# Only include OSINT targets
+oneaudit leaks download -i targets.json -o leaks.json --config config.json
+# Look for emails not in targets using the domain name
 oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
-# multiple domains
-oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com --alias dev.example.com -v # multiple domains
 ```
 
 ```json
@@ -287,3 +290,7 @@ Candidates:
 
 * [hashes.com](https://hashes.com/en/docs): hash identifier (FREE) or Rainbow table (PAID)
 * [DeHashed](https://www.dehashed.com/): Leaked Credentials. Require Platform and API subscriptions.
+* [idstrong](https://www.idstrong.com/): Data breaches, no API
+* [AmIBreached](https://amibreached.com/): Data breaches, no API
+* [HaveIBeenPwned](https://haveibeenpwned.com/): Data breaches API
+* [KeeperSecurity](https://www.keepersecurity.com): Data breaches, no API
