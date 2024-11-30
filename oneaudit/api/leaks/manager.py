@@ -40,7 +40,13 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             'breaches': {},
         }
         for credential in credentials:
+            # We need to inspect the results for EACH login
+            # If a user has two emails, we want to know the cumulated stats
+            # (e.g. one password 'abc' for a@b.c and one password 'abc' for a@d.e as counted as two
+            #   passwords as the login is different even if the user that own the two emails is the same)
+            found_passwords = []
             for login in credential['logins']:
+
                 # While not necessary, it will reduce the number of queries
                 # to the cache, as we won't look for logins that are not emails
                 if "@" not in login or " " in login or ":" in login:
@@ -68,9 +74,19 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                                 stats[key][entry] = []
                             stats[key][entry].append(api_provider.api_name)
 
+                            if key == 'password':
+                                found_passwords.append(key)
+
+            # We kept track of the password we found as some may have been generated/added externally/not in the cache
+            for password in credential['passwords']:
+                if password in found_passwords:
+                    continue
+                stats['passwords'][f"{credential['login']}.{password}"] = ['unknown']
+
         final_stats = {}
         for attribute_name, entries in stats.items():
             stats_per_provider = {provider.api_name:{'all': 0, 'exclusive': 0} for provider in self.providers}
+            stats_per_provider['unknown'] = {'all': 0, 'exclusive': 0}
 
             # Compute the exclusive/all values for each provider for this specific attribute
             for identifier, values in entries.items():

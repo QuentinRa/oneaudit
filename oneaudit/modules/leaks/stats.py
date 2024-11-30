@@ -57,3 +57,4 @@ def run(args):
     print(table)
     print()
     print("Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.")
+    print("Note: API Provider 'unknown' includes computed passwords or passwords that were added manually.")
