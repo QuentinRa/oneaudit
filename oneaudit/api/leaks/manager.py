@@ -67,15 +67,20 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             continue
 
                         for entry in entries:
-                            if entry not in credential[key]:
-                                continue
-                            entry = f"{login}.{entry}"
-                            if entry not in stats[key]:
-                                stats[key][entry] = []
-                            stats[key][entry].append(api_provider.api_name)
+                            local_key = key
+                            if entry not in credential[local_key]:
+                                if local_key == 'hashes' and entry['plaintext']:
+                                    local_key = 'passwords'
+                                    entry = entry['plaintext']
+                                else:
+                                    continue
+                            entry_key = f"{login}.{entry}"
+                            if entry_key not in stats[local_key]:
+                                stats[local_key][entry_key] = []
+                            stats[local_key][entry_key].append(api_provider.api_name)
 
-                            if key == 'password':
-                                found_passwords.append(key)
+                            if local_key == 'passwords':
+                                found_passwords.append(entry)
 
             # We kept track of the password we found as some may have been generated/added externally/not in the cache
             for password in credential['passwords']:
