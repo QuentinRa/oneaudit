@@ -12,6 +12,13 @@ def define_args(parent_parser):
     args_verbose_config(download_leaks)
 
 
+def _add_to_column(columns, column_name, column_value):
+    if column_name not in columns:
+        columns[column_name] = [column_value]
+    else:
+        columns[column_name].append(column_value)
+
+
 def run(args):
     args.api_config = None
     args_parse_parse_verbose(args)
@@ -27,22 +34,25 @@ def run(args):
     print()
 
     table = PrettyTable()
-    table.field_names = ["field \\ provider"] + [f'{name}' for (t, _) in list(stats.values())[:1] for name in t.keys()]
+    table_data = {}
 
     for attribute, (attribute_stats, total_count) in stats.items():
-        table_data = [attribute]
+        _add_to_column(table_data, "field \\ provider", attribute + " (" + str(total_count) + ")")
         for provider_name, provider_stats in attribute_stats.items():
             all_stats, exclusive = provider_stats['all'], provider_stats['exclusive']
             if all_stats == 0:
-                table_data.append("x")
+                _add_to_column(table_data, provider_name, None)
                 continue
             percent1, percent2 = (all_stats / total_count) * 100, (exclusive / total_count) * 100
             message = (str(int(percent1)) if percent1.is_integer() else f'{percent1:.1f}') + '%'
             if percent2 != percent1:
                 message += " (☆ " + (str(int(percent2)) if percent2.is_integer() else f"{percent2:.1f}") + '%)'
-            table_data.append(message)
+            _add_to_column(table_data, provider_name, message)
 
-        table.add_row(table_data)
+    for column_name, values in table_data.items():
+        if all(value is None for value in values):
+            continue
+        table.add_column(column_name, ["x" if value is None else value for value in values])
 
     print(table)
     print()
