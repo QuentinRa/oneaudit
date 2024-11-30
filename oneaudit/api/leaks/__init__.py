@@ -55,29 +55,29 @@ class InfoStealer:
 
 @dataclass(frozen=True, order=False)
 class BreachData:
-    name: str
-    source: str|None
+    source: str
+    date: str|None
 
     def to_dict(self):
         return {
-            "name": self.name,
-            "source": self.source if self.source else None,
+            "name": self.source if self.source else "Unknown",
+            "date": self.date if self.date else None,
         }
 
     def __lt__(self, other):
         if not isinstance(other, BreachData):
             return NotImplemented
 
-        if self.name != other.name:
-            return self.name < other.name
+        if self.source != other.source:
+            return (self.source is not None, self.source) < (other.source is not None, other.source)
 
-        return (self.source is not None, self.source) < (other.source is not None, other.source)
+        return (self.date is not None, self.date) < (other.date is not None, other.date)
 
     def __hash__(self):
-        normalized_source = self.source if self.source is not None else ''
-        return hash((self.name, normalized_source))
+        normalized_source = self.date if self.date is not None else ''
+        return hash((self.source, normalized_source))
 
     def __eq__(self, other):
         if not isinstance(other, BreachData):
             return NotImplemented
-        return (self.name, self.source if self.source is not None else '') == (other.name, other.source if other.source is not None else '')
+        return (self.source, self.date if self.date is not None else '') == (other.source, other.date if other.date is not None else '')

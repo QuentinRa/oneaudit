@@ -52,7 +52,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             cached, data = self.fetch_results_using_cache(f"public_{email}", default={})
             sources = data['sources'] if 'sources' in data else []
             results = {
-                'breaches': [BreachData(source["name"], source["date"]) for source in sources]
+                'breaches': [BreachData(source["name"], source["date"] if "date" in source else None) for source in sources]
             }
             yield cached, results
 
@@ -68,8 +68,7 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
                 sources = [entry['source'] for entry in data['result'] if 'source' in entry]
                 results = {
                     'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
-                    'breaches': [BreachData(source["name"], source["breach_date"])
-                                 for source in sources if source['name'] != "Unknown"],
+                    'breaches': [BreachData(source["name"], source["breach_date"] if "breach_date" in source else None) for source in sources],
                 }
                 yield cached, results
             except APIRateLimitException:

@@ -1,5 +1,3 @@
-from email.policy import default
-
 from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from datetime import datetime
