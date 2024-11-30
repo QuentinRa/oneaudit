@@ -53,7 +53,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         args=(login,)):
                     for key, entries in api_result.items():
                         if key == 'raw_hashes':
-                            entries = [list(api_provider.lookup_plaintext_from_hash(entry))[0][1] for entry in entries]
+                            entries = [self._find_plaintext_from_hash(entry) for entry in entries]
                             key = 'hashes'
                         if key in ['breaches', 'hashes', 'info_stealers']:
                             entries = [asdict(entry) for entry in entries]
@@ -148,26 +148,13 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
                     for hash_to_crack in results[key]['raw_hashes']:
                         hash_to_crack = hash_to_crack.strip()
-                        hash_data = PasswordHashDataFormat(hash_to_crack, None, None, -1)
 
                         # No need to crack these
                         if hash_to_crack in known_hashes:
                             continue
 
                         # We need to crack it, or at least, investigate it
-                        for _, api_result in self._call_all_providers(
-                                    heading="Attempt to find plaintext from hash",
-                                    capability=LeaksAPICapability.INVESTIGATE_CRACKED_HASHES,
-                                    method_name='lookup_plaintext_from_hash',
-                                    args=(hash_to_crack,)):
-                            hash_data = PasswordHashDataFormat(
-                                hash_to_crack,
-                                api_result.plaintext if api_result.plaintext else hash_data.plaintext,
-                                api_result.format if hash_data.format_confidence < api_result.format_confidence else hash_data.format,
-                                api_result.format_confidence if hash_data.format_confidence < api_result.format_confidence else hash_data.format_confidence,
-                            )
-                            if hash_data.plaintext:
-                                break
+                        hash_data = self._find_plaintext_from_hash(hash_to_crack)
 
                         # If uncracked, add the hash to the list, otherwise
                         # Add the password to the list
@@ -229,3 +216,20 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                 self.logger.error(f"Unexpected type for: k={k} v={v}")
                 continue
         return results
+
+    def _find_plaintext_from_hash(self, hash_to_crack):
+        hash_data = PasswordHashDataFormat(hash_to_crack, None, None, -1)
+        for _, api_result in self._call_all_providers(
+                heading="Attempt to find plaintext from hash",
+                capability=LeaksAPICapability.INVESTIGATE_CRACKED_HASHES,
+                method_name='lookup_plaintext_from_hash',
+                args=(hash_to_crack,)):
+            hash_data = PasswordHashDataFormat(
+                hash_to_crack,
+                api_result.plaintext if api_result.plaintext else hash_data.plaintext,
+                api_result.format if hash_data.format_confidence < api_result.format_confidence else hash_data.format,
+                api_result.format_confidence if hash_data.format_confidence < api_result.format_confidence else hash_data.format_confidence,
+            )
+            if hash_data.plaintext:
+                break
+        return hash_data
