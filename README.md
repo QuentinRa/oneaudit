@@ -13,8 +13,6 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 WIP
 
 * Clean censored passwords
-* Show API stats
-* Recursive search based on new emails
 * Add Nubela? Apollo?
 * Test only one email per domain with verifying emails
 * Add proxy support
@@ -61,10 +59,18 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 }
 ```
 
+If the API support it and you have enough export credits, you can export a list of profiles with:
+
+```bash
+$ oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
+Export done.
+```
+
 After exporting the emails, you can generate a unified list of targets for use with other module with:
 
 ```bash
-$ # Only keep employees working at "LinkedIn" (can use multiple filters)
+$ # Only keep employees working at "LinkedIn" (you can use multiple filters).
+$ # When using '-v' you can view which companies were excluded from the list.
 $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
 ```
 
@@ -134,6 +140,7 @@ You can download leaks and dark web data using the following module.
 
 ```bash
 $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
+$ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com --alias dev.example.com -v # multiple domains
 ```
 
 ```json
@@ -191,6 +198,24 @@ $ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d 
     ]
   }
 }
+```
+
+#### Compute Stats For Each Provider
+
+After download leaks for each user, you can compute statistics for each API provider. You can view the percentage of entries per categories and per provider, along with the percentage of exclusive results, if applicable.
+
+```
+$ oneaudit leaks stats -i leaks.json --cache .cache
+|  field \ provider  |   proxynova    | hudsonrocks |    leakcheck    |    snusbase    |
++--------------------+----------------+-------------+-----------------+----------------+
+|     passwords      | 58.0% (☆ 1.0%) |      x      | 95.7% (☆ 32.9%) | 17.6% (☆ 3.2%)|
+| censored_passwords |       x        |     100%    |        x        |       x        |
+|       hashes       |       x        |      x      |        x        |      100%      |
+|   info_stealers    |       x        |     100%    |        x        |       x        |
+|      breaches      |       x        |      x      |       100%      |       x        |
++--------------------+----------------+-------------+-----------------+----------------+
+
+Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.
 ```
 
 ## API Configuration

@@ -25,12 +25,6 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
                 self.capabilities = []
             raise APIRateLimitException(f"{response.text}")
 
-    def handle_request(self, **kwargs):
-        response = super().handle_request(**kwargs)
-        if response.status_code != 403:
-            return response
-        self.handle_rate_limit(response)
-
     def get_request_rate(self):
         return 1
 
@@ -45,6 +39,8 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             },
             api_keys=api_keys
         )
+        self.rate_limit_status_codes.append(403)
+        self.allowed_status_codes.append(400)
 
     def investigate_leaks_by_email(self, email):
         if LeaksAPICapability.FREE_ENDPOINT in self.capabilities or self.only_use_cache:
@@ -66,6 +62,8 @@ class LeakCheckAPI(OneAuditLeaksAPIProvider):
             try:
                 cached, data = self.fetch_results_using_cache(f"pro_{email}", default={'result': []})
                 if 'result' not in data:
+                    if 'error' in data and data['error'] and 'Searching for government domains is disabled' in data['error']:
+                        return False, {}
                     raise Exception(f"Unexpected result for {self.api_name}: {data}")
                 sources = [entry['source'] for entry in data['result'] if 'source' in entry]
                 results = {
