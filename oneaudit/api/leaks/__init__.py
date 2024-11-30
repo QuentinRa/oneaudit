@@ -61,7 +61,7 @@ class BreachData:
     def to_dict(self):
         return {
             "name": self.source if self.source else "Unknown",
-            "date": self.date if self.date else None,
+            "date": self.date[:7] if self.date else None,
         }
 
     def __lt__(self, other):
@@ -71,7 +71,7 @@ class BreachData:
         if self.source != other.source:
             return (self.source is not None, self.source) < (other.source is not None, other.source)
 
-        return (self.date is not None, self.date) < (other.date is not None, other.date)
+        return (self.date is not None, self.date[:7]) < (other.date is not None, other.date[:7])
 
     def __hash__(self):
         normalized_source = self.date if self.date is not None else ''
@@ -80,4 +80,4 @@ class BreachData:
     def __eq__(self, other):
         if not isinstance(other, BreachData):
             return NotImplemented
-        return (self.source, self.date if self.date is not None else '') == (other.source, other.date if other.date is not None else '')
+        return (self.source, self.date[:7] if self.date is not None else '') == (other.source, other.date[:7] if other.date is not None else '')

@@ -1,6 +1,7 @@
 from oneaudit.modules.osint.emails import check
 from oneaudit.utils import args_call_target
 
+
 def define_args(parent_parser):
     email_module = parent_parser.add_parser('emails')
 

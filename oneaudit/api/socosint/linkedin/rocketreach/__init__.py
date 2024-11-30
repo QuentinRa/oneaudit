@@ -66,7 +66,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             ids = []
             while True:
                 targets = []
-                self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else "?"}")
+                self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else '?'}")
                 self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
                 cached, data = self.fetch_results_using_cache(f"{company_domain}_score_{page}", default=None, method='execute')
                 for profile in data["profiles"]:

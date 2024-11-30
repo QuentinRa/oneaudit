@@ -1,6 +1,7 @@
 from oneaudit.modules.socosint import linkedin
 from oneaudit.utils import args_call_target
 
+
 def define_args(parent_parser):
     socosint_module = parent_parser.add_parser('socosint', help='Social Networks OSINT')
 

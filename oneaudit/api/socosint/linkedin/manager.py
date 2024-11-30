@@ -1,6 +1,6 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.socosint.linkedin import LinkedInAPICapability
-from time import time
+
 
 class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
     """
@@ -24,13 +24,7 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             result={provider.api_name: [] for provider in self.providers},
             args=(company_domain, target_profile_list_id)
         )
-
-        return [{
-            "source": provider.api_name,
-            "date": time(),
-            "version": 1.2,
-            "targets": result[provider.api_name]
-        } for provider in self.providers]
+        return [entry for entries in result.values() for entry in entries]
 
     def export_profiles_from_profile_list(self, api_name, target_profile_list_id):
         for provider in self.providers:

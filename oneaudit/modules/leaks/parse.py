@@ -85,7 +85,7 @@ def run(args):
         email_valid = email_valid and email_regex.match(computed_email) is not None
         if not email_valid:
             if computed_email not in found:
-                logger.warning(f"Invalid Computed Login: {computed_email} (verified={[t['email'] for t in target["emails"] if t['verified']]})")
+                logger.warning(f"Invalid Computed Login: {computed_email} (verified={[t['email'] for t in target['emails'] if t['verified']]})")
                 found[computed_email] = {}
             continue
 

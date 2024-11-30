@@ -21,7 +21,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
                 'method': 'POST',
                 'json': {},
                 'headers': {
-                    'Authorization': f'Bearer {api_keys.get('whiteintel', None)}'
+                    'Authorization': f'Bearer {api_keys.get("whiteintel", None)}'
                 }
             },
             api_keys=api_keys

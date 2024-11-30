@@ -19,7 +19,7 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
                     self.kill_switch += 1
                 return self.handle_request()
             else:
-                self.logger.error(f"{self.api_name} could not process '{self.request_args["url"]}'.")
+                self.logger.error(f"{self.api_name} could not process '{self.request_args['url']}'.")
                 return FakeResponse(204, {"lines": []})
         self.kill_switch = 0
         return response
