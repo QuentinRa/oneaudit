@@ -12,7 +12,6 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 
 WIP
 
-* Clean censored passwords
 * Add Nubela? Apollo?
 * Test only one email per domain with verifying emails
 * Add proxy support
@@ -36,7 +35,7 @@ You can use this module to get a list of LinkedIn profiles still working in the 
 oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 ```
 
-```
+```json
 {
   "version": 1.1,
   "entries": [
@@ -61,7 +60,7 @@ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 
 If the API support it and you have enough export credits, you can export a list of profiles with:
 
-```
+```bash
 oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
@@ -73,7 +72,7 @@ After exporting the emails, you can generate a unified list of targets for use w
 oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
 ```
 
-```
+```json
 {
   "version": 1.0,
   "entries": [
@@ -111,7 +110,7 @@ We can compute a list of targets from OSINT results.
 oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 ```
 
-```
+```json
 {
   "version": 1.2,
   "credentials": [
@@ -144,7 +143,7 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
 oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com --alias dev.example.com -v # multiple domains
 ```
 
-```
+```json
 {
   "version": 1.3,
   "credentials": [
@@ -229,7 +228,7 @@ oneaudit [...] --config config.json --cache .cache
 
 The expected format **without any comments** is:
 
-```
+```json5
 {
   // This API is free, just leave the key empty
   "aura": "",
