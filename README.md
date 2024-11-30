@@ -60,8 +60,8 @@ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 
 If the API support it and you have enough export credits, you can export a list of profiles with:
 
-```bash
-oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
+```shell
+$ oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
 After exporting the emails, you can generate a unified list of targets for use with other module with:
@@ -106,8 +106,8 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 
 We can compute a list of targets from OSINT results.
 
-```
-oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
+```powershell
+$ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 ```
 
 ```json
