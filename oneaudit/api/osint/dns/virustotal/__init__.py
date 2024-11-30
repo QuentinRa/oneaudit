@@ -1,7 +1,8 @@
-from oneaudit.api.osint.dns import DNSCapability
+from oneaudit.api.osint.dns import DNSCapability, DomainInformation
 from oneaudit.api.osint.dns.provider import OneAuditDNSAPIProvider
 
 
+# https://docs.virustotal.com/reference/overview
 class VirusTotalAPI(OneAuditDNSAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [DNSCapability.SUBDOMAINS_ENUMERATION] if api_key is not None else []
@@ -27,10 +28,11 @@ class VirusTotalAPI(OneAuditDNSAPIProvider):
         # Check subdomains
         self.request_args['url'] = self.api_endpoint.format(domain=domain, type="subdomains")
         cached, data = self.fetch_results_using_cache(key=f"subdomains_{domain}", default={'data': []})
-
-        for entry in data['data']:
-            print(entry['id'])
-            print(entry['type'])
-            print(entry['attributes']['last_dns_records'])
-
-        yield cached, {'subdomains': []}
+        yield cached, {
+            'subdomains':
+                [DomainInformation(entry['id'], record['value'])
+                 for entry in data['data']
+                 for record in entry['attributes']['last_dns_records']
+                 if record['type'] in ['A']]
+        }
+        # We should also check each domain for 'siblings'
