@@ -150,10 +150,72 @@ def define_args(parent_parser):
     args_verbose_config(clean_leaks)
 
 
+def censor_password(password, keep_start):
+    """
+    Input: toto1
+    => to**1 if we censor and keep the start
+    => t**o1 if we censor and keep the end
+    """
+    password_length = len(password)
+    if password_length <= 1:
+        return '*' if password_length == 1 else ''
+    if password_length <= 3:
+        return password[0] + "*" * (password_length-1)
+    if password_length == 4:
+        return password[0] + "*" * (password_length-2) + password[-1]
+    if keep_start:
+        first, second, last = password[0], password[1], password[-1]
+        return first + second + '*' * (password_length - 3) + last
+    else:
+        first, before_last, last = password[0], password[-2], password[-1]
+        return first + '*' * (password_length - 3) + before_last + last
+
 def run(args):
-    try:
-        processor = LeaksCredentialProcessor(args)
-        processor.cmdloop()
-    except KeyboardInterrupt:
-        pass
+    # try:
+    #     processor = LeaksCredentialProcessor(args)
+    #     processor.cmdloop()
+    # except KeyboardInterrupt:
+    #     pass
+
+    args_parse_parse_verbose(args)
+    logger = get_project_logger()
+
+    with open(args.input_file, 'r') as file_data:
+        credentials = json.load(file_data)['credentials']
+
+    # Passwords too long or too short are unlikely to be of any use
+    # (some are junk/most likely from very old breaches, or even censored hashes)
+    possible_trails = [""] + [chr(i) for i in range(0, 255)]
+    for credential in credentials:
+        if not credential['passwords'] and not credential['censored_passwords']:
+            continue
+
+        unknown_censored_passwords = []
+        passwords = [p for p in credential['passwords'] if 4 <= len(p) < 25]
+        known_censored_passwords = {}
+
+        for know_password in passwords:
+            for trail in possible_trails:
+                password = know_password + trail
+                for aura_mode in [True, False]:
+                    censored = censor_password(password, keep_start=aura_mode)
+                    known_censored_passwords[censored] = password
+                    known_censored_passwords[censored[0].lower() + censored[1:]] = password[0].lower() + password[1:]
+                    known_censored_passwords[censored[0].upper() + censored[1:]] = password[0].upper() + password[1:]
+
+        for censored_password in credential['censored_passwords']:
+            if censored_password in known_censored_passwords:
+                passwords.append(known_censored_passwords[censored_password])
+                continue
+            if not 4 <= len(censored_password) < 25:
+                continue
+            unknown_censored_passwords.append(censored_password)
+
+        # If we knew of every censored hash, we remove them
+        credential['passwords'] = [p for p in set(passwords) if p != "(null)"]
+        credential['censored_passwords'] = unknown_censored_passwords
+        if unknown_censored_passwords:
+            for unknown_censored_password in unknown_censored_passwords:
+                logger.warning(f"Uknown censored password {unknown_censored_password} for {credential['passwords']}")
+
 
