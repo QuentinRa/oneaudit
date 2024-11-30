@@ -32,11 +32,11 @@ Undocumented
 
 You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
 
-```bash
-$ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
+```
+oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 ```
 
-```json
+```
 {
   "version": 1.1,
   "entries": [
@@ -61,20 +61,19 @@ $ oneaudit socosint linkedin scrap -d example.com -o osint.json -v
 
 If the API support it and you have enough export credits, you can export a list of profiles with:
 
-```bash
-$ oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
-Export done.
+```
+oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
 After exporting the emails, you can generate a unified list of targets for use with other module with:
 
-```bash
-$ # Only keep employees working at "LinkedIn" (you can use multiple filters).
-$ # When using '-v' you can view which companies were excluded from the list.
-$ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
+```
+# Only keep employees working at "LinkedIn" (you can use multiple filters).
+# When using '-v' you can view which companies were excluded from the list.
+oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
 ```
 
-```json
+```
 {
   "version": 1.0,
   "entries": [
@@ -108,11 +107,11 @@ $ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s roc
 
 We can compute a list of targets from OSINT results.
 
-```bash
-$ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
+```
+oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 ```
 
-```json
+```
 {
   "version": 1.2,
   "credentials": [
@@ -138,12 +137,14 @@ $ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.co
 
 You can download leaks and dark web data using the following module.
 
-```bash
-$ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
-$ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com --alias dev.example.com -v # multiple domains
+```
+# one domain
+oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
+# multiple domains
+oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com --alias dev.example.com -v # multiple domains
 ```
 
-```json
+```
 {
   "version": 1.3,
   "credentials": [
@@ -222,13 +223,13 @@ Note: Percentages marked with a star (☆) are representing the percentage of re
 
 Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
 
-```bash
-$ oneaudit [...] --config config.json --cache .cache
+```
+oneaudit [...] --config config.json --cache .cache
 ```
 
 The expected format **without any comments** is:
 
-```json
+```
 {
   // This API is free, just leave the key empty
   "aura": "",
