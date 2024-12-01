@@ -17,6 +17,9 @@ WIP
 * Add proxy support
 * Remove backward compatibility caching code
 * email verification documentation
+* reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
+* use crt.sh then virustotal with the output
+* implement subfinder as a provider
 
 ## SocOSINT
 

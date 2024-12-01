@@ -9,6 +9,7 @@ def define_args(parent_parser):
     email_module_action = email_module.add_subparsers(dest='action', help="Action to perform.", required=True)
     check.define_args(email_module_action)
 
+
 def run(args):
     # Call the 'run' method on the target 'action' object
     args_call_target(globals(), args, 'action', 'run')
