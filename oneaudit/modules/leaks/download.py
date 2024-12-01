@@ -8,7 +8,7 @@ import json
 def define_args(parent_parser):
     download_leaks = parent_parser.add_parser('download', description='Download leaks from enabled APIs.')
     download_leaks.add_argument('-i', metavar='input.json', dest='input_file', help='JSON file with known data about targets.', required=True)
-    download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".')
+    download_leaks.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     download_leaks.add_argument('-o', metavar='output.json', dest='output_file', help='Export results as JSON.', required=True)
     download_leaks.add_argument('-r', action='store_true', dest='can_use_cache_even_if_disabled', help='Reuse cached result even for disabled APIs.')
     args_api_config(download_leaks)

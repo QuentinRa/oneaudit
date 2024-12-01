@@ -1,6 +1,7 @@
 from oneaudit.api import APIRateLimitException
 from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
+from oneaudit.api.utils.caching import set_cached_result
 from time import sleep
 
 
@@ -95,8 +96,27 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
         self.request_args['url'] = self.api_endpoint.format(route='data/search')
         self.request_args['json']['terms'] = [domain]
         self.request_args['json']['types'] = ['_domain']
+
         cached, data = self.fetch_results_using_cache(key=domain, default={'results': {}})
         results = {
             'emails': [entry['email'] for user_data in data['results'].values() for entry in user_data if 'email' in entry]
         }
+
+        # Index every domain result
+        if not cached:
+            indexed_data = {}
+            for breach_name, breach_data in data['results'].items():
+                for breach_entry in breach_data:
+                    email = breach_entry['email']
+                    if email not in indexed_data:
+                        indexed_data[email] = {}
+                    if breach_name not in indexed_data[email]:
+                        indexed_data[email][breach_name] = []
+                    indexed_data[email][breach_name].append(breach_entry)
+
+            for email, fake_data in indexed_data.items():
+                set_cached_result(self.api_name, f"search_{email}", {
+                    {'took': 1337, 'size': len(fake_data.keys()), 'results': fake_data }
+                })
+
         yield cached, results
