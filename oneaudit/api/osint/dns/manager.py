@@ -7,9 +7,10 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
     APIs related to emails
     """
     def __init__(self, api_keys):
-        from oneaudit.api.osint.dns import virustotal
+        from oneaudit.api.osint.dns import virustotal, subfinder
         super().__init__([
             # FREE
+            subfinder.SubFinderAPI(api_keys),
             # FREEMIUM
             virustotal.VirusTotalAPI(api_keys)
             # PAID
@@ -30,4 +31,24 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
             result=results,
             args=(domain,)
         )
-        return sorted(set(results['subdomains']))
+
+        final_results = {}
+        for result in results['subdomains']:
+            # Add the domain, since we only have this one
+            if result.domain_name not in final_results:
+                final_results[result.domain_name] = [result]
+                continue
+
+            # If we already have one result that may have an IP
+            if not result.ip_address:
+                continue
+
+            old_result = final_results[result.domain_name][0]
+
+            # Discard if there is no IP address
+            if not old_result.ip_address:
+                final_results[result.domain_name] = [result]
+            else:
+                final_results[result.domain_name].append(result)
+
+        return sorted(set([e for v in final_results.values() for e in v]))
