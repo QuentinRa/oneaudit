@@ -18,8 +18,11 @@ WIP
 * Remove backward compatibility caching code
 * email verification documentation
 * reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
-* use crt.sh then virustotal with the output
-* implement subfinder as a provider
+* subdomains
+  * use crt.sh then virustotal with the output
+  * resolve ip addresses?
+  * add option to only keep some range(s) of IPs
+  * improve subfinder integration
 
 ## SocOSINT
 
