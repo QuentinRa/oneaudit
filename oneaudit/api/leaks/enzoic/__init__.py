@@ -3,6 +3,7 @@ from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from time import sleep
 from base64 import b64encode
+from re import compile
 
 
 # https://docs.enzoic.com/enzoic-api-developer-documentation
@@ -30,6 +31,19 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
         )
         self.request_args['headers']['authorization'] = f'basic {b64encode(self.api_key.encode()).decode()}' if self.api_key else ''
         self.exposure_key_format = f'{self.api_name}_exposures_{{email}}'
+        self.domain_matcher = compile(r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?')
+        self.title_mapper = {
+            'Threat Actor': None,
+            'Unknown': None,
+
+            'Infostealers': 'Stealer Logs',
+
+            'list': 'Combolist',
+            'collection': 'Combolist',
+            'Compilation': 'Combolist',
+            'Combolist': 'Combolist',
+            'Anti Public': 'Anti Public',
+        }
 
     def investigate_bulk(self, emails):
         # Only process the emails for which we don't have anything
@@ -52,18 +66,21 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
         result = { 'breaches': [] }
         for exposure in data['exposures']:
             source = exposure['sourceURLs'][0] if exposure['sourceURLs'] else None
-            # if not sources:
-            #     sources = [exposure['title']]
-            # if sources:
-            #     sources[0] = sources[0].lower()
-            #     sources[0] = (
-            #         'stealer logs' if 'infostealers' in sources[0] else
-            #         'combolist' if 'combolist' in sources[0] or 'compilation' in sources[0] or 'collection' in sources[0] else
-            #         'combolist' if 'dehashed' in sources[0] or 'fabricated' in sources[0] or 'cit0day' in sources[0] else
-            #         sources[0] if 'threat actor comms file download' not in sources[0] and 'unknown' not in sources[0] else 'unknown'
-            #     )
-            # if source and len(source) > 20:
-            #     raise Exception(f'{self.api_name}: unexpected source "{source}" for "{exposure}".')
+            if source is None:
+                title = exposure['title']
+                match = self.domain_matcher.match(title)
+                if match:
+                    source = match.group(0)
+                else:
+                    found = False
+                    for title_part, title_value in self.title_mapper.items():
+                        if title_part.lower() in title.lower():
+                            found = True
+                            source = title_value
+                            break
+                    # if not found:
+                    #     print(exposure)
+                    #     raise Exception("X")
             result['breaches'].append(BreachData(
                 source,
                 exposure['dateAdded']
