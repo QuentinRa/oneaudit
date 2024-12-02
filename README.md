@@ -15,6 +15,7 @@ WIP
 * Add Nubela? Apollo?
 * Test only one email per domain with verifying emails
 * Add proxy support
+* Improve caching (allow each API to customize the check)
 * Remove backward compatibility caching code
 * email verification documentation
 * reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
@@ -23,6 +24,7 @@ WIP
   * resolve ip addresses?
   * add option to only keep some range(s) of IPs
   * improve subfinder integration
+  * [internetdb](https://internetdb.shodan.io/)
 
 ## SocOSINT
 

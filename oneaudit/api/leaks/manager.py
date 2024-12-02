@@ -66,8 +66,6 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             key = 'hashes'
                         if key in ['breaches', 'hashes', 'info_stealers']:
                             entries = [serialize_api_object(entry) for entry in entries]
-                            if api_provider.api_name == "enzoic":
-                                print(entries)
                         if key not in stats:
                             continue
 

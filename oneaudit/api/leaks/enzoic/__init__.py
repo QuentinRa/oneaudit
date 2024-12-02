@@ -42,13 +42,14 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
             'collection': 'Combolist',
             'Compilation': 'Combolist',
             'Combolist': 'Combolist',
+            'database': 'Combolist',
             'Anti Public': 'Anti Public',
         }
 
     def investigate_bulk(self, emails):
         # Only process the emails for which we don't have anything
         emails = sorted([email for email in emails if get_cached_result(self.api_name, self.exposure_key_format.format(email=email)) is None])
-        print(len(emails))
+        self.logger.debug(f"{self.api_name}: bulk download of {len(emails)} entries.")
         for i in range(0, len(emails), 50):
             self.request_args['params']['usernames'] = emails[i:i+50]
             data = self.fetch_result_without_cache()
@@ -78,11 +79,10 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                             found = True
                             source = title_value
                             break
-                    # if not found:
-                    #     print(exposure)
-                    #     raise Exception("X")
+                    if not found:
+                        self.logger.debug(f"{self.api_name}: no source found for {exposure}.")
             result['breaches'].append(BreachData(
                 source,
-                exposure['dateAdded']
+                exposure['date'] if exposure['date'] else exposure['dateAdded']
             ))
         yield True, result
