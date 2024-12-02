@@ -43,7 +43,7 @@ def run(args):
 
     # Passwords too long or too short are unlikely to be of any use
     # (some are junk/most likely from very old breaches, or even censored hashes)
-    possible_trails = [""] + [chr(i) for i in range(0, 255)]
+    possible_trails = ["", None] + [chr(i) for i in range(0, 255)]
     for credential in credentials:
         if not credential['passwords'] and not credential['censored_passwords']:
             continue
@@ -59,7 +59,13 @@ def run(args):
 
             for know_password in passwords_to_process:
                 for trail in possible_trails:
-                    password = know_password + trail
+                    # We remove the last character, or add a trail
+                    if trail is None:
+                        password = know_password[:-1]
+                    else:
+                        password = know_password + trail
+
+                    # And we test all variants
                     for censor_mode in range(0, 3):
                         censored = censor_password(password, censor_mode)
                         known_censored_passwords[censored] = password
