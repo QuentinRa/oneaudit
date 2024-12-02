@@ -267,6 +267,7 @@ The expected format **without any comments** is:
   "proxynova": "",
   "spycloud": "",
   // This API is paid, an API key is required
+  "enzoic": "your_api_key:your_api_secret",
   "hashmob": "your_api_key",
   "rocketreach": "your_api_key",
   "leakcheck_pro": "your_api_key",
@@ -285,6 +286,7 @@ The followed APIs are used by the plugin:
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
 | [spycloud](https://spycloud.com/)                  | `FREE`     | Data breaches API.                             |
+| [enzoic](https://www.enzoic.com/)                  | `FREEMIUM`     | Data breaches API.                             |
 | [proxynova](https://www.proxynova.com/tools/comb)  | `FREE`     | Leaked Credentials API.                        |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
 | [snusbase](https://docs.snusbase.com/)                  | `PAID`     | Leaked Credentials API.                        |

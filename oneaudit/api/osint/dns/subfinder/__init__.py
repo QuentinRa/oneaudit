@@ -7,6 +7,10 @@ from json import loads
 
 
 # https://github.com/projectdiscovery/subfinder
+# Handle:
+# - https://api.hackertarget.com/hostsearch/?q={domain}
+# - https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns
+# - https://crt.sh/?q={self.domain}&output=json
 class SubFinderAPI(OneAuditDNSAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [DNSCapability.SUBDOMAINS_ENUMERATION] if api_key is not None else []

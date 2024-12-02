@@ -15,7 +15,7 @@ def serialize_api_object(obj):
 class GenericObjectEncoder(JSONEncoder):
     def default(self, obj):
         res = serialize_api_object(obj)
-        return super().default(obj) if not res else obj
+        return super().default(obj) if not res else res
 
 
 def save_to_json(output_file, obj):
