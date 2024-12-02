@@ -6,8 +6,6 @@ class LeaksAPICapability(Enum):
     INVESTIGATE_LEAKS_BY_EMAIL = 0
     INVESTIGATE_LEAKS_BY_DOMAIN = 1
     INVESTIGATE_CRACKED_HASHES = 2
-    FREE_ENDPOINT = 3
-    PAID_ENDPOINT = 4
 
 
 @dataclass(frozen=True, order=True)

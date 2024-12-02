@@ -19,13 +19,14 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             aura.AuraAPI(api_keys),
             nth.NameThatHashAPI(api_keys),
             proxynova.ProxyNovaAPI(api_keys),
+            leakcheck.LeakCheckFreeAPI(api_keys),
             # FREEMIUM
             hudsonrocks.HudsonRocksAPI(api_keys),
             hashmob.HashMobAPI(api_keys),
             spycloud.SpyCloudAPI(api_keys),
             whiteintel.WhiteIntelAPI(api_keys),
             # PAID
-            leakcheck.LeakCheckAPI(api_keys),
+            leakcheck.LeakCheckPaidAPI(api_keys),
             snusbase.SnusbaseAPI(api_keys),
         ])
         self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
