@@ -2,7 +2,7 @@ from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
-from oneaudit.api.leaks import whiteintel
+from oneaudit.api.leaks import whiteintel, enzoic
 from dataclasses import asdict
 from hashlib import sha1, md5
 from bcrypt import hashpw
@@ -21,6 +21,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             proxynova.ProxyNovaAPI(api_keys),
             leakcheck.LeakCheckFreeAPI(api_keys),
             # FREEMIUM
+            enzoic.EnzoicAPI(api_keys),
             hudsonrocks.HudsonRocksAPI(api_keys),
             hashmob.HashMobAPI(api_keys),
             spycloud.SpyCloudAPI(api_keys),
@@ -115,6 +116,14 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
         try:
             domain_candidates = [asdict(LeakTarget(email.strip().lower(), True, [email.strip().lower()], {})) for email in candidates]
+            all_emails = [email for credential in credentials + domain_candidates for email in credential['emails']]
+            _, _ = self._call_all_providers(
+                heading="Processing bulk queries",
+                capability=LeaksAPICapability.INVESTIGATE_BULK,
+                method_name='investigate_bulk',
+                args=(all_emails,)
+            )
+
             for credential in credentials + domain_candidates:
                 key = credential['login']
                 if key in results:
