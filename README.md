@@ -16,7 +16,6 @@ WIP
 * Test only one email per domain with verifying emails
 * Add proxy support
 * Improve caching (allow each API to customize the check)
-* Remove backward compatibility caching code
 * email verification documentation
 * reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
 * subdomains
@@ -151,7 +150,7 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
 
 ```json
 {
-  "version": 1.3,
+  "version": 1.5,
   "credentials": [
     {
       "login": "john.doe@example.com",
@@ -179,8 +178,8 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
       ],
       "breaches": [
         {
-          "name": "Rockyou",
-          "source": "2009-01"
+          "source": "Rockyou",
+          "date": "2009-01"
         }
       ],
       "hashes": [

@@ -91,20 +91,4 @@ def get_cached_result(api_name, key, do_not_expire=False):
         timestamp = int(timestamp)
         if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
             return json.loads(json_response)
-    else:
-        # Backward capabilities
-        url_hash = f"{cache_folder}/{api_name}/" + hashlib.md5(key.encode('utf-8')).hexdigest() + ".cache"
-        url_hash_directory = os.path.dirname(url_hash)
-        if not os.path.exists(url_hash_directory):
-            return None
-
-        if not os.path.exists(url_hash):
-            return None
-
-        with open(url_hash, 'r') as f:
-            cached_data = json.load(f)
-            timestamp = cached_data['timestamp']
-            set_cached_result(api_name, key, cached_data['response'], timestamp)
-        os.rename(url_hash, url_hash+".migrated")
-        return get_cached_result(api_name, key, do_not_expire)
     return None
