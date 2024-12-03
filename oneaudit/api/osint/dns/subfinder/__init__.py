@@ -30,7 +30,7 @@ class SubFinderAPI(OneAuditDNSAPIProvider):
         if not data:
             # Execute the given executable with the given parameters
             # User can set both the executable path and the parameter, and we won't control it
-            result = run([self.executable] + ["-d", domain, "-oJ", "-silent", "-duc", "-recursive"], capture_output=True, text=True)
+            result = run([self.executable] + ["-d", domain, "-oJ", "-silent", "-duc", "-recursive", "-ip", "-nW"], capture_output=True, text=True)
             if result.returncode != 0 or result.stderr.strip():
                 raise Exception(f"{self.api_name}: failed to execute {self.executable}.\nError: {result.stderr}")
             data = {
@@ -40,7 +40,6 @@ class SubFinderAPI(OneAuditDNSAPIProvider):
 
         data = loads('[' + ','.join([line.strip() for line in data['stdout'].split() if line]) + ']')
         yield True, {
-            # Subfinder is bad+slow at resolving IPs, so we simply don't (for now)
-            'subdomains': [DomainInformation(entry['host'], None) for entry in data]
+            'subdomains': [DomainInformation(entry['host'], entry['ip']) for entry in data]
         }
         yield True, {}

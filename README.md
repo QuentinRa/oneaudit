@@ -21,10 +21,10 @@ WIP
 * reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
 * subdomains
   * use crt.sh then virustotal with the output
-  * resolve ip addresses?
   * add option to only keep some range(s) of IPs
-  * improve subfinder integration
   * [internetdb](https://internetdb.shodan.io/)
+* Only keep a range of leaks
+* Fix issues with rocketreach randomness in search
 
 ## SocOSINT
 
