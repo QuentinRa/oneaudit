@@ -38,12 +38,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
 
             'Infostealers': 'Stealer Logs',
 
-            'list': 'Combolist',
-            'collection': 'Combolist',
-            'Compilation': 'Combolist',
-            'Combolist': 'Combolist',
-            'database': 'Combolist',
-            'Anti Public': 'Anti Public',
+            'collection #': None,
         }
 
     def investigate_bulk(self, emails):
@@ -81,6 +76,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                             break
                     if not found:
                         self.logger.debug(f"{self.api_name}: no source found for {exposure}.")
+                        source = title
             result['breaches'].append(BreachData(
                 source,
                 exposure['date'] if exposure['date'] else exposure['dateAdded']
