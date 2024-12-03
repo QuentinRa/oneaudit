@@ -75,6 +75,8 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                     if not profile["name"]:
                         self.logger.warning(f"{self.api_name}: we found an employee with a blank name. We will skip it for now.")
                         continue
+                    if not profile['links'] and 'linkedin_url' in profile:
+                        profile['links'] = {SocialNetworkEnum.LINKEDIN.value: profile['linkedin_url']}
                     targets.append(UserProfileRawData(
                         profile["name"],
                         profile['birth_year'],

@@ -1,6 +1,7 @@
 from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
+from dataclasses import asdict
 from time import sleep
 from base64 import b64encode
 from re import compile
@@ -42,6 +43,10 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
         }
 
     def investigate_bulk(self, emails):
+        # We don't have anything to do without caching
+        if self.only_use_cache:
+            return True, {}
+
         # Only process the emails for which we don't have anything
         emails = sorted([email for email in emails if get_cached_result(self.api_name, self.exposure_key_format.format(email=email)) is None])
         self.logger.debug(f"{self.api_name}: bulk download of {len(emails)} entries.")
@@ -81,4 +86,23 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                 source,
                 exposure['date'] if exposure['date'] else exposure['dateAdded']
             ))
-        yield True, result
+
+        # We only keep the latest of the leaks having the same name
+        final_breaches = {}
+        for breach in result['breaches']:
+            breach_data = asdict(breach)
+            if breach_data['source'] not in final_breaches:
+                final_breaches[breach_data['source']] = breach_data
+            else:
+                other_data = final_breaches[breach_data['source']]
+                if (breach_data['date'][:7] if breach_data['date'] is not None else '') > (other_data['date'][:7] if other_data['date'] is not None else ''):
+                    final_breaches[breach_data['source']] = other_data
+
+        yield True, {
+            'breaches': [
+                BreachData(
+                    breach['source'],
+                    breach['date']
+                ) for breach in final_breaches.values()
+            ]
+        }
