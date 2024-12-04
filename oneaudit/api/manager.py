@@ -54,7 +54,7 @@ class OneAuditBaseAPIManager:
         """
         for provider in self.providers:
             if provider.is_endpoint_enabled and capability in provider.capabilities:
-                provider.logger.info(f"{heading} on {provider.api_name} (args={args})")
+                provider.logger.info(f"{heading} with args={args}")
                 provider.only_use_cache = False
             elif self.can_use_cache_even_if_disabled:
                 provider.only_use_cache = True

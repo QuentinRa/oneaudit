@@ -127,7 +127,7 @@ class _OneAuditCustomProviderLogger:
         self.prefix = prefix
 
     def _prepend_prefix(self, message):
-        return f"[{self.prefix}] {message}"
+        return f"[{self.prefix}] - {message}"
 
     def debug(self, msg, *args, **kwargs):
         self._logger.debug(self._prepend_prefix(msg), *args, **kwargs)
