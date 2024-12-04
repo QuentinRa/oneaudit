@@ -38,7 +38,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
         try:
-            domain_candidates = [asdict(LeakTarget(email.strip().lower(), True, [email.strip().lower()], {})) for email in candidates]
+            domain_candidates = [asdict(LeakTarget(email.strip().lower(), True, False, [email.strip().lower()], {})) for email in candidates]
             all_emails = [email for credential in credentials + domain_candidates for email in credential['emails']]
             list(self._call_all_providers(
                 heading="Processing bulk queries",
@@ -61,6 +61,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                     'info_stealers': [],
                     'breaches': [],
                     'verified': False,
+                    'employed': credential['employed'],
                 }
 
                 # Get the leaks per email, and save them in the record associated with the login

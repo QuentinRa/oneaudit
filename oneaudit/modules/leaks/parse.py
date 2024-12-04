@@ -138,11 +138,12 @@ def run(args):
         logger.info(f"     Format: {email_format_id:20} -> Result: {len(verified_count_per_format):5}")
 
     save_to_json(args.output_file, {
-        'version': 1.2,
+        'version': 1.3,
         'credentials': [
             LeakTarget(
                 c["login"],
                 c["verified"],
+                True,
                 list(set(c["emails"])),
                 {
                     "links": c["links"],

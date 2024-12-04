@@ -13,6 +13,7 @@ class LeaksAPICapability(Enum):
 class LeakTarget:
     login: str
     verified: bool
+    employed: bool
     emails: list[str]
     extra: dict
 

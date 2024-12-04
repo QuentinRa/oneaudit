@@ -24,6 +24,8 @@ WIP
   * [internetdb](https://internetdb.shodan.io/)
 * Only keep a range of leaks
 * Fix issues with rocketreach randomness in search
+* Fix major issue in email handling
+  * Ensure it's not uppercase, stripped, and valid
 
 ## SocOSINT
 
@@ -117,11 +119,12 @@ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com 
 
 ```json
 {
-  "version": 1.2,
+  "version": 1.3,
   "credentials": [
     {
       "login": "johndoe@example.com",
       "verified": true,
+      "employed": true,
       "emails": [
         "johndoe@example.com",
         "johndoe@dev.example.com"
@@ -150,10 +153,12 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
 
 ```json
 {
-  "version": 1.5,
+  "version": 1.6,
   "credentials": [
     {
       "login": "john.doe@example.com",
+      "verified": true,
+      "employed": true,
       "logins": [
         "john.doe",
         "johndoe@example.com",
