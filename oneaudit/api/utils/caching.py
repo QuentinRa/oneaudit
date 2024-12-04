@@ -1,18 +1,22 @@
-from oneaudit.utils.io import to_absolute_path
+from oneaudit.utils.io import to_absolute_path, GenericObjectEncoder
 from oneaudit.utils.logs import get_project_logger
-import argparse
-import hashlib
-import json
-import os
-import time
-import sqlite3
+from sqlite3 import connect as sqlite_connect
+from os.path import exists as file_exists
+from os.path import dirname
+from argparse import ArgumentParser
+from os import makedirs
+from time import time
+from json import dumps as json_dumps
+from json import loads as json_loads
+from json import JSONDecodeError
+
 
 cache_folder = ".cache"
 sqlite_connection = {}
 sqlite_cursor = {}
 
 
-def args_api_config(parser: argparse.ArgumentParser):
+def args_api_config(parser: ArgumentParser):
     parser.add_argument('--config', metavar='config.json', dest='api_config', help='Path to the config.json file with API settings.')
     parser.add_argument('--cache', metavar='.cache', dest='cache_folder', help='Path to the cache folder used to cache requests.')
 
@@ -21,17 +25,17 @@ def args_parse_api_config(args):
     config_file = to_absolute_path(args.api_config if args.api_config else 'config.json')
     api_keys = {}
     logger = get_project_logger()
-    if os.path.exists(config_file):
+    if file_exists(config_file):
         logger.info(f"Found config file at '{config_file}'.")
         try:
             with open(config_file, 'r') as config_file:
                 config_file = config_file.read()
                 if "//" in config_file:
-                    raise json.JSONDecodeError("JSON file cannot contain comments", "", 0)
-                keys = json.loads(config_file)
+                    raise JSONDecodeError("JSON file cannot contain comments", "", 0)
+                keys = json_loads(config_file)
                 for api, key in keys.items():
                     api_keys[api] = key
-        except json.JSONDecodeError as e:
+        except JSONDecodeError as e:
             logger.error("Error while parsing config file")
             raise e
     else:
@@ -46,8 +50,8 @@ def args_parse_api_config(args):
 
 def set_cached_result(api_name, key, data, from_timestamp=None):
     conn, cursor = create_cache_database(api_name)
-    json_response = json.dumps(data)
-    timestamp = int(time.time()) if not from_timestamp else int(from_timestamp)
+    json_response = json_dumps(data, cls=GenericObjectEncoder)
+    timestamp = int(time()) if not from_timestamp else int(from_timestamp)
     if data is None:
         raise ValueError(f"Trying to save null data '{data}' for '{key}'")
     cursor.execute('''
@@ -64,10 +68,10 @@ def create_cache_database(api_name):
         return sqlite_connection[api_name], sqlite_cursor[api_name]
     # Create/Load
     database_file = f"{cache_folder}/{api_name}.sqlite"
-    database_folder = os.path.dirname(database_file)
-    if not os.path.exists(database_folder):
-        os.makedirs(database_folder, exist_ok=True)
-    sqlite_connection[api_name] = sqlite3.connect(database_file)
+    database_folder = dirname(database_file)
+    if not file_exists(database_folder):
+        makedirs(database_folder, exist_ok=True)
+    sqlite_connection[api_name] = sqlite_connect(database_file)
     sqlite_cursor[api_name] = sqlite_connection[api_name].cursor()
     sqlite_cursor[api_name].execute('''
         CREATE TABLE IF NOT EXISTS cache (
@@ -87,8 +91,8 @@ def get_cached_result(api_name, key, do_not_expire=False):
     row = cursor.fetchone()
     if row:
         json_response, timestamp = row
-        current_time = int(time.time())
+        current_time = int(time())
         timestamp = int(timestamp)
         if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
-            return json.loads(json_response)
+            return json_loads(json_response)
     return None

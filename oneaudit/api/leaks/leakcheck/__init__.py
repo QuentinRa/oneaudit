@@ -33,6 +33,7 @@ class LeakCheckFreeAPI(OneAuditLeaksAPIProvider):
         }
         yield cached, results
 
+
 class LeakCheckPaidAPI(OneAuditLeaksAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key else []
