@@ -33,84 +33,6 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         ])
         self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
 
-    def compute_stats(self, credentials):
-        credentials = credentials[5:]
-        stats = {
-            'passwords': {},
-            'censored_passwords': {},
-            'hashes': {},
-            'info_stealers': {},
-            'breaches': {},
-        }
-        for credential in credentials:
-            # We need to inspect the results for EACH login
-            # If a user has two emails, we want to know the cumulated stats
-            # (e.g. one password 'abc' for a@b.c and one password 'abc' for a@d.e as counted as two
-            #   passwords as the login is different even if the user that own the two emails is the same)
-            found_passwords = []
-            for login in credential['logins']:
-
-                # While not necessary, it will reduce the number of queries
-                # to the cache, as we won't look for logins that are not emails
-                if "@" not in login or " " in login or ":" in login:
-                    continue
-
-                for api_provider, api_result in self._call_all_providers(
-                        heading="Investigate leaks",
-                        capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
-                        method_name='investigate_leaks_by_email',
-                        args=(login,)):
-                    for key, entries in api_result.items():
-                        if key == 'raw_hashes':
-                            entries = [self._find_plaintext_from_hash(entry) for entry in entries]
-                            key = 'hashes'
-                        if key in ['breaches', 'hashes', 'info_stealers']:
-                            entries = [serialize_api_object(entry) for entry in entries]
-                        if key not in stats:
-                            continue
-
-                        for entry in entries:
-                            local_key = key
-                            if entry not in credential[local_key]:
-                                if local_key == 'hashes' and entry['plaintext']:
-                                    local_key = 'passwords'
-                                    entry = entry['plaintext']
-                                else:
-                                    continue
-                            entry_key = f"{login}.{entry}"
-                            if entry_key not in stats[local_key]:
-                                stats[local_key][entry_key] = []
-                            stats[local_key][entry_key].append(api_provider.api_name)
-
-                            if local_key == 'passwords':
-                                found_passwords.append(entry)
-
-            # We kept track of the password we found as some may have been generated/added externally/not in the cache
-            for password in credential['passwords']:
-                if password in found_passwords:
-                    continue
-                stats['passwords'][f"{credential['login']}.{password}"] = ['unknown']
-
-        final_stats = {}
-        for attribute_name, entries in stats.items():
-            stats_per_provider = {provider.api_name:{'all': 0, 'exclusive': 0} for provider in self.providers}
-            stats_per_provider['unknown'] = {'all': 0, 'exclusive': 0}
-
-            # Compute the exclusive/all values for each provider for this specific attribute
-            for identifier, values in entries.items():
-                values = list(set(values))
-                if len(values) == 1:
-                    stats_per_provider[values[0]]['exclusive'] += 1
-                    stats_per_provider[values[0]]['all'] += 1
-                else:
-                    for value in values:
-                        stats_per_provider[value]['all'] += 1
-
-            final_stats[attribute_name] = (stats_per_provider, len(entries))
-
-        return final_stats
-
-
     def investigate_leaks(self, credentials, candidates):
         results = {}
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
@@ -237,6 +159,82 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             args=(domain,)
         )
         return self.sort_dict(results)
+
+    def compute_stats(self, credentials):
+        stats = {
+            'passwords': {},
+            'censored_passwords': {},
+            'hashes': {},
+            'info_stealers': {},
+            'breaches': {},
+        }
+        for credential in credentials:
+            # We need to inspect the results for EACH login
+            # If a user has two emails, we want to know the cumulated stats
+            # (e.g. one password 'abc' for a@b.c and one password 'abc' for a@d.e as counted as two
+            #   passwords as the login is different even if the user that own the two emails is the same)
+            found_passwords = []
+            for login in credential['logins']:
+
+                # While not necessary, it will reduce the number of queries
+                # to the cache, as we won't look for logins that are not emails
+                if "@" not in login or " " in login or ":" in login:
+                    continue
+
+                for api_provider, api_result in self._call_all_providers(
+                        heading="Investigate leaks",
+                        capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
+                        method_name='investigate_leaks_by_email',
+                        args=(login,)):
+                    for key, entries in api_result.items():
+                        if key == 'raw_hashes':
+                            entries = [self._find_plaintext_from_hash(entry) for entry in entries]
+                            key = 'hashes'
+                        if key in ['breaches', 'hashes', 'info_stealers']:
+                            entries = [serialize_api_object(entry) for entry in entries]
+                        if key not in stats:
+                            continue
+
+                        for entry in entries:
+                            local_key = key
+                            if entry not in credential[local_key]:
+                                if local_key == 'hashes' and entry['plaintext']:
+                                    local_key = 'passwords'
+                                    entry = entry['plaintext']
+                                else:
+                                    continue
+                            entry_key = f"{login}.{entry}"
+                            if entry_key not in stats[local_key]:
+                                stats[local_key][entry_key] = []
+                            stats[local_key][entry_key].append(api_provider.api_name)
+
+                            if local_key == 'passwords':
+                                found_passwords.append(entry)
+
+            # We kept track of the password we found as some may have been generated/added externally/not in the cache
+            for password in credential['passwords']:
+                if password in found_passwords:
+                    continue
+                stats['passwords'][f"{credential['login']}.{password}"] = ['unknown']
+
+        final_stats = {}
+        for attribute_name, entries in stats.items():
+            stats_per_provider = {provider.api_name:{'all': 0, 'exclusive': 0} for provider in self.providers}
+            stats_per_provider['unknown'] = {'all': 0, 'exclusive': 0}
+
+            # Compute the exclusive/all values for each provider for this specific attribute
+            for identifier, values in entries.items():
+                values = list(set(values))
+                if len(values) == 1:
+                    stats_per_provider[values[0]]['exclusive'] += 1
+                    stats_per_provider[values[0]]['all'] += 1
+                else:
+                    for value in values:
+                        stats_per_provider[value]['all'] += 1
+
+            final_stats[attribute_name] = (stats_per_provider, len(entries))
+
+        return final_stats
 
     def sort_dict(self, results):
         # Sort every value and remove duplicates

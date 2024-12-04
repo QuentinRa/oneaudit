@@ -70,13 +70,13 @@ class BreachData:
         if self.source != other.source:
             return (self.source is not None, self.source) < (other.source is not None, other.source)
 
-        return (self.date is not None, self.date[:7]) < (other.date is not None, other.date[:7])
+        return (self.date is not None, self.date[:7] if self.date is not None else '') < (other.date is not None, other.date[:7] if other.date is not None else '')
 
     def __hash__(self):
-        normalized_date =  self.date[:7] if self.date is not None else ''
+        normalized_date =  self.date[:7] if self.date is not None else None
         return hash((self.source, normalized_date))
 
     def __eq__(self, other):
         if not isinstance(other, BreachData):
             return NotImplemented
-        return (self.source, self.date[:7] if self.date is not None else '') == (other.source, other.date[:7] if other.date is not None else '')
+        return (self.source, self.date[:7] if self.date is not None else None) == (other.source, other.date[:7] if other.date is not None else None)
