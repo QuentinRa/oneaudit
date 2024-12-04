@@ -35,6 +35,7 @@ You can use this module to get a list of LinkedIn profiles still working in the 
 
 ```powershell
 oneaudit socosint linkedin scrap -d example.com -o osint.json -v
+oneaudit socosint linkedin scrap -d example.com -o osint.json -t 12345678 -v
 ```
 
 ```json

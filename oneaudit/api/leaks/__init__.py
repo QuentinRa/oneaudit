@@ -9,6 +9,10 @@ class LeaksAPICapability(Enum):
     INVESTIGATE_BULK = 3
 
 
+class LeakProviderUtilities(Enum):
+    IMPORT_FROM_FILE = 0
+
+
 @dataclass(frozen=True, order=True)
 class LeakTarget:
     login: str

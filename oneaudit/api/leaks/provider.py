@@ -23,6 +23,10 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
     def lookup_plaintext_from_hash(self, hash_to_crack):
         yield True, PasswordHashDataFormat(value=hash_to_crack, plaintext=None, format=None, format_confidence=-1)
 
+    def utilities(self, action):
+        """Mostly for testing/developing. We may want to test something on a provider."""
+        pass
+
 
 class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
     """

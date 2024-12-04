@@ -37,9 +37,9 @@ class OneAuditBaseProvider:
 
         # Log the provider status
         if not self.is_endpoint_enabled:
-            self.logger.warning(f"API is not enabled.")
+            self.logger.warning("API is not enabled.")
         else:
-            self.logger.info(f"API was enabled.")
+            self.logger.info("API was enabled.")
 
     def get_request_rate(self):
         """Default is one request per five seconds"""

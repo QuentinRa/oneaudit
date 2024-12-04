@@ -1,6 +1,6 @@
 from oneaudit.api.leaks import CensoredCredentials, CensoredInfoStealers, LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
-import time
+from time import sleep
 
 
 # https://docs.whiteintel.io/whiteintel-api-doc
@@ -9,7 +9,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
         return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN] if api_key is not None else []
 
     def handle_rate_limit(self, response):
-        time.sleep(30)
+        sleep(30)
 
     def get_request_rate(self):
         return 1
