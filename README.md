@@ -24,8 +24,6 @@ WIP
   * [internetdb](https://internetdb.shodan.io/)
 * Only keep a range of leaks
 * Fix issues with rocketreach randomness in search
-* Fix major issue in email handling
-  * Ensure it's not uppercase, stripped, and valid
 
 ## SocOSINT
 

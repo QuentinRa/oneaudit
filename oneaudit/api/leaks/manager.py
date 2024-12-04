@@ -10,6 +10,15 @@ from bcrypt import hashpw
 from re import compile
 
 
+def _email_cleaner(email):
+    """
+    We sometimes see "JOHN.DOE@EXAMPLE.COM"
+    or " john.doe@example.com" due to some providers/databases returning them like that.
+    We do miss some leaks by casting all of them to lowercase, but this makes the managment easier.
+    """
+    return email.strip().lower()
+
+
 class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
     """
     APIs related to leaks
@@ -38,8 +47,9 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
         try:
-            domain_candidates = [asdict(LeakTarget(email.strip().lower(), True, False, [email.strip().lower()], {})) for email in candidates]
-            all_emails = [email for credential in credentials + domain_candidates for email in credential['emails']]
+            # noinspection PyTypeChecker
+            domain_candidates = [asdict(LeakTarget(email, True, False, [email], {})) for email in candidates]
+            all_emails = [_email_cleaner(email) for credential in credentials + domain_candidates for email in credential['emails']]
             list(self._call_all_providers(
                 heading="Processing bulk queries",
                 capability=LeaksAPICapability.INVESTIGATE_BULK,
@@ -48,7 +58,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             ))
 
             for credential in credentials + domain_candidates:
-                key = credential['login']
+                key = _email_cleaner(credential['login'])
                 if key in results:
                     continue
 
@@ -63,6 +73,9 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                     'verified': False,
                     'employed': credential['employed'],
                 }
+
+                # Clean every email in "emails"
+                credential['emails'] = [_email_cleaner(email) for email in credential['emails']]
 
                 # Get the leaks per email, and save them in the record associated with the login
                 for email in credential['emails']:
@@ -80,7 +93,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
                 # Handle new logins
                 for login in results[key]["logins"]:
-                    login = login.strip().lower()
+                    login = _email_cleaner(login)
                     if "@" not in login or ':' in login or login in credential['emails']:
                         continue
                     raise Exception(f"Found new email that was not handled: {login}")
@@ -176,6 +189,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             #   passwords as the login is different even if the user that own the two emails is the same)
             found_passwords = []
             for login in credential['logins']:
+                login = _email_cleaner(login)
 
                 # While not necessary, it will reduce the number of queries
                 # to the cache, as we won't look for logins that are not emails
@@ -213,10 +227,11 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                                 found_passwords.append(entry)
 
             # We kept track of the password we found as some may have been generated/added externally/not in the cache
+            login = _email_cleaner(credential['login'])
             for password in credential['passwords']:
                 if password in found_passwords:
                     continue
-                stats['passwords'][f"{credential['login']}.{password}"] = ['unknown']
+                stats['passwords'][f"{login}.{password}"] = ['unknown']
 
         final_stats = {}
         for attribute_name, entries in stats.items():
