@@ -75,7 +75,7 @@ class OneAuditBaseProvider:
             self.logger.error(f"Provider: {self.__class__.__name__}")
             self.logger.error(f"Request: {self.request_args}")
             self.logger.error(f"Response code: {response.status_code}")
-            self.logger.error(response.text)
+            self.logger.error(f'Response text: {response.text}')
             raise Exception(f"Unexpected response. Could not parse JSON.")
 
     def handle_request(self, **kwargs):

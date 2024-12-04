@@ -36,6 +36,7 @@ class CensoredInfoStealers:
     device_identifier: str
     infection_date: str
 
+
 @dataclass(frozen=True, order=True)
 class CredentialStat:
     identifier: str
@@ -80,3 +81,11 @@ class BreachData:
         if not isinstance(other, BreachData):
             return NotImplemented
         return (self.source, self.date[:7] if self.date is not None else None) == (other.source, other.date[:7] if other.date is not None else None)
+
+
+def deserialize_result(result):
+    if 'breaches' in result:
+        result['breaches'] = [BreachData(breach['source'], breach['date']) for breach in result['breaches']]
+    if 'info_stealers' in result:
+        result['info_stealers'] = [InfoStealer(stealer['computer_name'], stealer['operating_system'], stealer['date_compromised']) for stealer in result['info_stealers']]
+    return result

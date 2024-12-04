@@ -1,7 +1,8 @@
 from oneaudit.api import APIRateLimitException
 from oneaudit.api.leaks import LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
-from oneaudit.api.utils.caching import set_cached_result
+from oneaudit.api.utils.caching import set_cached_result, get_cached_result
+from oneaudit.utils.io import compute_checksum
 from time import sleep
 
 
@@ -98,25 +99,33 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
         self.request_args['json']['types'] = ['_domain']
 
         cached, data = self.fetch_results_using_cache(key=domain, default={'results': {}})
-        results = {
-            'emails': [entry['email'] for user_data in data['results'].values() for entry in user_data if 'email' in entry]
-        }
 
         # Index every domain result
-        if not cached:
-            indexed_data = {}
-            for breach_name, breach_data in data['results'].items():
-                for breach_entry in breach_data:
-                    email = breach_entry['email']
-                    if email not in indexed_data:
-                        indexed_data[email] = {}
-                    if breach_name not in indexed_data[email]:
-                        indexed_data[email][breach_name] = []
-                    indexed_data[email][breach_name].append(breach_entry)
+        indexed_data = {}
+        for breach_name, breach_data in data['results'].items():
+            for breach_entry in breach_data:
+                email = breach_entry['email']
+                if email not in indexed_data:
+                    indexed_data[email] = {}
+                if breach_name not in indexed_data[email]:
+                    indexed_data[email][breach_name] = []
+                indexed_data[email][breach_name].append(breach_entry)
 
-            for email, fake_data in indexed_data.items():
-                set_cached_result(self.api_name, f"search_{email}", {
-                    {'took': 1337, 'size': len(fake_data.keys()), 'results': fake_data }
+        key_formatter = f'{self.api_name}_search_{{email}}'
+        for email, extracted_data in indexed_data.items():
+            # Compute checksum
+            cached_data = get_cached_result(self.api_name, key_formatter.format(email=email), True)
+            cached_data_checksum = compute_checksum(cached_data['results']) if 'checksum_sha256' not in cached_data else cached_data['checksum_sha256']
+            extracted_data_checksum = compute_checksum(extracted_data)
+            # Update database if data changed
+            if 'checksum_sha256' not in cached_data or extracted_data_checksum != cached_data_checksum:
+                set_cached_result(self.api_name, key_formatter.format(email=email), {
+                    'took': 1337,
+                    'size': len(extracted_data.keys()),
+                    'results': extracted_data,
+                    'checksum_sha256': extracted_data_checksum
                 })
 
-        yield cached, results
+        yield cached, {
+            'emails': list(indexed_data.keys())
+        }
