@@ -1,13 +1,11 @@
 from oneaudit.api import APIRateLimitException
 from oneaudit.api.leaks import LeaksAPICapability
-from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider, PasswordHashDataFormat
-from oneaudit.api.utils.caching import set_cached_result, get_cached_result
-from oneaudit.utils.io import compute_checksum
+from oneaudit.api.leaks.provider import OneAuditLeaksAPIBulkProvider, PasswordHashDataFormat
 from time import sleep
 
 
 # https://docs.snusbase.com/
-class SnusbaseAPI(OneAuditLeaksAPIProvider):
+class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
     def _init_capabilities(self, api_key, api_keys):
         return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL, LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN,
                 LeaksAPICapability.INVESTIGATE_CRACKED_HASHES] if api_key is not None else []
@@ -111,21 +109,16 @@ class SnusbaseAPI(OneAuditLeaksAPIProvider):
                     indexed_data[email][breach_name] = []
                 indexed_data[email][breach_name].append(breach_entry)
 
-        key_formatter = f'{self.api_name}_search_{{email}}'
-        for email, extracted_data in indexed_data.items():
-            # Compute checksum
-            cached_data = get_cached_result(self.api_name, key_formatter.format(email=email), True)
-            cached_data_checksum = compute_checksum(cached_data['results']) if 'checksum_sha256' not in cached_data else cached_data['checksum_sha256']
-            extracted_data_checksum = compute_checksum(extracted_data)
-            # Update database if data changed
-            if 'checksum_sha256' not in cached_data or extracted_data_checksum != cached_data_checksum:
-                set_cached_result(self.api_name, key_formatter.format(email=email), {
-                    'took': 1337,
-                    'size': len(extracted_data.keys()),
-                    'results': extracted_data,
-                    'checksum_sha256': extracted_data_checksum
-                })
+        # Update cache if required
+        self._cache_indexed_data_if_required("search_{{email}}", indexed_data)
 
         yield cached, {
             'emails': list(indexed_data.keys())
+        }
+
+    def _generate_cached_from_extracted(self, extracted_data):
+        return {
+            'took': 1337,
+            'size': len(extracted_data.keys()),
+            'results': extracted_data
         }
