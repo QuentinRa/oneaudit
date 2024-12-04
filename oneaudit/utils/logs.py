@@ -6,12 +6,14 @@ import logging
 _project_logger = None
 
 def args_verbose_config(parser: ArgumentParser):
-    parser.add_argument('-v', dest='is_debug', action='store_true', help='Debug verbosity level.')
+    verbosity_parser = parser.add_mutually_exclusive_group()
+    verbosity_parser.add_argument('-v', dest='is_info', action='store_true', help='Info verbosity level.')
+    verbosity_parser.add_argument('-vv', dest='is_debug', action='store_true', help='Debug verbosity level.')
     parser.add_argument('--log-file', dest='log_file', type=str, help='Log file to write logs.')
 
 
 def args_parse_parse_verbose(args):
-    log_level = logging.DEBUG if args.is_debug else logging.INFO
+    log_level = logging.DEBUG if args.is_debug else logging.INFO if args.is_info else logging.WARNING
     get_project_logger(log_level, args.log_file)
 
 
@@ -42,5 +44,5 @@ def get_project_logger(log_level=logging.INFO, log_file=None):
             file_handler.setFormatter(formatter)
             file_handler.setLevel(log_level)
             _project_logger.addHandler(file_handler)
-    else:
-        return _project_logger
+
+    return _project_logger

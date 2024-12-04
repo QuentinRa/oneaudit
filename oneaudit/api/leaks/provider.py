@@ -24,7 +24,7 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
         yield True, PasswordHashDataFormat(value=hash_to_crack, plaintext=None, format=None, format_confidence=-1)
 
 
-class OneAuditLeaksAPIBulkProvider(OneAuditBaseProvider):
+class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
     """
     Utilities for APIs that handle bulk queries
     """

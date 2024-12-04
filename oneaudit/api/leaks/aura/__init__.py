@@ -18,7 +18,7 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         s.post(**self.request_args)
         if 'data' not in self.request_args:
             # We should way a bit and move to another request
-            self.logger.error(f"{self.api_name}: unexpected answer to POST request.")
+            self.logger.error(f"Unexpected answer to POST request.")
             self.handle_rate_limit(None)
             raise APIRateLimitException()
         del self.request_args['data']
@@ -44,7 +44,7 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         try:
             cached, data = self.fetch_results_using_cache(email, default={'results': []})
             if 'results' not in data:
-                self.logger.error(f"Unexpected response for {self.api_name}: {data}.")
+                self.logger.error(f"Unexpected response for email investigation: {data}.")
                 return cached, {}
 
             results = {

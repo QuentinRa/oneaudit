@@ -24,7 +24,7 @@ class OneAuditBaseProvider:
         self.request_args["headers"]['User-Agent'] = UserAgent().random
 
         # Enable logs
-        self.logger = get_project_logger()
+        self.logger = _OneAuditCustomProviderLogger(get_project_logger(), self.api_name)
 
         # What can the endpoint do? Was it enabled ?
         self.capabilities = self._init_capabilities(self.api_key, api_keys)
@@ -37,9 +37,9 @@ class OneAuditBaseProvider:
 
         # Log the provider status
         if not self.is_endpoint_enabled:
-            self.logger.warning(f"API '{self.api_name}' is not enabled.")
+            self.logger.warning(f"API is not enabled.")
         else:
-            self.logger.info(f"API '{self.api_name}' was enabled.")
+            self.logger.info(f"API was enabled.")
 
     def get_request_rate(self):
         """Default is one request per five seconds"""
@@ -82,19 +82,20 @@ class OneAuditBaseProvider:
         try:
             return request(**self.request_args)
         except ReadTimeout:
-            self.logger.error(f"API {self.api_name} is unresponsive. It was disabled.")
+            self.logger.error(f"API is unresponsive. It was disabled.")
             self.handle_api_shutdown()
 
     def is_response_valid(self, response):
         if response.status_code in self.rate_limit_status_codes:
-            self.logger.warning(f"Hit rate-limit for {self.api_name}.")
+            self.logger.warning(f"Hit rate-limit. Status code was: {response.status_code}.")
             self.handle_rate_limit(response)
             return False
 
         if response.status_code not in self.allowed_status_codes:
             self.logger.error(f"Provider: {self.__class__.__name__}")
+            self.logger.error(f"Request: {self.request_args}")
             self.logger.error(f"Response code: {response.status_code}")
-            self.logger.error(response.text)
+            self.logger.error(f'Response text: {response.text}')
             raise Exception("This response code was not allowed/handled.")
 
         return True
@@ -115,3 +116,33 @@ class OneAuditBaseProvider:
         """
         self.capabilities = []
         raise APIRateLimitException()
+
+
+class _OneAuditCustomProviderLogger:
+    """
+    One format to rule them all
+    """
+    def __init__(self, logger, prefix):
+        self._logger = logger
+        self.prefix = prefix
+
+    def _prepend_prefix(self, message):
+        return f"[{self.prefix}] {message}"
+
+    def debug(self, msg, *args, **kwargs):
+        self._logger.debug(self._prepend_prefix(msg), *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        self._logger.info(self._prepend_prefix(msg), *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        self._logger.warning(self._prepend_prefix(msg), *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        self._logger.error(self._prepend_prefix(msg), *args, **kwargs)
+
+    def exception(self, msg, *args, **kwargs):
+        self._logger.exception(self._prepend_prefix(msg), *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        self._logger.critical(self._prepend_prefix(msg), *args, **kwargs)

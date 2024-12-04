@@ -13,13 +13,13 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
         response = request(**self.request_args)
         if response.status_code == 400 or response.status_code == 502:
             if self.kill_switch < 3:
-                self.logger.debug(f"{self.api_name} was rate-limited, waiting a few seconds.")
+                self.logger.debug(f"API was rate-limited, waiting a few seconds.")
                 self.handle_rate_limit(response)
                 if response.status_code != 502:
                     self.kill_switch += 1
                 return self.handle_request()
             else:
-                self.logger.error(f"{self.api_name} could not process '{self.request_args['url']}'.")
+                self.logger.error(f"API could not process '{self.request_args['url']}'.")
                 return FakeResponse(204, {"lines": []})
         self.kill_switch = 0
         return response

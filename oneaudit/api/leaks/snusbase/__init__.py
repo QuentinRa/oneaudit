@@ -12,7 +12,7 @@ class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
 
     def handle_rate_limit(self, response):
         if 'Rate-limit exceeded.' in response.text:
-            self.logger.error(f"Provider {self.api_name} was disabled due to rate-limit on search.")
+            self.logger.error(f"Provider was disabled due to rate-limit on search.")
             self.capabilities.remove(LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL)
             raise APIRateLimitException(f"{response.text}")
         else:
@@ -110,7 +110,7 @@ class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
                 indexed_data[email][breach_name].append(breach_entry)
 
         # Update cache if required
-        self._cache_indexed_data_if_required("search_{{email}}", indexed_data)
+        self._cache_indexed_data_if_required("search_{email}", indexed_data)
 
         yield cached, {
             'emails': list(indexed_data.keys())

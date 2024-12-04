@@ -30,7 +30,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         """API v2 returns retry-after. For v1, you are expected to handle it yourself."""
         wait = int(response.headers["retry-after"] if "retry-after" in response.headers else 0)
         if wait > 0:
-            self.logger.warning(f"{self.api_name}: Rate-limited. Waiting for {wait} seconds.")
+            self.logger.warning(f"Rate-limited. Waiting for {wait} seconds.")
             sleep(wait)
 
     def __init__(self, api_keys):
@@ -66,14 +66,14 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             ids = []
             while True:
                 targets = []
-                self.logger.info(f"{self.api_name}: Querying page {page + 1}/{total if total != -1 else '?'}")
+                self.logger.info(f"Querying page {page + 1}/{total if total != -1 else '?'}")
                 self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
                 cached, data = self.fetch_results_using_cache(f"{company_domain}_score_{page}", default=None, method='execute')
                 for profile in data["profiles"]:
                     target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
                     target_emails = list(set(target_emails))
                     if not profile["name"]:
-                        self.logger.warning(f"{self.api_name}: we found an employee with a blank name. We will skip it for now.")
+                        self.logger.warning(f"We found an employee with a blank name. We will skip it for now.")
                         continue
                     if not profile['links'] and 'linkedin_url' in profile:
                         profile['links'] = {SocialNetworkEnum.LINKEDIN.value: profile['linkedin_url']}
@@ -96,7 +96,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
             self._add_to_profile_list(target_profile_list_id, ids)
         except Exception as e:
-            self.logger.error(f"{self.api_name}: Error received: {e}")
+            self.logger.error(f"Error received: {e}")
 
     def _add_to_profile_list(self, target_profile_list_id, ids):
         """
@@ -110,7 +110,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         if not ids_to_check:
             return
 
-        self.logger.warning(f"{self.api_name}: You have to manually fetch {len(ids_to_check)} records.")
+        self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
 
         # We can try to fetch the trigger the requests for you, but it's somewhat dirty
         if not self.session_id or not target_profile_list_id:
@@ -120,7 +120,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
         i = 0
         while i < len(ids_to_check):
-            self.logger.info(f'{self.api_name}: Fetching batch from {i} to {i + 25}')
+            self.logger.info(f'Fetching batch from {i} to {i + 25}')
             batch = ids_to_check[i:i + 25]
             response = post(
                 url=f'https://rocketreach.co/v1/profileList/{target_profile_list_id}/lookup',
@@ -140,12 +140,12 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             if not self.is_response_valid(response):
                 if kill_switch >= 2:
                     wait = randint(1200, 1800)
-                    self.logger.warning(f"{self.api_name}: hit a hard rate-limit, waiting {wait} seconds.")
+                    self.logger.warning(f"Hit a hard rate-limit, waiting {wait} seconds.")
                     sleep(wait)
                     kill_switch += 1
                     continue
 
-                self.logger.info(f"{self.api_name}: Rate-limited. Waiting five minutes.")
+                self.logger.info(f"Rate-limited. Waiting five minutes.")
                 kill_switch += 1
                 sleep(300)
                 continue
@@ -156,7 +156,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
             # Waiting time
             wait = randint(60, 120)
-            self.logger.info(f"{self.api_name}: waiting {wait} seconds to respect fair use.")
+            self.logger.info(f"Waiting {wait} seconds to respect fair use.")
             sleep(wait)
 
             i += 25
@@ -192,7 +192,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         page = 1
         missing_entries = response_count - result['count']
         while missing_entries > 0:
-            self.logger.debug(f"{self.api_name}: Missing {missing_entries} entries from profile={target_profile_list_id}")
+            self.logger.debug(f"Missing {missing_entries} entries from profile={target_profile_list_id}")
 
             limit = 100 if missing_entries > 100 else missing_entries
             response = get(
@@ -208,7 +208,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             result['count'] += len(data['records'])
             set_cached_result(self.api_name, f'export_profile_{target_profile_list_id}', result)
 
-            self.logger.info(f"{self.api_name}: waiting 30 seconds to respect fair use.")
+            self.logger.info(f"Waiting 30 seconds to respect fair use.")
             sleep(30)
 
             if data['num_pages'] == page:

@@ -81,7 +81,6 @@ def run(args):
         computed_email = candidates[args.email_format]
         email_f, email_l = unidecode(firstname).strip(), unidecode(lastname).strip()
         email_valid = email_f and email_l and "." not in email_f+email_l
-        email_valid = email_valid and "_" not in email_f+email_l
         email_valid = email_valid and email_regex.match(computed_email) is not None
         if not email_valid:
             if computed_email not in found:

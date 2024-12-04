@@ -49,7 +49,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
 
         # Only process the emails for which we don't have anything
         emails = sorted([email for email in emails if get_cached_result(self.api_name, self.exposure_key_format.format(email=email)) is None])
-        self.logger.debug(f"{self.api_name}: bulk download of {len(emails)} entries.")
+        self.logger.debug(f"Bulk download of {len(emails)} entries.")
         for i in range(0, len(emails), 50):
             self.request_args['params']['usernames'] = emails[i:i+50]
             data = self.fetch_result_without_cache()
@@ -80,7 +80,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                             source = title_value
                             break
                     if not found:
-                        self.logger.debug(f"{self.api_name}: no source found for {exposure}.")
+                        self.logger.debug(f"No source found for {exposure}.")
                         source = title
             result['breaches'].append(BreachData(
                 source,
