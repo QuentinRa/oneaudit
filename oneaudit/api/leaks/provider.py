@@ -23,10 +23,6 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
     def lookup_plaintext_from_hash(self, hash_to_crack):
         yield True, PasswordHashDataFormat(value=hash_to_crack, plaintext=None, format=None, format_confidence=-1)
 
-    def utilities(self, action):
-        """Mostly for testing/developing. We may want to test something on a provider."""
-        pass
-
 
 class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
     """
@@ -38,10 +34,10 @@ class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
         for email, extracted_data in indexed_data.items():
             # Compute checksum
             cached_data = get_cached_result(self.api_name, key_formatter.format(email=email), True)
-            cached_data_checksum = compute_checksum(cached_data['results']) if 'checksum_sha256' not in cached_data else cached_data['checksum_sha256']
+            cached_data_checksum = cached_data['checksum_sha256'] if 'checksum_sha256' in cached_data else None
             extracted_data_checksum = compute_checksum(extracted_data)
             # Update database if data changed
-            if 'checksum_sha256' not in cached_data or extracted_data_checksum != cached_data_checksum:
+            if extracted_data_checksum != cached_data_checksum:
                 set_cached_result(self.api_name, key_formatter.format(email=email), {'checksum_sha256': extracted_data_checksum, **self._generate_cached_from_extracted(extracted_data)})
 
     def _generate_cached_from_extracted(self, extracted_data):

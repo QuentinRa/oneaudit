@@ -3,7 +3,6 @@ from oneaudit.modules.leaks import download
 from oneaudit.modules.leaks import stats
 from oneaudit.modules.leaks import clean
 from oneaudit.modules.leaks import export
-from oneaudit.modules.leaks import utils
 from oneaudit.utils import args_call_target
 
 
@@ -17,7 +16,6 @@ def define_args(parent_parser):
     stats.define_args(leaks_module_action)
     clean.define_args(leaks_module_action)
     export.define_args(leaks_module_action)
-    utils.define_args(leaks_module_action)
 
 
 def run(args):
