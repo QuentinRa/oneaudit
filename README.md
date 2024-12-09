@@ -219,15 +219,16 @@ Note: Percentages marked with a star (☆) are representing the percentage of re
 Note: API Provider 'unknown' (if present) includes computed passwords using cleaning rules or passwords that were added manually.
 
 Leaks by provider
-+--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
-|     field \ provider     |  aura |   proxynova    | hudsonrocks | spycloud |    leakcheck    |    snusbase    |
-+--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
-|     passwords (300)      |   x   | 46.7% (☆ 0.7%) |      x      |    x     | 94.8% (☆ 32.8%) | 31.0% (☆ 4.5%) |
-| censored_passwords (450) | 96.7% |       x        |     3.3%    |    x     |        x        |       x        |
-|       hashes (75)        |   x   |       x        |      x      |    x     |        x        |      100%      |
-|    info_stealers (5)     |   x   |       x        |     100%    |    x     |        x        |       x        |
-|      breaches (800)      |   x   |       x        |      x      |  47.6%   |      52.4%      |       x        |
-+--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
++--------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+
+|     field \ provider     |  aura |   proxynova    |   leakcheck    |      enzoic     | hudsonrocks |  leakcheck_pro  |    snusbase    |
++--------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+
+|     passwords (300)      |   x   | 46.7% (☆ 0.7%) |       x        |        x        |      x      | 94.8% (☆ 32.8%) | 31.0% (☆ 4.5%) |
+| censored_passwords (450) | 96.7% |       x        |       x        |        x        |     3.3%    |        x        |       x        |
+|       hashes (75)        |   x   |       x        |       x        |        x        |      x      |        x        |      100%      |
+|    info_stealers (5)     |   x   |       x        |       x        |        x        |     100%    |        x        |       x        |
+|     breaches (1500)      |   x   |      6.2%      | 30.5% (☆ 1.2%) | 61.7% (☆ 57.8%) |      x      |  34.9% (☆ 5.6%) |       x        |
++--------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+
+
 
 Breaches by count
 +-----------------------+------------------------+
@@ -259,19 +260,19 @@ Some passwords in the leaks may be irrelevant, such as overly short or long ones
 ```
 $ oneaudit leaks clean -i leaks.json -o pwned.json
 $ oneaudit leaks stats -i pwned.json --cache .cache
+[...]
 
-+-------------------------+-------+----------------+-------------+----------+-----------------+----------------+---------+     
-|     field \ provider    |  aura |   proxynova    | hudsonrocks | spycloud |    leakcheck    |    snusbase    | unknown |     
-+-------------------------+-------+----------------+-------------+----------+-----------------+----------------+---------+     
-|     passwords (400)     |   x   | 33.8% (☆ 0.5%) |      x      |    x     | 69.1% (☆ 23.9%) | 23.1% (☆ 3.4%) |  27.0%  |     
-| censored_passwords (75) | 85.1% |       x        |    14.9%    |    x     |        x        |       x        |    x    |     
-|       hashes (75)       |   x   |       x        |      x      |    x     |        x        |      100%      |    x    |     
-|    info_stealers (5)    |   x   |       x        |     100%    |    x     |        x        |       x        |    x    |     
-|      breaches (800)     |   x   |       x        |      x      |  47.6%   |      52.4%      |       x        |    x    |     
-+-------------------------+-------+----------------+-------------+----------+-----------------+----------------+---------+  
++-------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+---------+
+|     field \ provider    |  aura |   proxynova    |   leakcheck    |      enzoic     | hudsonrocks |  leakcheck_pro  |    snusbase    | unknown |
++-------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+---------+
+|     passwords (400)     |   x   | 33.8% (☆ 0.5%) |       x        |        x        |      x      | 69.1% (☆ 23.9%) | 23.1% (☆ 3.4%) |  27.0%  |
+| censored_passwords (75) | 85.1% |       x        |       x        |        x        |    14.9%    |        x        |       x        |    x    |
+|       hashes (75)       |   x   |       x        |       x        |        x        |      x      |        x        |      100%      |    x    |
+|    info_stealers (5)    |   x   |       x        |       x        |        x        |     100%    |        x        |       x        |    x    |
+|     breaches (1500)     |   x   |      6.2%      | 30.5% (☆ 1.2%) | 61.7% (☆ 57.8%) |      x      |  34.9% (☆ 5.6%) |       x        |    x    |
++-------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+---------+
 
-Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.
-Note: API Provider 'unknown' includes computed passwords or passwords that were added manually.
+[...]
 ```
 
 ## API Configuration
