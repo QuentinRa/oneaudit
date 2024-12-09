@@ -26,7 +26,7 @@ def run(args):
 
     # Inspect them
     provider = OneAuditLeaksAPIManager({}, True)
-    leak_stats, breaches_stats = provider.compute_stats(credentials)
+    leak_stats, breaches_stats, password_stats = provider.compute_stats(credentials)
 
     table = PrettyTable()
     table_data = {}
@@ -52,10 +52,19 @@ def run(args):
     print("Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.")
     print("Note: API Provider 'unknown' (if present) includes computed passwords using cleaning rules or passwords that were added manually.")
     print()
+    print("Leaks by provider")
     print(table)
-    print()
 
     table = PrettyTable()
     for column_name, values in breaches_stats.items():
-        table.add_column(column_name, [v[0] + (" " + str(v[1]) if v[1] > 0 else "") for v in values + [("x", 0)] * (10 - len(values))])
+        table.add_column(column_name, [v[0] + (f' ({v[1]})' if v[1] > 0 else "") for v in values + [("x", 0)] * (10 - len(values))])
+    print()
+    print("Breaches by count")
+    print(table)
+
+    table = PrettyTable()
+    for column_name, values in password_stats.items():
+        table.add_column(column_name, [f"Length={v[0]} ({v[1]})" if v[1] > 0 else "x" for v in values])
+    print()
+    print("Passwords by length")
     print(table)

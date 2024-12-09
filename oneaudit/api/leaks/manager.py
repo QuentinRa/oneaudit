@@ -184,6 +184,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             'breaches': {},
         }
         breach_per_provider = {}
+        password_length_per_provider = {}
         for credential in credentials:
             # We need to inspect the results for EACH login
             # If a user has two emails, we want to know the cumulated stats
@@ -228,6 +229,11 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             if local_key == 'passwords':
                                 found_passwords.append(entry)
 
+                                # Compute password size stats
+                                if api_provider.api_name not in password_length_per_provider:
+                                    password_length_per_provider[api_provider.api_name] = []
+                                password_length_per_provider[api_provider.api_name].append(len(entry))
+
                             if local_key == 'breaches':
                                 if api_provider.api_name not in breach_per_provider:
                                     breach_per_provider[api_provider.api_name] = []
@@ -239,11 +245,21 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                 if password in found_passwords:
                     continue
                 stats['passwords'][f"{login}.{password}"] = ['unknown']
+                if 'unknown' not in password_length_per_provider:
+                    password_length_per_provider['unknown'] = []
+                password_length_per_provider['unknown'].append(len(password))
 
+        # Only keep the top 10 sources
         for provider, breaches in breach_per_provider.items():
             source_counts = Counter(breaches)
             top_sources = source_counts.most_common(10)
             breach_per_provider[provider] = top_sources
+
+        # Only keep the top 5 password lengths
+        for provider, lengths in password_length_per_provider.items():
+            length_counts = Counter(lengths)
+            top_lengths = length_counts.most_common(5)
+            password_length_per_provider[provider] = top_lengths
 
         final_stats = {}
         for attribute_name, entries in stats.items():
@@ -262,7 +278,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
             final_stats[attribute_name] = (stats_per_provider, len(entries))
 
-        return final_stats, breach_per_provider
+        return final_stats, breach_per_provider, password_length_per_provider
 
     def sort_dict(self, results):
         # Sort every value and remove duplicates
