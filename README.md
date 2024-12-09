@@ -162,7 +162,6 @@ oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
       "censored_logins": [
         "jo*******1"
       ],
-      // Passwords
       "passwords": [
         "hello"
       ],
@@ -197,14 +196,12 @@ oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
     }
   ],
   "additional": {
-    // Censored credentials, often from info_stealers
     "censored_data": [
       {
         "censored_username": "j******e@example.com",
         "censored_password": "**********"
       }
     ],
-    // Leaked URLs, often from info_stealers
     "leaked_urls": [
       "https://secret.auth.example.com"
     ]
@@ -218,7 +215,10 @@ After download leaks for each user, you can compute statistics for each API prov
 
 ```
 $ oneaudit leaks stats -i leaks.json --cache .cache
+Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.
+Note: API Provider 'unknown' (if present) includes computed passwords using cleaning rules or passwords that were added manually.
 
+Leaks by provider
 +--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
 |     field \ provider     |  aura |   proxynova    | hudsonrocks | spycloud |    leakcheck    |    snusbase    |
 +--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
@@ -229,8 +229,27 @@ $ oneaudit leaks stats -i leaks.json --cache .cache
 |      breaches (800)      |   x   |       x        |      x      |  47.6%   |      52.4%      |       x        |
 +--------------------------+-------+----------------+-------------+----------+-----------------+----------------+
 
+Breaches by count
++-----------------------+------------------------+
+|       leakcheck       |         enzoic         |
++-----------------------+------------------------+
+|    canva.com (25)     |      unknown (25)      |
+|    twitter.com (15)   |  telegram client (15)  |
+|   deezer.com (15)     |  breachforums.is (15)  |
+|   stealer logs (5)    |    dropbox.com (10)    |
+|    trello.com (5)     |     adobe.com (5)      |
++-----------------------+------------------------+
 
-Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.
+Passwords by length
++---------------+----------------+---------------+---------------+
+|    snusbase   | leakcheck_pro  |    unknown    |   proxynova   |
++---------------+----------------+---------------+---------------+
+|  Length=6 (5) | Length=8 (50)  | Length=12 (5) | Length=8 (20) |
+| Length=10 (5) | Length=9 (20)  | Length=10 (5) | Length=6 (10) |
+|  Length=8 (5) | Length=6 (20)  |  Length=9 (5) | Length=10 (5) |
+|  Length=9 (5) | Length=10 (15) |  Length=8 (5) |  Length=7 (5) |
+|  Length=7 (5) | Length=11 (15) | Length=13 (0) |  Length=9 (5) |
++---------------+----------------+---------------+---------------+
 ```
 
 #### Optimize And Clean Leaks
