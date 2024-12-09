@@ -192,7 +192,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         page = 1
         missing_entries = response_count - result['count']
         while missing_entries > 0:
-            self.logger.debug(f"Missing {missing_entries} entries from profile={target_profile_list_id}")
+            self.logger.info(f"Missing {missing_entries} entries from profile={target_profile_list_id}")
 
             limit = 100 if missing_entries > 100 else missing_entries
             response = get(
@@ -208,7 +208,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             result['count'] += len(data['records'])
             set_cached_result(self.api_name, f'export_profile_{target_profile_list_id}', result)
 
-            self.logger.info(f"Waiting 30 seconds to respect fair use.")
+            self.logger.debug(f"Waiting 30 seconds to respect fair use.")
             sleep(30)
 
             if data['num_pages'] == page:
