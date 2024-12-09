@@ -17,7 +17,6 @@ WIP
 * Add proxy support
 * Improve caching (allow each API to customize the check)
 * email verification documentation
-* reduce the number of requests for snusbase by caching each domain result in the database rather than delegating them
 * subdomains
   * use crt.sh then virustotal with the output
   * add option to only keep some range(s) of IPs
