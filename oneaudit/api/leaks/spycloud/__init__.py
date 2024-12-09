@@ -26,7 +26,7 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
         )
         self.api_endpoint = 'https://portal.spycloud.com/endpoint/enriched-stats/{email}'
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(email=email)
         # Send the request
@@ -38,7 +38,7 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
             'breaches': [
                 BreachData(f"SpyCloud [{records}]", self.compute_date(last, last_period).strftime('%Y-%m'))
             ]
-        } if records != 0 else {}
+        } if records != 0 and not for_stats else {}
 
         yield cached, result
 

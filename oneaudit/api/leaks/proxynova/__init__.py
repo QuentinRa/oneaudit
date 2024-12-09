@@ -1,4 +1,4 @@
-from oneaudit.api.leaks import LeaksAPICapability
+from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from oneaudit.api import FakeResponse
 from requests import request
@@ -41,18 +41,18 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
         self.api_endpoint = 'https://api.proxynova.com/comb?query={email}&start=0&limit=20'
         self.kill_switch = 0
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(email=email)
         # Send the request
         cached, data = self.fetch_results_using_cache(email, default=None)
+        # API is overloaded
+        if data is None:
+            return {}
+
         result = {
             'passwords': []
         }
-        # API is overloaded
-        if data is None:
-            return result
-
         for line in data['lines']:
             if ':' not in line:
                 continue
@@ -60,5 +60,8 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
             password = ''.join(password)
             if username == email:
                 result['passwords'].append(password)
+
+        if result['passwords']:
+            result['breaches'] = [BreachData("COMB-Compilation of Many Breaches 2021", None)]
 
         yield cached, result

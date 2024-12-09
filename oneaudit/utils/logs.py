@@ -17,7 +17,7 @@ def args_parse_parse_verbose(args):
     get_project_logger(log_level, args.log_file)
 
 
-def get_project_logger(log_level=logging.INFO, log_file=None):
+def get_project_logger(log_level=logging.ERROR, log_file=None):
     global _project_logger
     if _project_logger is None:
         _project_logger = logging.getLogger('oneaudit')

@@ -37,7 +37,7 @@ class AuraAPI(OneAuditLeaksAPIProvider):
         )
         self.rate_limit_status_codes = [429, 500]
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['data'] = {'email': email}
         # Send the request

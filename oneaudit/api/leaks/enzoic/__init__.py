@@ -59,7 +59,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
             yield False, {}
         yield True, {}
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # We are using bulk requests, so we mustn't process individual requests
         self.only_use_cache = True
         # Retrieve from cache

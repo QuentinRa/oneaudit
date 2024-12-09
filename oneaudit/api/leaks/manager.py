@@ -4,6 +4,7 @@ from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel, enzoic
 from oneaudit.utils.io import serialize_api_object
+from collections import Counter
 from dataclasses import asdict
 from hashlib import sha1, md5
 from bcrypt import hashpw
@@ -182,6 +183,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             'info_stealers': {},
             'breaches': {},
         }
+        breach_per_provider = {}
         for credential in credentials:
             # We need to inspect the results for EACH login
             # If a user has two emails, we want to know the cumulated stats
@@ -200,7 +202,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         heading="Investigate leaks",
                         capability=LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
                         method_name='investigate_leaks_by_email',
-                        args=(login,)):
+                        args=(login, True)):
                     for key, entries in api_result.items():
                         if key == 'raw_hashes':
                             entries = [self._find_plaintext_from_hash(entry) for entry in entries]
@@ -226,12 +228,22 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             if local_key == 'passwords':
                                 found_passwords.append(entry)
 
+                            if local_key == 'breaches':
+                                if api_provider.api_name not in breach_per_provider:
+                                    breach_per_provider[api_provider.api_name] = []
+                                breach_per_provider[api_provider.api_name].append(entry['source'])
+
             # We kept track of the password we found as some may have been generated/added externally/not in the cache
             login = _email_cleaner(credential['login'])
             for password in credential['passwords']:
                 if password in found_passwords:
                     continue
                 stats['passwords'][f"{login}.{password}"] = ['unknown']
+
+        for provider, breaches in breach_per_provider.items():
+            source_counts = Counter(breaches)
+            top_sources = source_counts.most_common(10)
+            breach_per_provider[provider] = top_sources
 
         final_stats = {}
         for attribute_name, entries in stats.items():
@@ -250,7 +262,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
 
             final_stats[attribute_name] = (stats_per_provider, len(entries))
 
-        return final_stats
+        return final_stats, breach_per_provider
 
     def sort_dict(self, results):
         # Sort every value and remove duplicates

@@ -24,7 +24,7 @@ class HudsonRocksAPI(OneAuditLeaksAPIProvider):
             api_keys=api_keys
         )
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['params'] = {'email': email}
         # Send the request

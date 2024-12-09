@@ -20,23 +20,18 @@ def _add_to_column(columns, column_name, column_value):
 
 
 def run(args):
-    args.api_config = None
-    args_parse_parse_verbose(args)
-    api_keys = args_parse_api_config(args)
-
     # Load Credentials
     with open(args.input_file, 'r') as file_data:
         credentials = load(file_data)['credentials']
 
     # Inspect them
-    provider = OneAuditLeaksAPIManager(api_keys, True)
-    stats = provider.compute_stats(credentials)
-    print()
+    provider = OneAuditLeaksAPIManager({}, True)
+    leak_stats, breaches_stats = provider.compute_stats(credentials)
 
     table = PrettyTable()
     table_data = {}
 
-    for attribute, (attribute_stats, total_count) in stats.items():
+    for attribute, (attribute_stats, total_count) in leak_stats.items():
         _add_to_column(table_data, "field \\ provider", attribute + " (" + str(total_count) + ")")
         for provider_name, provider_stats in attribute_stats.items():
             all_stats, exclusive = provider_stats['all'], provider_stats['exclusive']
@@ -54,7 +49,13 @@ def run(args):
             continue
         table.add_column(column_name, ["x" if value is None else value for value in values])
 
+    print("Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.")
+    print("Note: API Provider 'unknown' (if present) includes computed passwords using cleaning rules or passwords that were added manually.")
+    print()
     print(table)
     print()
-    print("Note: Percentages marked with a star (☆) are representing the percentage of results exclusive to this API.")
-    print("Note: API Provider 'unknown' includes computed passwords or passwords that were added manually.")
+
+    table = PrettyTable()
+    for column_name, values in breaches_stats.items():
+        table.add_column(column_name, [v[0] + (" " + str(v[1]) if v[1] > 0 else "") for v in values + [("x", 0)] * (10 - len(values))])
+    print(table)

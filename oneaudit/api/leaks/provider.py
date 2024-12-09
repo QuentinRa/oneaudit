@@ -14,7 +14,7 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
     def investigate_bulk(self, emails):
         yield True, {}
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         yield True, {}
 
     def investigate_leaks_by_domain(self, domain):

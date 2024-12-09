@@ -151,7 +151,7 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
 
 ```json
 {
-  "version": 1.6,
+  "version": 1.7,
   "credentials": [
     {
       "login": "john.doe@example.com",
@@ -181,7 +181,7 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
       ],
       "breaches": [
         {
-          "source": "Rockyou",
+          "source": "rockyou",
           "date": "2009-01"
         }
       ],

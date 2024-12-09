@@ -21,7 +21,7 @@ class LeakCheckFreeAPI(OneAuditLeaksAPIProvider):
         )
         self.allowed_status_codes.append(400)
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['url'] = 'https://leakcheck.io/api/public'
         self.request_args['params'] = {'check': email}
@@ -59,7 +59,7 @@ class LeakCheckPaidAPI(OneAuditLeaksAPIProvider):
         self.rate_limit_status_codes.append(403)
         self.allowed_status_codes.append(400)
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         self.request_args['url'] = f'https://leakcheck.io/api/v2/query/{email}'
         try:
             cached, data = self.fetch_results_using_cache(f"{email}", default={'result': []})

@@ -41,7 +41,7 @@ class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
         self.api_endpoint = 'https://api.snusbase.com/{route}'
         self.rate_limit_status_codes = [429, 502]
 
-    def investigate_leaks_by_email(self, email):
+    def investigate_leaks_by_email(self, email, for_stats=False):
         # Update parameters
         self.request_args['url'] = self.api_endpoint.format(route='data/search')
         self.request_args['json']['terms'] = [email]
