@@ -24,9 +24,20 @@ WIP
 * Only keep a range of leaks
 * Fix issues with rocketreach randomness in search
 
-## SocOSINT
+**Table of contents**
 
-### LinkedIn OSINT
+* [1. SocOSINT](#1-socosint)
+  * [1.1 LinkedIn OSINT](#11-linkedin-osint)
+* [2. Leaks](#2-leaks)
+  * [2.1 Generate A List Of Targets](#21-generate-a-list-of-targets)
+  * [2.2 Download Leaks For Each Target](#22-download-leaks-for-each-target)
+  * [2.3 Compute Stats For Each Provider](#23-compute-stats-for-each-provider)
+  * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
+* [3. API Configuration](#3-api-configuration)
+
+## 1. SocOSINT
+
+### 1.1 LinkedIn OSINT
 
 ✍️ Get name, birthdate, LinkedIn profile URL, professional and personal emails.
 
@@ -96,9 +107,9 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 }
 ```
 
-## Leaks
+## 2. Leaks
 
-#### Generate A List Of Targets
+#### 2.1 Generate A List Of Targets
 
 We can compute a list of targets from OSINT results. You can use either or both `osint.json` and `contacts.json`. Having the two of them would result in more targets.
 
@@ -134,7 +145,7 @@ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com 
 
 **Warning**: ensure you use verbose to see the number of verified emails per email format in order to ensure the selected format is valid. Moreover, the current script **only keep ascii characters** in the emails.
 
-#### Download Leaks For Each Target
+#### 2.2 Download Leaks For Each Target
 
 You can download leaks and dark web data using the following module.
 
@@ -209,7 +220,7 @@ oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
 }
 ```
 
-#### Compute Stats For Each Provider
+#### 2.3 Compute Stats For Each Provider
 
 After download leaks for each user, you can compute statistics for each API provider. You can view the percentage of entries per categories and per provider, along with the percentage of exclusive results, if applicable.
 
@@ -253,7 +264,7 @@ Passwords by length
 +---------------+----------------+---------------+---------------+
 ```
 
-#### Optimize And Clean Leaks
+#### 2.4 Optimize And Clean Leaks
 
 Some passwords in the leaks may be irrelevant, such as overly short or long ones, or hashes that are mistakenly labeled as passwords by certain providers. Additionally, we may want to handle censored passwords by identifying and removing as many of them as possible using known password patterns. However, this approach carries the risk of incorrectly adding some passwords.
 
@@ -275,7 +286,7 @@ $ oneaudit leaks stats -i pwned.json --cache .cache
 [...]
 ```
 
-## API Configuration
+## 3. API Configuration
 
 Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
 
@@ -287,14 +298,14 @@ The expected format **without any comments** is:
 
 ```json5
 {
-  // This API is free, just leave the key empty
+  // These APIs are free, just leave the key empty
   "aura": "",
   "hudsonrocks": "",
   "leakcheck": "",
   "nth": "",
   "proxynova": "",
   "spycloud": "",
-  // This API is paid, an API key is required
+  // These APIs are paid, an API key is required
   "enzoic": "your_api_key:your_api_secret",
   "hashmob": "your_api_key",
   "rocketreach": "your_api_key",

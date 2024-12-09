@@ -113,8 +113,10 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
 
         # We can try to fetch the trigger the requests for you, but it's somewhat dirty
-        if not self.session_id or not target_profile_list_id:
+        if not target_profile_list_id:
             return
+        if not self.session_id:
+            raise Exception(f"{self.api_name} API v2 is not supported to automatically lookup records.")
 
         kill_switch = 0
         csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
@@ -164,7 +166,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
     def export_profiles_from_profile_list(self, target_profile_list_id):
         if not self.session_id:
-            raise Exception(f"{self.api_name}: add a valid 'rocketreach_session' in your configuration file.")
+            raise Exception(f"{self.__class__.__name__} API v2 is not supported to automatically export records.")
 
         # Get Account ID
         self.current_handler = self.handler.account
