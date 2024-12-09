@@ -30,48 +30,45 @@ WIP
 
 ✍️ Get name, birthdate, LinkedIn profile URL, professional and personal emails.
 
-You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically look them up.
+You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically add them to a given profile list for APIs such as RocketReach.
 
 ```powershell
-oneaudit socosint linkedin scrap -d example.com -o osint.json -v
-oneaudit socosint linkedin scrap -d example.com -o osint.json -t 12345678 -v
+oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -v
+oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -t profile_list_id -v
 ```
 
-```json
+```json5
 {
   "version": 1.1,
   "entries": [
     {
-      "source": "rocketreach",
-      "date": 1732044168.2800202,
-      "version": 1.2,
-      "targets": [
-        {
-          "full_name": "Firstname Lastname",
-          "birth_year": 1337,
-          "links": {
-            "LINKEDIN": "https://www.linkedin.com/in/john_doe"
-          },
-          "count": 1
-        }
-      ]
+      // Full name can be used to guess emails
+      "full_name": "Firstname Lastname",
+      // Birth Year can be used in passwords
+      "birth_year": 1337,
+      // Links can be used to find more information
+      "links": {
+        "LINKEDIN": "https://www.linkedin.com/in/john_doe"
+      },
+      // Count refers to the number of possible emails you may find
+      "count": 1
     }
   ]
 }
 ```
 
-If the API support it and you have enough export credits, you can export a list of profiles with:
+If the API supports it and you have enough export credits, you can export a list of profiles with:
 
 ```powershell
 oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
-After exporting the emails, you can generate a unified list of targets for use with other module with:
+After exporting the emails, you need to parse them so that they have a format similar to `òsint.json`, while this is also useful to filter employees by company name:
 
 ```powershell
 # Only keep employees working at "LinkedIn" (you can use multiple filters).
-# When using '-v' you can view which companies were excluded from the list.
-oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rocketreach_export.json -o contacts.json -v
+# When using VERBOSE you can view which companies were excluded based on the filter
+oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocketreach -i rrexport.json -o contacts.json -v
 ```
 
 ```json
@@ -79,22 +76,19 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
   "version": 1.0,
   "entries": [
     {
-      "source": "rocketreach",
-      "date": 1732044168.2800202,
-      "version": 1.3,
-      "targets": [
+      "first_name": "John",
+      "last_name": "Doe",
+      "links": {
+        "LINKEDIN": "https://www.linkedin.com/in/john_doe"
+      },
+      "emails": [
         {
-          "first_name": "John",
-          "last_name": "Doe",
-          "links": {
-            "LINKEDIN": "https://www.linkedin.com/in/john_doe"
-          },
-          "emails": [
-            {
-              "email": "johndoe@example.com",
-              "verified": false
-            }
-          ]
+          "email": "johndoe@example.com",
+          "verified": false
+        },
+        {
+          "email": "johndoe@dev.example.com",
+          "verified": true
         }
       ]
     }
@@ -106,7 +100,7 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 
 #### Generate A List Of Targets
 
-We can compute a list of targets from OSINT results.
+We can compute a list of targets from OSINT results. You can use either or both `osint.json` and `contacts.json`. Having the two of them would result in more targets.
 
 ```powershell
 # one domain
@@ -138,40 +132,53 @@ oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com 
 }
 ```
 
+**Warning**: ensure you use verbose to see the number of verified emails per email format in order to ensure the selected format is valid. Moreover, the current script **only keep ascii characters** in the emails.
+
 #### Download Leaks For Each Target
 
 You can download leaks and dark web data using the following module.
 
 ```powershell
-# Only include OSINT targets
-oneaudit leaks download -i targets.json -o leaks.json --config config.json
-# Look for emails not in targets using the domain name
-oneaudit leaks download -i targets.json -o leaks.json --config config.json -d example.com -v
+oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
 ```
 
-```json
+```json5
 {
   "version": 1.7,
   "credentials": [
     {
       "login": "john.doe@example.com",
+      // Some emails are generated, so this is handy
       "verified": true,
+      // Was the email found from LinkedIn?
       "employed": true,
+      // Alternate logins, it includes "login"
       "logins": [
         "john.doe",
         "johndoe@example.com",
         "johndoe@dev.example.com",
         "johndoe001"
       ],
-      "passwords": [
-        "hello"
-      ],
       "censored_logins": [
         "jo*******1"
       ],
+      // Passwords
+      "passwords": [
+        "hello"
+      ],
+      // The password is probably "hello!"
       "censored_passwords": [
         "he***!"
       ],
+      // Uncracked hashes (we *quickly* tried to)
+      "hashes": [
+        {
+          "value": "8d016244527e4d86737d6a3332da6d82",
+          "format": "MD5",
+          "format_confidence": 40
+        }
+      ],
+      // The logged credentials were added to the fields above
       "info_stealers": [
         {
           "computer_name": "jojo",
@@ -179,28 +186,25 @@ oneaudit leaks download -i targets.json -o leaks.json --config config.json -d ex
           "date_compromised": "2009-01-01"
         }
       ],
+      // Lowercase breach names/dates
+      // "unknown" is used when the provider returned "null"
       "breaches": [
         {
           "source": "rockyou",
           "date": "2009-01"
         }
-      ],
-      "hashes": [
-        {
-          "value": "8d016244527e4d86737d6a3332da6d82",
-          "format": "MD5",
-          "format_confidence": 40
-        }
       ]
     }
   ],
   "additional": {
+    // Censored credentials, often from info_stealers
     "censored_data": [
       {
         "censored_username": "j******e@example.com",
         "censored_password": "**********"
       }
     ],
+    // Leaked URLs, often from info_stealers
     "leaked_urls": [
       "https://secret.auth.example.com"
     ]
