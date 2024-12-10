@@ -67,9 +67,14 @@ class BreachData:
         object.__setattr__(self, 'source', 'unknown' if self.source is None else self.source.lower())
         object.__setattr__(self, 'date', 'unknown' if self.date is None else self.date[:7])
 
+    def __str__(self):
+        return f"{self.source} - {self.date}"
+
 def deserialize_result(result):
     if 'breaches' in result:
         result['breaches'] = [BreachData(breach['source'], breach['date']) for breach in result['breaches']]
     if 'info_stealers' in result:
         result['info_stealers'] = [InfoStealer(stealer['computer_name'], stealer['operating_system'], stealer['date_compromised']) for stealer in result['info_stealers']]
+    if 'hashes' in result:
+        result['hashes'] = [PasswordHashDataFormat(h['value'], h['plaintext'], h['format'], h['format_confidence']) for h in result['hashes']]
     return result

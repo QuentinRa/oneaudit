@@ -2,8 +2,8 @@ from oneaudit.modules.leaks import parse
 from oneaudit.modules.leaks import download
 from oneaudit.modules.leaks import stats
 from oneaudit.modules.leaks import clean
-from oneaudit.modules.leaks import export
 from oneaudit.utils import args_call_target
+import oneaudit.modules.leaks.export
 
 
 def define_args(parent_parser):
