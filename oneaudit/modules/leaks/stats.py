@@ -64,7 +64,7 @@ def run(args):
 
     table = PrettyTable()
     for column_name, values in password_stats.items():
-        table.add_column(column_name, [f"Length={v[0]} ({v[1]})" if v[1] > 0 else "x" for v in values])
+        table.add_column(column_name, [f"Length={v[0]} ({v[1]})" if v[1] > 0 else "x" for v in values + [("x", 0)] * (5 - len(values))])
     print()
     print("Passwords by length")
     print(table)

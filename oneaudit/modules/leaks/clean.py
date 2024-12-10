@@ -1,3 +1,4 @@
+from oneaudit.api.leaks import BreachData
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.utils.io import save_to_json
 import json
@@ -45,6 +46,24 @@ def run(args):
     # (some are junk/most likely from very old breaches, or even censored hashes)
     possible_trails = ["", None] + [chr(i) for i in range(0, 255)]
     for credential in credentials:
+        if credential['breaches']:
+            valid_breaches = {}
+            for breach in credential['breaches']:
+                source, date = breach['source'], breach['date']
+                # Ignore breaches like this
+                if source == 'unknown' and date == 'unknown':
+                    continue
+                # Only keep the earliest leak, as to avoid "fake" dates
+                if source in valid_breaches:
+                    other_date = valid_breaches[source]
+                    if not date:
+                        continue
+                    if not other_date or other_date > date:
+                        valid_breaches[source] = date
+                else:
+                    valid_breaches[source] = date
+            credential['breaches'] = [BreachData(k, v) for k, v in valid_breaches.items()]
+
         if not credential['passwords'] and not credential['censored_passwords']:
             continue
 

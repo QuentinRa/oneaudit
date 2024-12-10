@@ -64,8 +64,8 @@ class BreachData:
     date: str|None
 
     def __post_init__(self):
-        object.__setattr__(self, 'source', 'unknown' if self.source is None else self.source.lower())
-        object.__setattr__(self, 'date', 'unknown' if self.date is None else self.date[:7])
+        object.__setattr__(self, 'source', 'unknown' if self.source is None or not self.source.strip() else self.source.lower())
+        object.__setattr__(self, 'date', 'unknown' if self.date is None or not self.source.strip() else self.date[:7])
 
     def __str__(self):
         return f"{self.source} - {self.date}"
