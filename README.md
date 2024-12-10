@@ -115,10 +115,11 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 We can compute a list of targets from OSINT results. You can use either or both `osint.json` and `contacts.json`. Having the two of them would result in more targets.
 
 ```powershell
-# one domain
 oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
 # multiple domains
-oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com --alias dev.example.com -o targets.json -v
+oneaudit leaks parse [...] --alias dev.example.com
+# only keep emails from the target domain(s)
+oneaudit leaks parse [...] --restrict
 ```
 
 ```json

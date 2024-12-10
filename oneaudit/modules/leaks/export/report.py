@@ -16,8 +16,7 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
 
-    html_template = """
-<!DOCTYPE html>
+    html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

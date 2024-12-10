@@ -45,7 +45,7 @@ class LeakCheckPaidAPI(OneAuditLeaksAPIProvider):
             raise APIRateLimitException(f"{response.text}")
 
     def get_request_rate(self):
-        return 1
+        return 0.4
 
     def __init__(self, api_keys):
         super().__init__(

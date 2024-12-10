@@ -32,6 +32,7 @@ def define_args(parent_parser):
     parse_osint.add_argument('-d', '--domain', dest='domain', help='For example, "example.com".', required=True)
     parse_osint.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys(), required=True)
     parse_osint.add_argument('--alias', dest='domain_aliases', default=[], action='append', help='Alternative domain names that should be investigated.')
+    parse_osint.add_argument('--restrict', dest='only_from_the_target_domain', action='store_true', help='Only keep emails ending with the provided domain/aliases.')
     args_verbose_config(parse_osint)
 
 
@@ -96,9 +97,11 @@ def run(args):
             target_email = target_email_data['email']
             is_target_email_verified = target_email_data['verified']
             verified = verified or (computed_email == target_email and is_target_email_verified)
+            # We are not allowing emails from the target domain different from the computed_email unless they were verified
             allowed = [domain for domain in args.domain_aliases if target_email.endswith(domain)] == []
             if allowed:
-                emails.add(target_email.lower())
+                if not args.only_from_the_target_domain:
+                    emails.add(target_email.lower())
             elif is_target_email_verified:
                 # Always add verified emails, regardless of any rule
                 emails.add(target_email.lower())

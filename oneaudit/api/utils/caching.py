@@ -95,4 +95,5 @@ def get_cached_result(api_name, key, do_not_expire=False):
         timestamp = int(timestamp)
         if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
             return json_loads(json_response)
+        get_project_logger().debug(f"Removed entry {key} for {api_name} from cache.")
     return None
