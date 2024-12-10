@@ -296,7 +296,7 @@ oneaudit leaks export report -i pwned.json -f html -o report.html
 oneaudit leaks export report -i pwned.json -f html -o report.html --all
 ```
 
-![img.png](report_v0.1.png)
+![oneaudit_leaks_html_report](.github/report_v0.1.png)
 
 We can generate hashes for the cleartext passwords using:
 
