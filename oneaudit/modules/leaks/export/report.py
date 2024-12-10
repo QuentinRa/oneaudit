@@ -55,7 +55,7 @@ def run(args):
 <body>
     <h1>OneAudit Leaks Report</h1>
     {% if not include_all %}
-        <p>Warning: no option '--all', some entries were removed as they didn't have a cleartext password.</p>
+        <p><b>Warning</b>: No '--all' option provided. Some entries were removed because they don't have a cleartext password.</p>
     {% endif %}
     <table>
         <thead>
@@ -81,7 +81,7 @@ def run(args):
                 </td>
                 <td>
                     {% for hash in user['hashes'] %}
-                    {{ hash }}<br>
+                    Uncracked hash found (format={{ hash.format if hash.format else '?' }})<br>
                     {% endfor %}
                 </td>
                 <td class="{{ 'green' if user['verified'] else 'red' }}">{{ 'True' if user['verified'] else 'False' }}</td>
@@ -96,7 +96,7 @@ def run(args):
                 <td>
                     <ul class="info-stealers">
                         {% for stealer in user['info_stealers'] %}
-                        <li>{{ stealer }}</li>
+                        <li>{{ stealer['operating_system'] }} / {{ stealer['date_compromised'] }}</li>
                         {% endfor %}
                     </ul>
                 </td>

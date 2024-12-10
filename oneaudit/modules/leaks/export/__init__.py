@@ -1,4 +1,5 @@
 from oneaudit.modules.leaks.export import report
+from oneaudit.modules.leaks.export import hashes
 from oneaudit.utils import args_call_target
 
 def define_args(parent_parser):
@@ -7,6 +8,7 @@ def define_args(parent_parser):
     # Add actions we can perform related to leaks
     export_module_action = export_module.add_subparsers(dest='action_type', help="Which export module to use.", required=True)
     report.define_args(export_module_action)
+    hashes.define_args(export_module_action)
 
 
 def run(args):

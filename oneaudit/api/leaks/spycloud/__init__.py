@@ -36,7 +36,7 @@ class SpyCloudAPI(OneAuditLeaksAPIProvider):
         records, last, last_period = data['you']["records"], data['you']["discovered"], data['you']["discovered_unit"]
         result = {
             'breaches': [
-                BreachData(f"SpyCloud [{records}]", self.compute_date(last, last_period).strftime('%Y-%m'))
+                BreachData(f"unknown", self.compute_date(last, last_period).strftime('%Y-%m'))
             ]
         } if records != 0 and not for_stats else {}
 

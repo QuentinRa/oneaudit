@@ -33,6 +33,7 @@ WIP
   * [2.2 Download Leaks For Each Target](#22-download-leaks-for-each-target)
   * [2.3 Compute Stats For Each Provider](#23-compute-stats-for-each-provider)
   * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
+  * [2.5 Export Results](#25-export-results)
 * [3. API Configuration](#3-api-configuration)
 
 ## 1. SocOSINT
@@ -284,6 +285,23 @@ $ oneaudit leaks stats -i pwned.json --cache .cache
 +-------------------------+-------+----------------+----------------+-----------------+-------------+-----------------+----------------+---------+
 
 [...]
+```
+
+#### 2.5 Export Results
+
+We can generate an HTML report using:
+
+```ps
+oneaudit leaks export report -i pwned.json -f html -o report.html
+oneaudit leaks export report -i pwned.json -f html -o report.html --all
+```
+
+![img.png](report_v0.1.png)
+
+We can generate hashes for the cleartext passwords using:
+
+```ps
+oneaudit leaks export hashes -i pwned.json -f ntlm -o hashes.txt
 ```
 
 ## 3. API Configuration

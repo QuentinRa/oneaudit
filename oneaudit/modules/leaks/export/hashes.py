@@ -4,7 +4,7 @@ import json
 
 
 def define_args(parent_parser):
-    export_leaks = parent_parser.add_parser('export', help='Convert passwords to the given hash format')
+    export_leaks = parent_parser.add_parser('hashes', help='Export passwords to the given hash format')
     export_leaks.add_argument('-i', metavar='input.json', dest='input_file', help='JSON file with leaked credentials.', required=True)
     export_leaks.add_argument('-f', metavar='format', dest='hash_format', choices=['ntlm'], help='Select a hash format.', required=True)
     export_leaks.add_argument('-o', metavar='output.json', dest='output_file', help='Export results as JSON.', required=True)
