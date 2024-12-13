@@ -119,7 +119,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         hash_to_crack = hash_to_crack.strip()
 
                         # No need to crack these
-                        if hash_to_crack in known_hashes:
+                        if not hash_to_crack or hash_to_crack in known_hashes:
                             continue
 
                         # We need to crack it, or at least, investigate it

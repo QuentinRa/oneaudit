@@ -34,7 +34,7 @@ class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
         for email, extracted_data in indexed_data.items():
             # Compute checksum
             cached_data = get_cached_result(self.api_name, key_formatter.format(email=email), True)
-            cached_data_checksum = cached_data['checksum_sha256'] if 'checksum_sha256' in cached_data else None
+            cached_data_checksum = cached_data['checksum_sha256'] if cached_data and 'checksum_sha256' in cached_data else None
             extracted_data_checksum = compute_checksum(extracted_data)
             # Update database if data changed
             if extracted_data_checksum != cached_data_checksum:
