@@ -360,3 +360,26 @@ Candidates:
 * [AmIBreached](https://amibreached.com/): Data breaches, no API
 * [HaveIBeenPwned](https://haveibeenpwned.com/): Data breaches API
 * [KeeperSecurity](https://www.keepersecurity.com): Data breaches, no API
+
+
+## 4. Cheatsheet
+
+Configuration
+
+```
+domain=example.com
+src=./output/$domain/
+config_opt=--config ./config.json
+cache_opt=--cache .cache
+mail_format=first.last
+```
+
+Leaks
+
+```sh
+$ oneaudit leaks parse -i $src/contacts.json -i $src/osint.json -f $mail_format -d $domain -o $src/targets.json
+$ oneaudit leaks download -i $src/targets.json -o $src/leaks.json $config_opt $cache_opt -vv -r -d $domain
+$ oneaudit leaks clean -i  $src/leaks.json -o  $src/pwned.json
+$ oneaudit leaks export report -i $src/pwned.json -f html -o $src/report.html
+$ oneaudit leaks stats -i  $src/pwned.json $cache_opt
+```
