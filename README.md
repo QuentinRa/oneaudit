@@ -35,6 +35,7 @@ WIP
   * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
   * [2.5 Export Results](#25-export-results)
 * [3. API Configuration](#3-api-configuration)
+* [4. Cheatsheet](#4-cheatsheet)
 
 ## 1. SocOSINT
 
@@ -368,18 +369,28 @@ Configuration
 
 ```
 domain=example.com
-src=./output/$domain/
+profile_list_opt=-t 12345678
 config_opt=--config ./config.json
 cache_opt=--cache .cache
+filters=-f "Microsoft"
 mail_format=first.last
+out=./output/$domain/
+```
+
+SocOSINT
+
+```powershell
+$ oneaudit socosint linkedin scrap -d $domain -o $out/osint.json $config_opt $profile_list_opt -v
+$ oneaudit socosint linkedin export -s rocketreach $profile_list_opt -o $out/rrexport.json $config_opt -v
+$ oneaudit socosint linkedin parse -s rocketreach $filters -i $out/rrexport.json -o $out/contacts.json -v
 ```
 
 Leaks
 
-```sh
-$ oneaudit leaks parse -i $src/contacts.json -i $src/osint.json -f $mail_format -d $domain -o $src/targets.json
-$ oneaudit leaks download -i $src/targets.json -o $src/leaks.json $config_opt $cache_opt -vv -r -d $domain
-$ oneaudit leaks clean -i  $src/leaks.json -o  $src/pwned.json
-$ oneaudit leaks export report -i $src/pwned.json -f html -o $src/report.html
-$ oneaudit leaks stats -i  $src/pwned.json $cache_opt
+```powershell
+$ oneaudit leaks parse -i $out/contacts.json -i $out/osint.json -f $mail_format -d $domain -o $out/targets.json
+$ oneaudit leaks download -i $out/targets.json -o $out/leaks.json $config_opt $cache_opt -vv -r -d $domain
+$ oneaudit leaks clean -i  $out/leaks.json -o  $out/pwned.json
+$ oneaudit leaks export report -i $out/pwned.json -f html -o $out/report.html
+$ oneaudit leaks stats -i  $out/pwned.json $cache_opt
 ```
