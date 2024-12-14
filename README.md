@@ -52,7 +52,7 @@ oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -t profile_list_
 
 ```json5
 {
-  "version": 1.1,
+  "version": 1.2,
   "entries": [
     {
       // Full name can be used to guess emails
@@ -63,8 +63,8 @@ oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -t profile_list_
       "links": {
         "LINKEDIN": "https://www.linkedin.com/in/john_doe"
       },
-      // Count refers to the number of possible emails you may find
-      "count": 1
+      // Emails found using Social Networks
+      "emails": []
     }
   ]
 }
@@ -325,12 +325,14 @@ The expected format **without any comments** is:
   "nth": "",
   "proxynova": "",
   "spycloud": "",
+  "haveibeenpwned": "",
   // These APIs are paid, an API key is required
   "enzoic": "your_api_key:your_api_secret",
   "hashmob": "your_api_key",
   "rocketreach": "your_api_key",
   "leakcheck_pro": "your_api_key",
   "snusbase": "your_api_key",
+  "nubela": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
 }
@@ -341,11 +343,12 @@ The followed APIs are used by the plugin:
 | API Identifier                                     | Pricing    | Usage                                          |
 |----------------------------------------------------|------------|------------------------------------------------|
 | [rocketreach](https://rocketreach.co/)             | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
+| [nubela](https://rocketreach.co/)                  | `PAID`     | Access LinkedIn API. Lookup for emails/phones. |
 | [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`     | InfoStealer API (censored).                    |
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |
 | [spycloud](https://spycloud.com/)                  | `FREE`     | Data breaches API.                             |
-| [haveibeenpwned](https://haveibeenpwned.com/)          | `FREE`     | Data breaches API.                             |
+| [haveibeenpwned](https://haveibeenpwned.com/)      | `FREE`     | Data breaches API.                             |
 | [enzoic](https://www.enzoic.com/)                  | `FREEMIUM` | Data breaches API.                             |
 | [proxynova](https://www.proxynova.com/tools/comb)  | `FREE`     | Leaked Credentials API.                        |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |

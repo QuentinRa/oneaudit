@@ -70,8 +70,6 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                 self.current_handler = search_handler.params(start=page * 100 + 1, size=100)
                 cached, data = self.fetch_results_using_cache(f"{company_domain}_score_{page}", default=None, method='execute')
                 for profile in data["profiles"]:
-                    target_emails = profile["teaser"]["emails"] + profile["teaser"]["professional_emails"]
-                    target_emails = list(set(target_emails))
                     if not profile["name"]:
                         self.logger.warning(f"We found an employee with a blank name. We will skip it for now.")
                         continue
@@ -80,7 +78,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                     targets.append(UserProfileRawData(
                         profile["name"],
                         profile['birth_year'],
-                        len(target_emails),
+                        [],
                         {SocialNetworkEnum.get(k): str(v) for k, v in (profile['links'] if profile['links'] else {}).items()}
                     ))
                     if profile['status'] != "complete":

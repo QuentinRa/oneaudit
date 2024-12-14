@@ -41,4 +41,4 @@ class NubelaProxycurlAPI(OneAuditLinkedInAPIProvider):
         yield True, {}
 
     def get_request_rate(self):
-        return 10
+        return 3

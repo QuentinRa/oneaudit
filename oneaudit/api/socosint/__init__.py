@@ -39,14 +39,14 @@ class SocialNetworkEnum(Enum):
 class UserProfileRawData:
     full_name: str
     birth_year: str
-    count: int
+    emails: list[str]
     links: Dict[SocialNetworkEnum, str] = field(default_factory=dict)
 
     def to_dict(self):
         return {
             "full_name": self.full_name,
             "birth_year": self.birth_year,
-            "count": self.count,
+            "emails": self.emails,
             "links": {k: v for k, v in self.links.items() if k},
         }
 

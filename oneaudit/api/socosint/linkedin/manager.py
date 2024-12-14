@@ -2,6 +2,7 @@ from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.socosint import SocialNetworkEnum
 from oneaudit.api.socosint.linkedin import rocketreach, nubela
 from oneaudit.api.socosint.linkedin import LinkedInAPICapability
+from oneaudit.utils.io import serialize_api_object
 
 
 class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
@@ -28,19 +29,24 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
         )
         entries = [entry for entries in result.values() for entry in entries]
 
+        final_entries = []
         for entry in entries:
             args = (
                 entry.links[SocialNetworkEnum.LINKEDIN.name] if SocialNetworkEnum.LINKEDIN.name in entry.links else None,
                 entry.links[SocialNetworkEnum.TWITTER.name] if SocialNetworkEnum.TWITTER.name in entry.links else None,
                 entry.links[SocialNetworkEnum.FACEBOOK.name] if SocialNetworkEnum.FACEBOOK.name in entry.links else None,
             )
-            for _, api_result in self._call_all_providers(
-                    heading='Searching employees emails',
-                    capability=LinkedInAPICapability.SEARCH_EMPLOYEES_BY_SOCIAL_NETWORK,
-                    method_name='search_employees_by_social_network', args=args):
-                print(api_result)
+            _, result = self._call_all_providers_dict(
+                heading='Searching employees emails',
+                capability=LinkedInAPICapability.SEARCH_EMPLOYEES_BY_SOCIAL_NETWORK,
+                stop_when_modified=False,
+                method_name='search_employees_by_social_network',
+                result=serialize_api_object(entry),
+                args=args
+            )
+            final_entries.append(result)
 
-        return entries
+        return final_entries
 
     def export_profiles_from_profile_list(self, api_name, target_profile_list_id):
         for provider in self.providers:

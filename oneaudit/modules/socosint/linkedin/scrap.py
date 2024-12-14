@@ -18,6 +18,6 @@ def run(args):
     api_keys = args_parse_api_config(args)
     provider = OneAuditLinkedInAPIManager(api_keys)
     save_to_json(args.output_file, {
-        "version": 1.1,
+        "version": 1.2,
         "entries": provider.search_employees_from_company_domain(args.company_domain, args.target_profile_list_id),
     })
