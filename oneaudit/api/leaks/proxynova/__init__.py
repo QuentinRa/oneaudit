@@ -61,7 +61,4 @@ class ProxyNovaAPI(OneAuditLeaksAPIProvider):
             if username == email:
                 result['passwords'].append(password)
 
-        if result['passwords']:
-            result['breaches'] = [BreachData("COMB-Compilation of Many Breaches 2021", None)]
-
         yield cached, result

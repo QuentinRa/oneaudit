@@ -88,7 +88,7 @@ class HaveIBeenPwnedFree(OneAuditLeaksAPIBulkProvider):
 
         yield True,  [
             BreachData(
-                breach_data['name'],
+                breach.source,
                 breach_data['date'],
                 breach_data['description'],
             )

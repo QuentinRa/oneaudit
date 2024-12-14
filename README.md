@@ -21,7 +21,6 @@ WIP
   * use crt.sh then virustotal with the output
   * add option to only keep some range(s) of IPs
   * [internetdb](https://internetdb.shodan.io/)
-* Only keep a range of leaks
 * Fix issues with rocketreach randomness in search
 
 **Table of contents**
@@ -36,6 +35,7 @@ WIP
   * [2.5 Export Results](#25-export-results)
 * [3. API Configuration](#3-api-configuration)
 * [4. Cheatsheet](#4-cheatsheet)
+* [5. Developer Notes](#5-developer-notes)
 
 ## 1. SocOSINT
 
@@ -360,7 +360,6 @@ Candidates:
 * [DeHashed](https://www.dehashed.com/): Leaked Credentials. Require Platform and API subscriptions.
 * [idstrong](https://www.idstrong.com/): Data breaches, no API
 * [AmIBreached](https://amibreached.com/): Data breaches, no API
-* [HaveIBeenPwned](https://haveibeenpwned.com/): Data breaches API
 * [KeeperSecurity](https://www.keepersecurity.com): Data breaches, no API
 
 
@@ -395,3 +394,14 @@ $ oneaudit leaks clean -i  $out/leaks.json -o  $out/pwned.json
 $ oneaudit leaks export report -i $out/pwned.json -f html -o $out/report.html
 $ oneaudit leaks stats -i  $out/pwned.json $cache_opt
 ```
+
+## 5. Developer Notes
+
+#### Leak And Breaches Dates
+
+We won't implement a logic to filter leaks by date (such as to keep recent ones).
+
+* Multiple providers are not returning breach dates
+* Multiple providers are returning invalid dates
+* Multiple providers are not sorting passwords per breach
+* Breach Compilations do not include breach data

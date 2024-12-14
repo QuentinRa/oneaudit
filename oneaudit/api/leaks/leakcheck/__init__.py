@@ -3,6 +3,10 @@ from oneaudit.api.leaks import BreachData, LeaksAPICapability
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 
 
+def uniformize_breach_source(source):
+    return source.replace(" (scraping data)", "")
+
+
 # https://wiki.leakcheck.io/en/api
 class LeakCheckFreeAPI(OneAuditLeaksAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
@@ -29,7 +33,7 @@ class LeakCheckFreeAPI(OneAuditLeaksAPIProvider):
         cached, data = self.fetch_results_using_cache(f"public_{email}", default={})
         sources = data['sources'] if 'sources' in data else []
         results = {
-            'breaches': [BreachData(source["name"], source["date"] if "date" in source else None) for source in sources]
+            'breaches': [BreachData(uniformize_breach_source(source["name"]), source["date"] if "date" in source else None) for source in sources]
         }
         yield cached, results
 
@@ -70,7 +74,7 @@ class LeakCheckPaidAPI(OneAuditLeaksAPIProvider):
             sources = [entry['source'] for entry in data['result'] if 'source' in entry]
             results = {
                 'passwords': [entry['password'] for entry in data['result'] if 'password' in entry],
-                'breaches': [BreachData(source["name"], source["breach_date"] if "breach_date" in source else None) for source in sources],
+                'breaches': [BreachData(uniformize_breach_source(source["name"]), source["breach_date"] if "breach_date" in source else None) for source in sources],
             }
             yield cached, results
         except APIRateLimitException:

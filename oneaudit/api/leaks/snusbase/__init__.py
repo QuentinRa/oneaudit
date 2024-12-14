@@ -1,5 +1,5 @@
 from oneaudit.api import APIRateLimitException
-from oneaudit.api.leaks import LeaksAPICapability
+from oneaudit.api.leaks import LeaksAPICapability, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIBulkProvider, PasswordHashDataFormat
 from time import sleep
 
@@ -51,11 +51,18 @@ class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
             cached, data = self.fetch_results_using_cache(f"search_{email}", default={'results': {}})
             results = {
                 'logins': [],
+                'breaches': [],
                 'passwords': [],
                 'raw_hashes': []
             }
             # Parse useful fields
-            for breach_data in data['results'].values():
+            for breach_id, breach_data in data['results'].items():
+                breach_parts = breach_id.split("_")
+                breach_details = BreachData(
+                    breach_parts[1] + ('.' + breach_parts[2] if breach_parts[2] != "NA" else ""),
+                    breach_parts[-1][2:6] + "-" + breach_parts[-1][:2] if len(breach_parts[-1]) >= 6 else breach_parts[-1] + "-01"
+                )
+                results['breaches'].append(breach_details)
                 for entry in breach_data:
                     for k, v in [
                         ('name', 'logins'),

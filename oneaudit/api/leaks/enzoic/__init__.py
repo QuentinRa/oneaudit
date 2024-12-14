@@ -65,6 +65,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
         self.only_use_cache = True
         # Retrieve from cache
         _, data = self.fetch_results_using_cache(f"exposures_{email}", default={'exposures': []})
+
         result = { 'breaches': [] }
         for exposure in data['exposures']:
             source = exposure['sourceURLs'][0] if exposure['sourceURLs'] else None
@@ -83,6 +84,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                     if not found:
                         self.logger.debug(f"No source found for {exposure}.")
                         source = title
+
             result['breaches'].append(BreachData(
                 source,
                 exposure['date'] if exposure['date'] else exposure['dateAdded']

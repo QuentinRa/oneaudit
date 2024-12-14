@@ -66,7 +66,7 @@ class BreachData:
     description: str = ""
 
     def __post_init__(self):
-        object.__setattr__(self, 'source', 'unknown' if self.source is None or not self.source.strip() else self.source.lower())
+        object.__setattr__(self, 'source', 'unknown' if self.source is None or not self.source.strip() else self.source.lower().strip())
         object.__setattr__(self, 'date', 'unknown' if self.date is None or not self.source.strip() else self.date[:7])
 
     def __str__(self):
