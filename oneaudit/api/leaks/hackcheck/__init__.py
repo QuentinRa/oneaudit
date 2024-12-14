@@ -42,7 +42,7 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
 
             indexed_data[email] = extract_data_from_result(result, indexed_data[email] if email in indexed_data else None)
 
-        self._cache_indexed_data_if_required("search_email_{key}", indexed_data)
+        self._cache_indexed_data_if_required("parsed_email_{key}", indexed_data)
 
         yield cached, {
             'emails': list(indexed_data.keys())
@@ -59,25 +59,15 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
             yield cached, {}
 
             if 'results' in data:
-                result = None
                 for raw_data in data['results']:
-                    result = extract_data_from_result(raw_data, result)
-                if not result:
-                    result = {}
-            else:
-                result = deserialize_result(data['result'])
-
-            if result:
-                result['breaches'] = [
-                    BreachData(clean_breach_source(breach.source), breach.date, breach.description)
-                    for breach in result['breaches']
-                ]
+                    cached_result = extract_data_from_result(raw_data, cached_result)
+                if not cached_result:
+                    cached_result = {}
 
             # Save result after parsing
-            cached_result = result
             if not self.only_use_cache:
                 set_cached_result(self.api_name, cached_result_key, {
-                    'result': result
+                    'result': cached_result
                 })
         else:
             cached_result = deserialize_result(cached_result['result'])
@@ -106,7 +96,7 @@ def extract_data_from_result(result, indexor):
         indexor['raw_hashes'].append(result['hash'])
 
     indexor['breaches'].append(BreachData(
-        result['source']['name'],
+        clean_breach_source(result['source']['name']),
         result['source']['date']
     ))
     return indexor
