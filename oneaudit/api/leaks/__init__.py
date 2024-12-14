@@ -7,6 +7,7 @@ class LeaksAPICapability(Enum):
     INVESTIGATE_LEAKS_BY_DOMAIN = 1
     INVESTIGATE_CRACKED_HASHES = 2
     INVESTIGATE_BULK = 3
+    ADD_BREACH_DESCRIPTION = 4
 
 
 class LeakProviderUtilities(Enum):
