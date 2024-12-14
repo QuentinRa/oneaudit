@@ -53,7 +53,7 @@ def run(args):
                 # Ignore breaches like this
                 if source == 'unknown' and date == 'unknown':
                     continue
-                # Only keep the earliest leak, as to avoid "fake" dates
+                # We keep the earliest leak, as to avoid "fake" dates
                 if source in valid_breaches:
                     other_date, other_description = valid_breaches[source]
                     if not date:

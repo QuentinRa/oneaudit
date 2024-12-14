@@ -45,21 +45,21 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         self.can_use_cache_even_if_disabled = can_use_cache_even_if_disabled
         self.known_generic_breaches = {
             "stealer logs": "A computer has been infected with info-stealer malware, which is designed to collect sensitive data."
-                            "This often happens when users download and open or run malicious files, such as email attachments or cracked software."
-                            "They are designed to collect sensitive data, such as stored passwords, browsing history, cookies, and other private information.",
+                            " This often happens when users download and open or run malicious files, such as email attachments or cracked software."
+                            " They are designed to collect sensitive data, such as stored passwords, browsing history, cookies, and other private information.",
 
             "combolist": "A combolist is a collection of usernames and passwords that have been exposed or leaked from various data breaches."
-                         "For instance, hackers create combolists specific to each country to make it easier to target users and services in particular languages."
+                         " For instance, hackers create combolists specific to each country to make it easier to target users and services in particular languages."
                          " One of the most well-known combolists is the Compilation Of Many Breaches (COMB), which contained 10 billion credentials as of 2021.",
 
             "telegram client": "Hackers often use Telegram for its anonymity and encryption features, which allow them to communicate securely and share information without easily being tracked."
-                               "Telegram hosts numerous channels and groups where stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
+                               " Telegram hosts numerous channels and groups where stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
 
             "hacker forums": "Hackers often use forums such as 'breachforums' or 'exploit.in' to communicate and share information."
-                             "Numerous stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
+                             " Numerous stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
 
             "unknown": "We do not have detailed information about this breach, aside from its date. "
-                       "This could be due to several reasons: it may involve a phishing attack where data was compromised without our knowledge, or the email address might have been mentioned in a document that was shared or leaked.",
+                       " This could be due to several reasons: it may involve a phishing attack where data was compromised without our knowledge, or the email address might have been mentioned in a document that was shared or leaked.",
 
             "_placeholder_": "We could not find more details on this breach."
         }
@@ -245,6 +245,10 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                                 if local_key == 'hashes' and entry['plaintext']:
                                     local_key = 'passwords'
                                     entry = entry['plaintext']
+                                elif local_key == "breaches":
+                                    found = [True for breach in credential[local_key] if breach['source'] == entry['source']] == [True]
+                                    if not found:
+                                        continue
                                 else:
                                     continue
                             entry_key = f"{login}.{entry}"
