@@ -44,7 +44,7 @@ class NubelaProxycurlAPI(OneAuditLinkedInAPIProvider):
             while True:
                 self.logger.info(f"Querying page {page + 1}/?")
 
-                cached, results = self.fetch_results_using_cache(f"search_{company_domain}_page{page}", default={})
+                cached, results = self.fetch_results_using_cache(f"search_{company_domain}_page{page}", default={'employees': [], 'next_page': None })
                 yield cached, {}
 
                 targets = []
@@ -57,8 +57,9 @@ class NubelaProxycurlAPI(OneAuditLinkedInAPIProvider):
                             SocialNetworkEnum.LINKEDIN.name: employee['profile_url']
                         }
                     ))
+                yield cached, { self.api_name: targets }
 
-                after_value = parse_qs(results['next_page']).get('after', None)
+                after_value = parse_qs(results['next_page']).get('after', None) if results['next_page'] else None
                 if not after_value:
                     break
                 self.request_args['params']['after'] = after_value[0]
