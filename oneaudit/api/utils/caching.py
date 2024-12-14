@@ -85,7 +85,7 @@ def create_cache_database(api_name):
     return sqlite_connection[api_name], sqlite_cursor[api_name]
 
 
-def get_cached_result(api_name, key, do_not_expire=False):
+def get_cached_result(api_name, key, do_not_expire=False, expiration_check=30 * 24 * 60 * 60):
     conn, cursor = create_cache_database(api_name)
     cursor.execute('SELECT json_response, timestamp FROM cache WHERE response_key = ?', (key,))
     row = cursor.fetchone()
@@ -93,7 +93,7 @@ def get_cached_result(api_name, key, do_not_expire=False):
         json_response, timestamp = row
         current_time = int(time())
         timestamp = int(timestamp)
-        if do_not_expire or current_time - timestamp < 30 * 24 * 60 * 60:
+        if do_not_expire or current_time - timestamp < expiration_check:
             return json_loads(json_response)
         get_project_logger().debug(f"Removed entry {key} for {api_name} from cache.")
     return None

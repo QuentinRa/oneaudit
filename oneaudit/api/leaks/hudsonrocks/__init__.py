@@ -4,9 +4,10 @@ from time import sleep
 
 
 # https://cavalier.hudsonrock.com/docs
-class HudsonRocksAPI(OneAuditLeaksAPIProvider):
+class HudsonRocksFreeAPI(OneAuditLeaksAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL,
+                LeaksAPICapability.ADD_BREACH_DESCRIPTION] if api_key is not None else []
 
     def handle_rate_limit(self, response):
         sleep(60)

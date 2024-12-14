@@ -110,7 +110,7 @@ class SnusbaseAPI(OneAuditLeaksAPIBulkProvider):
                 indexed_data[email][breach_name].append(breach_entry)
 
         # Update cache if required
-        self._cache_indexed_data_if_required("search_{email}", indexed_data)
+        self._cache_indexed_data_if_required("search_{key}", indexed_data)
 
         yield cached, {
             'emails': list(indexed_data.keys())

@@ -57,6 +57,7 @@ class EnzoicAPI(OneAuditLeaksAPIProvider):
                 email = entry['username']
                 set_cached_result(self.api_name, self.exposure_key_format.format(email=email), entry)
             yield False, {}
+
         yield True, {}
 
     def investigate_leaks_by_email(self, email, for_stats=False):
