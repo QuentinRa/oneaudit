@@ -20,6 +20,9 @@ class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
     def investigate_leaks_by_domain(self, domain):
         yield True, {}
 
+    def investigate_breach_from_name(self, breach):
+        yield True, {}
+
     def lookup_plaintext_from_hash(self, hash_to_crack):
         yield True, PasswordHashDataFormat(value=hash_to_crack, plaintext=None, format=None, format_confidence=-1)
 

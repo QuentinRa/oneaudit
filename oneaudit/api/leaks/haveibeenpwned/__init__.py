@@ -5,7 +5,7 @@ from oneaudit.api.leaks.provider import OneAuditLeaksAPIBulkProvider
 # https://haveibeenpwned.com/API/v3#AllBreaches
 class HaveIBeenPwnedFree(OneAuditLeaksAPIBulkProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [LeaksAPICapability.INVESTIGATE_BULK] if api_key is not None else []
+        return [LeaksAPICapability.INVESTIGATE_BULK, LeaksAPICapability.INVESTIGATE_BREACH] if api_key is not None else []
 
     def get_request_rate(self):
         return 2
@@ -42,3 +42,6 @@ class HaveIBeenPwnedFree(OneAuditLeaksAPIBulkProvider):
         self._cache_indexed_data_if_required("breach_data_{key}", indexed_data)
 
         yield cached, {}
+
+    def investigate_breach_from_name(self, breach):
+        raise Exception(breach)

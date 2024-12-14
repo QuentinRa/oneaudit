@@ -150,6 +150,14 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                 results[key]['hashes'] = uncracked_hashes
                 del results[key]['raw_hashes']
 
+                for breach in results[key]['breaches']:
+                    for _, api_result in self._call_all_providers(
+                            heading="Attempt to find breach details",
+                            capability=LeaksAPICapability.INVESTIGATE_BREACH,
+                            method_name='investigate_breach_from_name',
+                            args=(breach,)):
+                        print(api_result)
+
                 # Sort every value and remove duplicates
                 results[key] = self.sort_dict(results[key])
         except KeyboardInterrupt:

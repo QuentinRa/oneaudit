@@ -7,7 +7,7 @@ class LeaksAPICapability(Enum):
     INVESTIGATE_LEAKS_BY_DOMAIN = 1
     INVESTIGATE_CRACKED_HASHES = 2
     INVESTIGATE_BULK = 3
-    ADD_BREACH_DESCRIPTION = 4
+    INVESTIGATE_BREACH = 4
 
 
 class LeakProviderUtilities(Enum):
@@ -63,6 +63,7 @@ class InfoStealer:
 class BreachData:
     source: str|None
     date: str|None
+    description: str = ""
 
     def __post_init__(self):
         object.__setattr__(self, 'source', 'unknown' if self.source is None or not self.source.strip() else self.source.lower())
@@ -73,7 +74,7 @@ class BreachData:
 
 def deserialize_result(result):
     if 'breaches' in result:
-        result['breaches'] = [BreachData(breach['source'], breach['date']) for breach in result['breaches']]
+        result['breaches'] = [BreachData(breach['source'], breach['date'], breach['description']) for breach in result['breaches']]
     if 'info_stealers' in result:
         result['info_stealers'] = [InfoStealer(stealer['computer_name'], stealer['operating_system'], stealer['date_compromised']) for stealer in result['info_stealers']]
     if 'hashes' in result:

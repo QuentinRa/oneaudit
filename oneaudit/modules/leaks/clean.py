@@ -49,20 +49,20 @@ def run(args):
         if credential['breaches']:
             valid_breaches = {}
             for breach in credential['breaches']:
-                source, date = breach['source'], breach['date']
+                source, date, description = breach['source'], breach['date'], breach['description']
                 # Ignore breaches like this
                 if source == 'unknown' and date == 'unknown':
                     continue
                 # Only keep the earliest leak, as to avoid "fake" dates
                 if source in valid_breaches:
-                    other_date = valid_breaches[source]
+                    other_date, other_description = valid_breaches[source]
                     if not date:
                         continue
                     if not other_date or other_date > date:
-                        valid_breaches[source] = date
+                        valid_breaches[source] = date, description if description else other_description
                 else:
-                    valid_breaches[source] = date
-            credential['breaches'] = [BreachData(k, v) for k, v in valid_breaches.items()]
+                    valid_breaches[source] = date, description
+            credential['breaches'] = [BreachData(k, date, desc) for k, (date, desc) in valid_breaches.items()]
 
         if not credential['passwords'] and not credential['censored_passwords']:
             continue
