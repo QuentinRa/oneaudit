@@ -246,7 +246,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                                     local_key = 'passwords'
                                     entry = entry['plaintext']
                                 elif local_key == "breaches":
-                                    found = [True for breach in credential[local_key] if breach['source'] == entry['source']] == [True]
+                                    found = [True for breach in credential[local_key] if breach['source'] == entry['source'] and entry['source'] != 'unknown'] == [True]
                                     if not found:
                                         continue
                                 else:
@@ -267,7 +267,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                             if local_key == 'breaches':
                                 if api_provider.api_name not in breach_per_provider:
                                     breach_per_provider[api_provider.api_name] = []
-                                breach_per_provider[api_provider.api_name].append(entry['source'])
+                                breach_per_provider[api_provider.api_name].append(entry['source'] + " - " + entry['date'])
 
             # We kept track of the password we found as some may have been generated/added externally/not in the cache
             login = _email_cleaner(credential['login'])
