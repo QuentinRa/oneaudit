@@ -18,14 +18,14 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             rocketreach.RocketReachAPI(api_keys),
         ])
 
-    def search_employees_from_company_domain(self, company_domain, target_profile_list_id=None):
+    def search_employees_from_company_domain(self, company_domain, company_profile, target_profile_list_id=None):
         _, result = self._call_all_providers_dict(
             heading='Searching employees',
             capability=LinkedInAPICapability.SEARCH_EMPLOYEES_BY_DOMAIN,
             stop_when_modified=False,
             method_name='search_employees_from_company_domain',
             result={provider.api_name: [] for provider in self.providers},
-            args=(company_domain, target_profile_list_id)
+            args=(company_domain, company_profile, target_profile_list_id)
         )
         entries = [entry for entries in result.values() for entry in entries]
 

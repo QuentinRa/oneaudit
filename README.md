@@ -12,7 +12,7 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 
 WIP
 
-* Add Nubela? Apollo?
+* Add Apollo?
 * Test only one email per domain with verifying emails
 * Add proxy support
 * Improve caching (allow each API to customize the check)

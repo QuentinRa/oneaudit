@@ -57,7 +57,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
             "valid": True
         }
 
-    def search_employees_from_company_domain(self, company_domain, target_profile_list_id=None):
+    def search_employees_from_company_domain(self, company_domain, _, target_profile_list_id=None):
         search_handler = self.handler.person.search().filter(current_employer=f'\"{company_domain}\"')
         search_handler = search_handler.options(order_by="score")
         page = 0
