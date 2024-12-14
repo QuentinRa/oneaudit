@@ -78,20 +78,18 @@ class HaveIBeenPwnedFree(OneAuditLeaksAPIBulkProvider):
                             self.logger.error("Two breaches the same year, how do you determine the one to use?")
                             self.logger.error(f"Found: {breach_data}")
                             self.logger.error(f"Found: {breach_candidate}")
-                            return True, None
+                            return True, []
 
                         breach_data = breach_candidate
 
+        # We don't have anything
         if not breach_data:
-            self.logger.warning(f"No details found for {breach.source}.")
-            return True, None
+            return True, []
 
-        yield True, {
-            'breaches': [
-                BreachData(
-                    breach_data['name'],
-                    breach_data['date'],
-                    breach_data['description'],
-                )
-            ]
-        }
+        yield True,  [
+            BreachData(
+                breach_data['name'],
+                breach_data['date'],
+                breach_data['description'],
+            )
+        ]

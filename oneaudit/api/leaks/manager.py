@@ -150,6 +150,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                 results[key]['hashes'] = uncracked_hashes
                 del results[key]['raw_hashes']
 
+                # Add descriptions
                 breaches_with_description = []
                 known_generic_breaches = {
                     "stealer logs": "A computer has been infected with info-stealer malware, which is designed to collect sensitive data."
@@ -167,7 +168,9 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                                      "Numerous stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
 
                     "unknown": "We do not have detailed information about this breach, aside from its date. "
-                               "This could be due to several reasons: it may involve a phishing attack where data was compromised without our knowledge, or the email address might have been mentioned in a document that was shared or leaked."
+                               "This could be due to several reasons: it may involve a phishing attack where data was compromised without our knowledge, or the email address might have been mentioned in a document that was shared or leaked.",
+
+                    "_placeholder_": "We could not find more details on this breach."
                 }
 
                 for breach in results[key]['breaches']:
@@ -185,12 +188,26 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
                         ))
                         continue
 
+                    final_breach = None
                     for _, api_result in self._call_all_providers(
                             heading="Attempt to find breach details",
                             capability=LeaksAPICapability.INVESTIGATE_BREACH,
                             method_name='investigate_breach_from_name',
                             args=(breach,)):
-                        pass
+                        if api_result:
+                            final_breach = api_result[0]
+
+                    if not final_breach:
+                        final_breach = BreachData(
+                            breach.source,
+                            breach.date,
+                            known_generic_breaches['_placeholder_']
+                        )
+                        self.logger.warning(f"No details found for {breach.source}.")
+
+                    breaches_with_description.append(final_breach)
+
+                results[key]['breaches'] = breaches_with_description
 
                 # Sort every value and remove duplicates
                 results[key] = self.sort_dict(results[key])
