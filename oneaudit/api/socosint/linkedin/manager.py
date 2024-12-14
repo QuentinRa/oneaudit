@@ -1,6 +1,6 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.socosint import SocialNetworkEnum
-from oneaudit.api.socosint.linkedin import rocketreach, nubela
+from oneaudit.api.socosint.linkedin import rocketreach, nubela, apollo
 from oneaudit.api.socosint.linkedin import LinkedInAPICapability
 from oneaudit.utils.io import serialize_api_object
 
@@ -15,6 +15,7 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             # FREEMIUM
             nubela.NubelaProxycurlAPI(api_keys),
             # PAID
+            apollo.ApolloAPI(api_keys),
             rocketreach.RocketReachAPI(api_keys),
         ])
 
