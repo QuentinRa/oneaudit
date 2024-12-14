@@ -55,7 +55,7 @@ class OneAuditBaseProvider:
     def fetch_results_using_cache(self, key, default, **kwargs):
         cached = True
         cached_result_key = self.unique_identifier + key
-        data = get_cached_result(self.api_name, cached_result_key, do_not_expire=self.only_use_cache)
+        data = get_cached_result(self.api_name, cached_result_key, do_not_expire=self.only_use_cache, expiration_check=kwargs.get('expiration_check', 30 * 24 * 3600))
         if data is None:
             if self.only_use_cache:
                 data = default

@@ -85,7 +85,7 @@ def create_cache_database(api_name):
     return sqlite_connection[api_name], sqlite_cursor[api_name]
 
 
-def get_cached_result(api_name, key, do_not_expire=False, expiration_check=30 * 24 * 60 * 60):
+def get_cached_result(api_name, key, do_not_expire=False, expiration_check=30 * 24 * 3600):
     conn, cursor = create_cache_database(api_name)
     cursor.execute('SELECT json_response, timestamp FROM cache WHERE response_key = ?', (key,))
     row = cursor.fetchone()

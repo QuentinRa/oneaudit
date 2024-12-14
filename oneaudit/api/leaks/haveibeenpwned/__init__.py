@@ -25,7 +25,7 @@ class HaveIBeenPwnedFree(OneAuditLeaksAPIBulkProvider):
         if self.only_use_cache:
             return True, {}
 
-        cached, results = self.fetch_results_using_cache("breaches", default=[])
+        cached, results = self.fetch_results_using_cache("breaches", default=[], expiration_check=24 * 3600)
         indexed_data = {}
         for result in results:
             domain = result['Domain'].lower().strip()
