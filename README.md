@@ -12,10 +12,8 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
 
 WIP
 
-* Add Apollo?
 * Test only one email per domain with verifying emails
 * Add proxy support
-* Improve caching (allow each API to customize the check)
 * email verification documentation
 * subdomains
   * use crt.sh then virustotal with the output
@@ -344,6 +342,7 @@ The followed APIs are used by the plugin:
 |----------------------------------------------------|------------|------------------------------------------------|
 | [rocketreach](https://rocketreach.co/)             | `FREEMIUM` | Access LinkedIn API. Lookup for emails/phones. |
 | [nubela](https://rocketreach.co/)                  | `PAID`     | Access LinkedIn API. Lookup for emails/phones. |
+| [apollo](https://docs.apollo.io/docs/api-overview) | `PAID`     | Access LinkedIn API. Lookup for emails/phones. |
 | [hudsonrocks](https://www.hudsonrock.com/cavalier) | `FREE`     | InfoStealer API (censored).                    |
 | [whiteintel](https://whiteintel.io/)               | `FREEMIUM` | InfoStealer API (censored).                    |
 | [leakcheck](https://leakcheck.io/)                 | `FREE`     | Data breaches API.                             |

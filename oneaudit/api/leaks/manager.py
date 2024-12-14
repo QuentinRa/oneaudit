@@ -3,6 +3,7 @@ from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakT
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
 from oneaudit.api.leaks import whiteintel, enzoic, haveibeenpwned
+from oneaudit.api.leaks import hackcheck
 from oneaudit.utils.io import serialize_api_object
 from collections import Counter
 from dataclasses import asdict
@@ -39,6 +40,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             spycloud.SpyCloudAPI(api_keys),
             whiteintel.WhiteIntelAPI(api_keys),
             # PAID
+            hackcheck.HackCheck(api_keys),
             leakcheck.LeakCheckPaidAPI(api_keys),
             snusbase.SnusbaseAPI(api_keys),
         ])
