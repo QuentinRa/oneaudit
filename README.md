@@ -330,6 +330,7 @@ The expected format **without any comments** is:
   "rocketreach": "your_api_key",
   "leakcheck_pro": "your_api_key",
   "snusbase": "your_api_key",
+  "hackcheck": "your_api_key",
   "nubela": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
@@ -352,6 +353,7 @@ The followed APIs are used by the plugin:
 | [proxynova](https://www.proxynova.com/tools/comb)  | `FREE`     | Leaked Credentials API.                        |
 | [leakcheck_pro](https://leakcheck.io/)             | `PAID`     | Leaked Credentials API.                        |
 | [snusbase](https://docs.snusbase.com/)             | `PAID`     | Leaked Credentials API.                        |
+| [hackcheck](https://app.hackcheck.io)            | `PAID`     | Leaked Credentials API.                        |
 | [aura](https://scan.aura.com/)                     | `FREE`     | Leaked Credentials API (censored).             |
 | [nth](https://github.com/HashPals/Name-That-Hash)  | `FREE`     | Hash Identifier.                               |
 | [hashmob](https://hashmob.net/)                    | `FREEMIUM` | Hash Rainbow tables.                           |
