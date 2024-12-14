@@ -1,11 +1,13 @@
 from oneaudit.api.leaks import LeaksAPICapability, BreachData, deserialize_result
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIBulkProvider
+from oneaudit.api.utils.caching import get_cached_result, set_cached_result
 
 
 # https://documenter.getpostman.com/view/26427470/2s9Xy5MWUd
 class HackCheck(OneAuditLeaksAPIBulkProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN, LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
+        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN,
+                LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
 
     def get_request_rate(self):
         return 1
@@ -47,25 +49,40 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
         }
 
     def investigate_leaks_by_email(self, email, for_stats=False):
-        self.request_args['url'] = self.base_search_endpoint.format(type="email", value=email)
-        cached, data = self.fetch_results_using_cache(f"search_email_{email}", default={'results': []})
+        # To improve performances, we are caching parsed results
+        cached_result_key = f'{self.api_name}_parsed_email_{email}'
+        cached_result = get_cached_result(self.api_name, cached_result_key, do_not_expire=self.only_use_cache)
 
-        # Prepare result. We want to tune breach names a bit
-        result = None
-        if 'results' in data:
-            for raw_data in data['results']:
-                result = extract_data_from_result(raw_data, result)
+        if not cached_result:
+            self.request_args['url'] = self.base_search_endpoint.format(type="email", value=email)
+            cached, data = self.fetch_results_using_cache(f"search_email_{email}", default={'results': []})
+            yield cached, {}
 
-            if not result:
-                return cached, {}
+            if 'results' in data:
+                result = None
+                for raw_data in data['results']:
+                    result = extract_data_from_result(raw_data, result)
+                if not result:
+                    result = {}
+            else:
+                result = deserialize_result(data['result'])
+
+            if result:
+                result['breaches'] = [
+                    BreachData(clean_breach_source(breach.source), breach.date, breach.description)
+                    for breach in result['breaches']
+                ]
+
+            # Save result after parsing
+            cached_result = result
+            if not self.only_use_cache:
+                set_cached_result(self.api_name, cached_result_key, {
+                    'result': result
+                })
         else:
-            result = deserialize_result(data['result'])
+            cached_result = deserialize_result(cached_result['result'])
 
-        result['breaches'] = [
-            BreachData(clean_breach_source(breach.source), breach.date, breach.description)
-            for breach in result['breaches']
-        ]
-        yield cached, result
+        yield True, cached_result
 
 
 def clean_breach_source(breach_source):
@@ -84,7 +101,7 @@ def extract_data_from_result(result, indexor):
     if result['username']:
         indexor['logins'].append(result['username'])
     if result['password']:
-        indexor['passwords'].append(result['password'])
+        indexor['passwords' if len(result['password']) < 32 else 'raw_hashes'].append(result['password'])
     if result['hash']:
         indexor['raw_hashes'].append(result['hash'])
 
