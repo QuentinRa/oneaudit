@@ -1,4 +1,4 @@
-from oneaudit.api.leaks import LeaksAPICapability, InfoStealer
+from oneaudit.api.leaks import LeaksAPICapability, InfoStealer, BreachData
 from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
 from time import sleep
 
@@ -30,6 +30,7 @@ class HudsonRocksFreeAPI(OneAuditLeaksAPIProvider):
         # Send the request
         cached, data = self.fetch_results_using_cache(email, default={'stealers': []})
         result = {
+            'breaches': [],
             'info_stealers': [],
             'censored_logins': [],
             'censored_passwords': [],
@@ -42,5 +43,9 @@ class HudsonRocksFreeAPI(OneAuditLeaksAPIProvider):
             ))
             result['censored_logins'].extend(stealer['top_logins'])
             result['censored_passwords'].extend(stealer['top_passwords'])
+            result['breaches'].append(BreachData(
+                "stealer logs",
+                stealer['date_compromised']
+            ))
 
         yield cached, result
