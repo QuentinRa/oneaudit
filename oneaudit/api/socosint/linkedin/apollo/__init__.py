@@ -51,12 +51,19 @@ class ApolloAPI(OneAuditLinkedInAPIProvider):
                     if employee['contact_emails']:
                         self.logger.error(f"Contact emails were not handled: {employee['contact_emails']}")
 
+                    # noinspection PyTypeChecker
                     targets.append(UserProfileData(
                         employee["first_name"],
                         employee["last_name"],
                         emails,
                         {
-                            SocialNetworkEnum.LINKEDIN.name: employee['linkedin_url']
+                            enum_entry.name: employee[attribute_name]
+                            for enum_entry, attribute_name in [
+                                (SocialNetworkEnum.LINKEDIN, 'linkedin_url'),
+                                (SocialNetworkEnum.TWITTER, 'twitter_url'),
+                                (SocialNetworkEnum.FACEBOOK, 'facebook_url'),
+                            ]
+                            if attribute_name in employee and employee[attribute_name]
                         }
                     ))
                 yield cached, { self.api_name: targets }
