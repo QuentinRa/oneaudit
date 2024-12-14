@@ -1,4 +1,6 @@
 from oneaudit.api.manager import OneAuditBaseAPIManager
+from oneaudit.api.socosint import SocialNetworkEnum
+from oneaudit.api.socosint.linkedin import rocketreach, nubela
 from oneaudit.api.socosint.linkedin import LinkedInAPICapability
 
 
@@ -7,12 +9,12 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
     APIs related to emails
     """
     def __init__(self, api_keys):
-        from oneaudit.api.socosint.linkedin import rocketreach
         super().__init__([
             # FREE
             # FREEMIUM
+            nubela.NubelaProxycurlAPI(api_keys),
             # PAID
-            rocketreach.RocketReachAPI(api_keys)
+            rocketreach.RocketReachAPI(api_keys),
         ])
 
     def search_employees_from_company_domain(self, company_domain, target_profile_list_id=None):
@@ -24,7 +26,21 @@ class OneAuditLinkedInAPIManager(OneAuditBaseAPIManager):
             result={provider.api_name: [] for provider in self.providers},
             args=(company_domain, target_profile_list_id)
         )
-        return [entry for entries in result.values() for entry in entries]
+        entries = [entry for entries in result.values() for entry in entries]
+
+        for entry in entries:
+            args = (
+                entry.links[SocialNetworkEnum.LINKEDIN.name] if SocialNetworkEnum.LINKEDIN.name in entry.links else None,
+                entry.links[SocialNetworkEnum.TWITTER.name] if SocialNetworkEnum.TWITTER.name in entry.links else None,
+                entry.links[SocialNetworkEnum.FACEBOOK.name] if SocialNetworkEnum.FACEBOOK.name in entry.links else None,
+            )
+            for _, api_result in self._call_all_providers(
+                    heading='Searching employees emails',
+                    capability=LinkedInAPICapability.SEARCH_EMPLOYEES_BY_SOCIAL_NETWORK,
+                    method_name='search_employees_by_social_network', args=args):
+                print(api_result)
+
+        return entries
 
     def export_profiles_from_profile_list(self, api_name, target_profile_list_id):
         for provider in self.providers:

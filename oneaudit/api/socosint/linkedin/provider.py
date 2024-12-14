@@ -14,6 +14,12 @@ class OneAuditLinkedInAPIProvider(OneAuditBaseProvider):
         """
         yield True, { self.api_name: [] }
 
+    def search_employees_by_social_network(self, linkedin, twitter, facebook):
+        """
+        Returns { "emails": [] } with emails given the social network URLs
+        """
+        yield True, {}
+
     def export_profiles_from_profile_list(self, target_profile_list_id):
         """
         Export as JSON profiles from a profile list
