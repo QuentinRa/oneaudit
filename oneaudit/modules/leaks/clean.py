@@ -34,17 +34,17 @@ def censor_password(password, mode):
     else:
         raise ValueError(f"Invalid value for mode: {mode}.")
 
-def run(args):
-    args_parse_parse_verbose(args)
-    logger = get_project_logger()
 
-    with open(args.input_file, 'r') as file_data:
-        data = json.load(file_data)
-        credentials = data['credentials']
+def clean_credentials(credentials, logger=None):
+    """
+    Passwords too long or too short are unlikely to be of any use
+    (some are junk/most likely from very old breaches, or even censored hashes)
 
-    # Passwords too long or too short are unlikely to be of any use
-    # (some are junk/most likely from very old breaches, or even censored hashes)
+    We also want to fix the date of each breach to the most likely, and remove duplicates.
+    """
     possible_trails = ["", None] + [chr(i) for i in range(0, 255)]
+    logger = logger if logger else get_project_logger()
+
     for credential in credentials:
         if credential['breaches']:
             valid_breaches = {}
@@ -65,7 +65,7 @@ def run(args):
             credential['breaches'] = [BreachData(k, date, desc) for k, (date, desc) in valid_breaches.items()]
 
         if not credential['passwords'] and not credential['censored_passwords']:
-            continue
+            return credential
 
         passwords = [p for p in credential['passwords'] if 4 <= len(p) < 25]
         known_censored_passwords = {}
@@ -105,9 +105,19 @@ def run(args):
         # If we knew of every censored hash, we remove them
         credential['passwords'] = [p for p in set(passwords) if p != "(null)"]
         credential['censored_passwords'] = unknown_censored_passwords
-        if unknown_censored_passwords:
+        if unknown_censored_passwords and logger:
             for unknown_censored_password in unknown_censored_passwords:
                 logger.warning(f"Uknown censored password {unknown_censored_password} for {credential['passwords']}")
 
-    data['credentials'] = credentials
+    return credentials
+
+def run(args):
+    args_parse_parse_verbose(args)
+
+    with open(args.input_file, 'r') as file_data:
+        data = json.load(file_data)
+        credentials = data['credentials']
+
+    data['credentials'] = clean_credentials(credentials)
+
     save_to_json(args.output_file, data)

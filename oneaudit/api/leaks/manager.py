@@ -59,7 +59,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             "hacker forums": "Hackers often use forums such as 'breachforums' or 'exploit.in' to communicate and share information."
                              " Numerous stolen data, including credentials, personal information, and hacking tools, are bought and sold.",
 
-            "unknown": "We do not have detailed information about this breach, aside from its date. "
+            "unknown": "We do not have detailed information about this breach. "
                        " This could be due to several reasons: it may involve a phishing attack where data was compromised without our knowledge, or the email address might have been mentioned in a document that was shared or leaked.",
 
             "_placeholder_": "We could not find more details on this breach."
