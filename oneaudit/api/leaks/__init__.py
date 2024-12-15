@@ -51,12 +51,14 @@ class CredentialStat:
 
 @dataclass(frozen=True, order=True)
 class InfoStealer:
-    computer_name: str
-    operating_system: str
-    date_compromised: str
+    computer_name: str|None
+    operating_system: str|None
+    date_compromised: str|None
 
     def __post_init__(self):
-        object.__setattr__(self, 'date_compromised', self.date_compromised[:10])
+        object.__setattr__(self, 'computer_name', self.computer_name if self.computer_name else 'unknown')
+        object.__setattr__(self, 'operating_system', self.operating_system if self.operating_system else 'unknown')
+        object.__setattr__(self, 'date_compromised', self.date_compromised[:10] if self.date_compromised else 'unknown')
 
 
 @dataclass(frozen=True, order=True)
