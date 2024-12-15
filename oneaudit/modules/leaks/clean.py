@@ -53,6 +53,17 @@ def clean_credentials(credentials, logger=None):
                 # Ignore breaches like this
                 if source == 'unknown' and date == 'unknown':
                     continue
+                # Some breaches are missing the domain name
+                for tld in [".com"]:
+                    if source + tld in valid_breaches:
+                        source += tld
+                        break
+                    if source.split(tld)[0] in valid_breaches:
+                        key = source.split(tld)[0]
+                        valid_breaches[source] = valid_breaches[key]
+                        del valid_breaches[key]
+                        break
+
                 # We keep the earliest leak, as to avoid "fake" dates
                 if source in valid_breaches:
                     other_date, other_description = valid_breaches[source]

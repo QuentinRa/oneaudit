@@ -10,7 +10,7 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
                 LeaksAPICapability.INVESTIGATE_LEAKS_BY_EMAIL] if api_key is not None else []
 
     def get_request_rate(self):
-        return 1
+        return 0.3
 
     def __init__(self, api_keys):
         super().__init__(
@@ -52,6 +52,8 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
         # To improve performances, we are caching parsed results
         cached_result_key = f'{self.api_name}_parsed_email_{email}'
         cached_result = get_cached_result(self.api_name, cached_result_key, do_not_expire=self.only_use_cache)
+        # To invalidate cache, simply expire every 'parsed' result in cache
+        #cached_result = get_cached_result(self.api_name, cached_result_key, expiration_check=0)
 
         if not cached_result:
             self.request_args['url'] = self.base_search_endpoint.format(type="email", value=email)
@@ -76,7 +78,8 @@ class HackCheck(OneAuditLeaksAPIBulkProvider):
 
 
 def clean_breach_source(breach_source):
-    return breach_source.replace("-scrape", "") if breach_source else None
+    # Warning, as we do heavy caching, filters are not applied unless the cache is invalidated
+    return breach_source.replace("twitter-scrape", "twitter.com") if breach_source else None
 
 
 def extract_data_from_result(result, indexor):
