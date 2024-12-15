@@ -76,7 +76,7 @@ def clean_credentials(credentials, logger=None):
             credential['breaches'] = [BreachData(k, date, desc) for k, (date, desc) in valid_breaches.items()]
 
         if not credential['passwords'] and not credential['censored_passwords']:
-            return credential
+            continue
 
         passwords = [p for p in credential['passwords'] if 4 <= len(p) < 25]
         known_censored_passwords = {}
