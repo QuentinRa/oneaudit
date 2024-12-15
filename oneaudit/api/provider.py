@@ -37,7 +37,7 @@ class OneAuditBaseProvider:
 
         # Log the provider status
         if not self.is_endpoint_enabled:
-            self.logger.warning("API is not enabled.")
+            self.logger.debug("API is not enabled.")
         else:
             self.logger.info("API was enabled.")
 

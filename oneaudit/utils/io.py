@@ -25,6 +25,10 @@ def save_to_json(output_file, obj):
         json_dump(obj, output_file, cls=GenericObjectEncoder, indent=4)
 
 
+def display_json(obj):
+   print(json_dumps(obj, cls=GenericObjectEncoder, indent=2))
+
+
 def to_absolute_path(filepath):
     if not isabs(filepath):
         filepath = join(getcwd(), filepath)

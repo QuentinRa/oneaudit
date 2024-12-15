@@ -6,7 +6,6 @@ from oneaudit.api.leaks import whiteintel, enzoic, haveibeenpwned
 from oneaudit.api.leaks import hackcheck
 from oneaudit.utils.io import serialize_api_object
 from collections import Counter
-from dataclasses import asdict
 from hashlib import sha1, md5
 from bcrypt import hashpw
 from re import compile
@@ -71,8 +70,7 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
         bcrypt_hash_regex = compile(r'(^\$2[aby]\$[0-9]{2}\$[A-Za-z0-9./]{22})')
 
         try:
-            # noinspection PyTypeChecker
-            domain_candidates = [asdict(LeakTarget(email, True, False, [email], {})) for email in candidates]
+            domain_candidates = [serialize_api_object(LeakTarget(email, True, False, [email], {})) for email in candidates]
             all_emails = [_email_cleaner(email) for credential in credentials + domain_candidates for email in credential['emails']]
             list(self._call_all_providers(
                 heading="Processing bulk queries",
