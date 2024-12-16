@@ -10,3 +10,4 @@ python-dateutil~=2.9.0
 prettytable~=3.12.0
 name-that-hash~=1.11.0
 jinja2~=3.1.4
+zxcvbn~=4.4.28
