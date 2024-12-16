@@ -304,6 +304,14 @@ We can generate hashes for the cleartext passwords using:
 oneaudit leaks export hashes -i pwned.json -f ntlm -o hashes.txt
 ```
 
+We can generate wordlists using:
+
+```ps
+oneaudit leaks export wordlist -i pwned.json -o wordlists/
+oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft
+oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft -s 2
+```
+
 ## 3. API Configuration
 
 Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
@@ -377,6 +385,8 @@ profile_list_opt=-t 12345678
 config_opt=--config ./config.json
 cache_opt=--cache .cache
 filters=-f "Microsoft"
+company_name=-c microsoft
+per_wordlist=2
 mail_format=first.last
 out=./output/$domain/
 ```
@@ -396,6 +406,7 @@ $ oneaudit leaks parse -i $out/contacts.json -i $out/osint.json -f $mail_format 
 $ oneaudit leaks download -i $out/targets.json -o $out/leaks.json $config_opt $cache_opt -vv -r -d $domain
 $ oneaudit leaks clean -i  $out/leaks.json -o  $out/pwned.json
 $ oneaudit leaks export report -i $out/pwned.json -f html -o $out/report.html
+$ oneaudit leaks export wordlist -i $out/pwned.json -o $out/wordlists/ $company_name -s $per_wordlist
 $ oneaudit leaks stats -i  $out/pwned.json $cache_opt
 ```
 

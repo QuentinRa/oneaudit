@@ -7,11 +7,12 @@ from os.path import join, exists
 
 
 def define_args(parent_parser):
-    export_leaks = parent_parser.add_parser('wordlist', help='Export passwords in multiple wordlists, 2 creds per user, per wordlist.')
-    export_leaks.add_argument('-i', metavar='input.json', dest='input_file', help='JSON file with leaked credentials.', required=True)
-    export_leaks.add_argument('-c', metavar='company_name', dest='token', help='Company name, if you want to prioritize testing passwords that contain the company name.')
-    export_leaks.add_argument('-r', dest='reverse', action='store_true', help='The most complex passwords are tested last (default to first).')
-    export_leaks.add_argument('-o', metavar='output', dest='output_folder', help='Export results in this folder.', required=True)
+    export_leaks = parent_parser.add_parser('wordlist', help='Export passwords in multiple wordlists, 2 creds per user per wordlist (by default).')
+    export_leaks.add_argument('-i', '--input', metavar='input.json', dest='input_file', help='JSON file with leaked credentials.', required=True)
+    export_leaks.add_argument('-c', '--company', metavar='company_name', dest='token', help='Company name, if you want to prioritize testing passwords that contain the company name.')
+    export_leaks.add_argument('-r', '--reverse', dest='reverse', action='store_true', help='The most complex passwords are tested last (default to first).')
+    export_leaks.add_argument('-s', '--size', type=int, default=2, dest='size', help='Number of credentials per user per wordlist (%(default)s)')
+    export_leaks.add_argument('-o', '--output', metavar='output', dest='output_folder', help='Export results in this folder.', required=True)
     args_verbose_config(export_leaks)
 
 
@@ -37,7 +38,7 @@ def run(args):
         passwords = sorted(passwords, key=lambda password: password_complexity(token, password), reverse=not args.reverse)
         password_count = len(passwords)
         for password_index in range(0, password_count):
-            wordlist_index = password_index // 2  if password_index > 0 else 0
+            wordlist_index = password_index // args.size  if password_index > 0 else 0
 
             if wordlist_index > creds_per_wordlist_length:
                 creds_per_wordlist.append([])
