@@ -7,10 +7,11 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
     APIs related to emails
     """
     def __init__(self, api_keys):
-        from oneaudit.api.osint.dns import virustotal, subfinder
+        from oneaudit.api.osint.dns import virustotal, subfinder, crtsh
         super().__init__([
             # FREE
             subfinder.SubFinderAPI(api_keys),
+            crtsh.CrtShAPI(api_keys),
             # FREEMIUM
             virustotal.VirusTotalAPI(api_keys)
             # PAID
@@ -20,17 +21,27 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
         """
         Indicates for each email if the email is verified or not.
         """
-        results = {
-            'subdomains': [],
-        }
-        _, results = self._call_all_providers_dict(
-            heading="Investigate subdomains",
-            capability=DNSCapability.SUBDOMAINS_ENUMERATION,
+        _, extra = self._call_all_providers_dict(
+            heading="Investigate wildcard subdomains",
+            capability=DNSCapability.FETCH_WILDCARD_DOMAINS,
             stop_when_modified=False,
-            method_name='dump_subdomains_from_domain',
-            result=results,
+            method_name='dump_wildcard_domains_from_domain',
+            result={
+                'wildcard': []
+            },
             args=(domain,)
         )
+
+        results = { 'subdomains': [], }
+        for domain in set([domain] + extra['wildcard']):
+            _, results = self._call_all_providers_dict(
+                heading="Investigate subdomains",
+                capability=DNSCapability.SUBDOMAINS_ENUMERATION,
+                stop_when_modified=False,
+                method_name='dump_subdomains_from_domain',
+                result=results,
+                args=(domain,)
+            )
 
         final_results = {}
         for result in results['subdomains']:

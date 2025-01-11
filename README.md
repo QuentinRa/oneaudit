@@ -31,9 +31,11 @@ WIP
   * [2.3 Compute Stats For Each Provider](#23-compute-stats-for-each-provider)
   * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
   * [2.5 Export Results](#25-export-results)
-* [3. API Configuration](#3-api-configuration)
-* [4. Cheatsheet](#4-cheatsheet)
-* [5. Developer Notes](#5-developer-notes)
+* [3. Passive Domain Recon](#3-passive-domain-recon)
+  * [3.1 Find Domain Names For A Company](#31-find-domain-names-for-a-company)
+* [4. API Configuration](#4-api-configuration)
+* [5. Cheatsheet](#5-cheatsheet)
+* [6. Developer Notes](#6-developer-notes)
 
 ## 1. SocOSINT
 
@@ -312,7 +314,15 @@ oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft
 oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft -s 2
 ```
 
-## 3. API Configuration
+## 3. Passive Domain Recon
+
+#### 3.1 Find Domain Names For A Company
+
+```ps
+oneaudit osint subdomains dump -d example.com -v -o domains.json
+```
+
+## 4. API Configuration
 
 Create a JSON file called `config.json` or specify any file using `--config`. You can also define `--cache` to use an arbitrary folder for cached results.
 
@@ -375,7 +385,7 @@ Candidates:
 * [KeeperSecurity](https://www.keepersecurity.com): Data breaches, no API
 
 
-## 4. Cheatsheet
+## 5. Cheatsheet
 
 Configuration
 
@@ -410,7 +420,7 @@ $ oneaudit leaks export wordlist -i $out/pwned.json -o $out/wordlists/ $company_
 $ oneaudit leaks stats -i  $out/pwned.json $cache_opt
 ```
 
-## 5. Developer Notes
+## 6. Developer Notes
 
 #### Leak And Breaches Dates
 

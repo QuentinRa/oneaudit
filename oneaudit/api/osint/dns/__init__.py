@@ -4,6 +4,7 @@ from enum import Enum
 
 class DNSCapability(Enum):
     SUBDOMAINS_ENUMERATION = 0
+    FETCH_WILDCARD_DOMAINS = 1
 
 
 @dataclass(frozen=True)

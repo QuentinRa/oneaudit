@@ -10,3 +10,6 @@ class OneAuditDNSAPIProvider(OneAuditBaseProvider):
 
     def dump_subdomains_from_domain(self, domain):
          yield True, {'subdomains': []}
+
+    def dump_wildcard_domains_from_domain(self, domain):
+        yield True, {'wildcard': []}
