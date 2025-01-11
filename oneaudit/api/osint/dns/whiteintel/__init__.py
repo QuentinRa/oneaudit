@@ -1,12 +1,13 @@
-from oneaudit.api.leaks import CensoredCredentials, CensoredInfoStealers, LeaksAPICapability
-from oneaudit.api.leaks.provider import OneAuditLeaksAPIProvider
+from oneaudit.api.osint.dns import DNSCapability, DomainInformation
+from oneaudit.api.osint.dns.provider import OneAuditDNSAPIProvider
+from urllib.parse import urlparse
 from time import sleep
 
 
 # https://docs.whiteintel.io/whiteintel-api-doc
-class WhiteIntelAPI(OneAuditLeaksAPIProvider):
+class WhiteIntelAPI(OneAuditDNSAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [LeaksAPICapability.INVESTIGATE_LEAKS_BY_DOMAIN] if api_key is not None else []
+        return [DNSCapability.SUBDOMAINS_ENUMERATION] if api_key is not None else []
 
     def handle_rate_limit(self, response):
         sleep(30)
@@ -28,7 +29,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
         )
         self.api_endpoint = 'https://whiteintel.io/api/regular/app{endpoint}'
 
-    def investigate_leaks_by_domain(self, domain):
+    def dump_subdomains_from_domain(self, domain):
         # Fetching Leaked URLs
         self.request_args['url'] = self.api_endpoint.format(endpoint='/attack_surface_handler.php')
         self.request_args['json'] = {
@@ -36,7 +37,7 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
             'page': 1, 'per_page': 25
         }
         cached, data = self.fetch_results_using_cache(f"attack_surface_{domain}", default={'leak_urls_customer': []})
-        yield cached, {'leaked_urls': [leak['url'] for leak in data['leak_urls_customer']]}
+        yield cached, {'subdomains': compute_subdomains([leak['url'] for leak in data['leak_urls_customer']], domain) }
 
         # Fetching Info Stealer And Comb Credentials
         for endpoint_url, details_url in [
@@ -63,22 +64,19 @@ class WhiteIntelAPI(OneAuditLeaksAPIProvider):
                 cached, data = self.fetch_results_using_cache(f"{get_key(details_url)}_{domain}_{element['log_id']}", default={'credentials': []})
 
                 yield cached, {
-                    'leaked_urls': [format_url(leak['URL']) for leak in data['credentials']],
-                    'censored_creds': [CensoredCredentials(
-                        leak['username'],
-                        leak['password'],
-                    ) for leak in data['credentials']],
-                    'censored_stealers': [CensoredInfoStealers(
-                        element['device_id'],
-                        element['breach_date'],
-                    ) ] if 'device_id' in element else []
+                    'subdomains': compute_subdomains([leak['URL'] for leak in data['credentials']], domain),
                 }
 
         yield cached, {}
 
 
-def format_url(URL):
-    return URL if "://" in URL else f"https://{URL}"
+def compute_subdomains(urls, domain):
+    return [
+        DomainInformation(subdomain, None)
+        for subdomain in [urlparse(url if "://" in url else f"https://{url}").netloc for url in urls]
+        if subdomain.endswith(domain)
+    ]
+
 
 def get_key(endpoint):
     return '_'.join(endpoint[1:].split('_')[:3])

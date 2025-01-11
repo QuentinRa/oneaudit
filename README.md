@@ -32,7 +32,7 @@ WIP
   * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
   * [2.5 Export Results](#25-export-results)
 * [3. Passive Domain Recon](#3-passive-domain-recon)
-  * [3.1 Find Domain Names For A Company](#31-find-domain-names-for-a-company)
+  * [3.1 Find Subdomains From A Domain](#31-find-subdomains-from-a-domain)
 * [4. API Configuration](#4-api-configuration)
 * [5. Cheatsheet](#5-cheatsheet)
 * [6. Developer Notes](#6-developer-notes)
@@ -316,7 +316,13 @@ oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft -s 2
 
 ## 3. Passive Domain Recon
 
-#### 3.1 Find Domain Names For A Company
+#### 3.1 Find Subdomains From A Domain
+
+There are multiple tools and APIs that can be used to find subdomains. Some of them are leveraged by this tool to provide the most comprehensive result.
+
+For instance, if we find a certificate such as `*.hp.example.com` with `hp.example.com` not being associated to a host, multiple tools would not dig into it and miss a few subdomains.
+
+Moreover, a few domains are hard to find due to DNS servers being hardened and websites not being associated to them -or multiple domains being associated to the same host-. We are leveraging info-stealers to find some of them.
 
 ```ps
 oneaudit osint subdomains dump -d example.com -v -o domains.json

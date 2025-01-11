@@ -2,7 +2,7 @@ from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.leaks import LeaksAPICapability, PasswordHashDataFormat, LeakTarget, BreachData
 from oneaudit.api.leaks import aura, hashmob, hudsonrocks, leakcheck
 from oneaudit.api.leaks import nth, proxynova, snusbase, spycloud
-from oneaudit.api.leaks import whiteintel, enzoic, haveibeenpwned
+from oneaudit.api.leaks import enzoic, haveibeenpwned
 from oneaudit.api.leaks import hackcheck
 from oneaudit.utils.io import serialize_api_object
 from collections import Counter
@@ -37,7 +37,6 @@ class OneAuditLeaksAPIManager(OneAuditBaseAPIManager):
             hudsonrocks.HudsonRocksFreeAPI(api_keys),
             hashmob.HashMobAPI(api_keys),
             spycloud.SpyCloudAPI(api_keys),
-            whiteintel.WhiteIntelAPI(api_keys),
             # PAID
             hackcheck.HackCheck(api_keys),
             leakcheck.LeakCheckPaidAPI(api_keys),
