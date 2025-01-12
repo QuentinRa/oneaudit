@@ -18,8 +18,9 @@ WIP
 * subdomains
   * use crt.sh then virustotal with the output
   * add option to only keep some range(s) of IPs
-  * [internetdb](https://internetdb.shodan.io/)
+  * [internetdb](https://internetdb.shodan.io/), leakix
 * Fix issues with rocketreach randomness in search
+* Scan leaks from a list of emails (e.g. nxc output, etc.)
 
 **Table of contents**
 

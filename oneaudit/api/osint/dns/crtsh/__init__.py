@@ -4,6 +4,9 @@ from oneaudit.api.osint.dns.provider import OneAuditDNSAPIProvider
 
 # https://crt.sh
 class CrtShAPI(OneAuditDNSAPIProvider):
+    def get_request_rate(self):
+        return 1
+
     def _init_capabilities(self, api_key, api_keys):
         return [DNSCapability.FETCH_WILDCARD_DOMAINS] if api_key is not None else []
 

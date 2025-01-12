@@ -7,11 +7,25 @@ from json import loads
 
 
 # https://github.com/projectdiscovery/subfinder
-# Handle:
+# go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+#
+# Handles:
 # - https://api.hackertarget.com/hostsearch/?q={domain}
 # - https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns
 # - https://crt.sh/?q={domain}&output=json
+# - Leakix
+# - https://api.subdomain.center/?domain={domain}
+# - https://certificatedetails.com/{domain}
+# - digitorus
+#
+# API KEY: censys, hunter, quake, shodan, robtex, intelx, bultwith
+# whoisxmlapi, dnsrepo, bevigil, chaos, c99, fofa, chinaz, fullhunt
+# securitytrails, certspotter, redhuntlabs, passivetotal, bufferover
+# Errors: dnsdumpster, columbus, jonlu
 class SubFinderAPI(OneAuditDNSAPIProvider):
+    def get_request_rate(self):
+        return 0.1
+
     def _init_capabilities(self, api_key, api_keys):
         return [DNSCapability.SUBDOMAINS_ENUMERATION] if api_key is not None else []
 
