@@ -8,12 +8,13 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
     """
     def __init__(self, api_keys):
         from oneaudit.api.osint.dns import virustotal, subfinder, crtsh
-        from oneaudit.api.osint.dns import whiteintel, certspotter
+        from oneaudit.api.osint.dns import whiteintel, certspotter, webarchive
         super().__init__([
             # FREE
             subfinder.SubFinderAPI(api_keys),
             crtsh.CrtShAPI(api_keys),
             certspotter.CertSpotterAPI(api_keys),
+            webarchive.WebArchiveAPI(api_keys),
             # FREEMIUM
             virustotal.VirusTotalAPI(api_keys),
             whiteintel.WhiteIntelAPI(api_keys),
