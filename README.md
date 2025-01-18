@@ -10,24 +10,12 @@
 
 This tool is intended for legitimate open-source intelligence (OSINT) purposes, such as research and security assessments. Users are responsible for ensuring that their use of this tool complies with all applicable laws and regulations in their jurisdiction. We strongly encourage users to respect individuals' privacy and to refrain from using this tool for any malicious activities, including harassment or unauthorized access to personal data. By using this tool, you agree to act ethically and responsibly, understanding the potential legal implications of your actions.
 
-WIP
-
-* Test only one email per domain with verifying emails
-* Add proxy support
-* email verification documentation
-* subdomains
-  * use crt.sh then virustotal with the output
-  * add option to only keep some range(s) of IPs
-  * [internetdb](https://internetdb.shodan.io/), leakix
-* Fix issues with rocketreach randomness in search
-* Scan leaks from a list of emails (e.g. nxc output, etc.)
-
 **Table of contents**
 
 * [1. SocOSINT](#1-socosint)
   * [1.1 LinkedIn OSINT](#11-linkedin-osint)
 * [2. Leaks](#2-leaks)
-  * [2.1 Generate A List Of Targets](#21-generate-a-list-of-targets)
+  * [2.1 Generate A List Of Targets](#21-generate-a-list-of-targets-optional)
   * [2.2 Download Leaks For Each Target](#22-download-leaks-for-each-target)
   * [2.3 Compute Stats For Each Provider](#23-compute-stats-for-each-provider)
   * [2.4 Optimize And Clean Leaks](#24-optimize-and-clean-leaks)
@@ -42,9 +30,13 @@ WIP
 
 ### 1.1 LinkedIn OSINT
 
+**LinkedIn Company Search**
+
 ✍️ Get name, birthdate, LinkedIn profile URL, professional and personal emails.
 
-You can use this module to get a list of LinkedIn profiles still working in the target company from their domain. This will automatically add them to a given profile list for APIs such as RocketReach.
+✅ Supported APIs: RocketReach, Apollo, Nubela
+
+Multiple APIs have a search function which list current employees given a company domain. Each platform usually adds the employees to a profile list (`profile_list_id`) so that you can then fetch their contact information.
 
 ```powershell
 oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -v
@@ -71,13 +63,15 @@ oneaudit socosint linkedin scrap -d 'example.com' -o osint.json -t profile_list_
 }
 ```
 
-If the API supports it and you have enough export credits, you can export a list of profiles with:
+**LinkedIn Employee Contact Information**
+
+You can use this module to export a profile list, with all target employees added to it and their contact information with:
 
 ```powershell
 oneaudit socosint linkedin export -s rocketreach -t 12345678 -o rrexport.json --config config.json -v
 ```
 
-After exporting the emails, you need to parse them so that they have a format similar to `òsint.json`, while this is also useful to filter employees by company name:
+Unfortunately, when "looked up" by the provider, some records may be updated, and some employees in the profile list may not be in the company anymore. We can filter employees to only keep the ones we want using:
 
 ```powershell
 # Only keep employees working at "LinkedIn" (you can use multiple filters).
@@ -112,16 +106,25 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 
 ## 2. Leaks
 
-#### 2.1 Generate A List Of Targets
+#### 2.1 Generate A List Of Targets (optional)
+
+✍️ Goal: Not all OSINT results have contact information. This module generate and guess what is missing.
+
+✅ Supported APIs: N/A
 
 We can compute a list of targets from OSINT results. You can use either or both `osint.json` and `contacts.json`. Having the two of them would result in more targets.
 
+* Keep every verified email
+* Only keep one email per domain (excluding verified emails)
+* Generate emails for the given(s) domain(s)
+* Get rid of users for which we can't generate a valid email
+* **Ensure we have a least one email per OSINT result**
+
 ```powershell
+# Common usage
 oneaudit leaks parse -i osint.json -i contacts.json -f firstlast -d example.com -o targets.json -v
-# multiple domains
+# Multiple domains
 oneaudit leaks parse [...] --alias dev.example.com
-# only keep emails from the target domain(s)
-oneaudit leaks parse [...] --restrict
 ```
 
 ```json
@@ -147,14 +150,25 @@ oneaudit leaks parse [...] --restrict
 }
 ```
 
-**Warning**: ensure you use verbose to see the number of verified emails per email format in order to ensure the selected format is valid. Moreover, the current script **only keep ascii characters** in the emails.
-
 #### 2.2 Download Leaks For Each Target
 
-You can download leaks and dark web data using the following module.
+✍️ Goal: download leaks for each target
+
+✅ Supported APIs: LeakCheck, HackCheck, Snusbase, etc.
+
+If you have a list of targets, use the following command:
 
 ```powershell
+# While -d is optional, using -d allow us to perform bulk queries
+# Effectively reducing the number of API calls and the pricing
+# As a side effect, old leaks will be fetched
 oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
+```
+
+If you only have one email, use the following command:
+
+```powershell
+oneaudit leaks download -t john.doe@example.com -o leaks.json -v
 ```
 
 ```json5
@@ -226,6 +240,10 @@ oneaudit leaks download -i targets.json -o leaks.json -d example.com -v
 
 #### 2.3 Compute Stats For Each Provider
 
+✍️ Goal: compute statistics to determine how well each API performed.
+
+✅ Supported APIs: N/A
+
 After download leaks for each user, you can compute statistics for each API provider. You can view the percentage of entries per categories and per provider, along with the percentage of exclusive results, if applicable.
 
 ```
@@ -270,6 +288,10 @@ Passwords by length
 
 #### 2.4 Optimize And Clean Leaks
 
+✍️ Goal: remove bad passwords, identify some censored passwords, etc.
+
+✅ Supported APIs: N/A
+
 Some passwords in the leaks may be irrelevant, such as overly short or long ones, or hashes that are mistakenly labeled as passwords by certain providers. Additionally, we may want to handle censored passwords by identifying and removing as many of them as possible using known password patterns. However, this approach carries the risk of incorrectly adding some passwords.
 
 ```
@@ -291,6 +313,10 @@ $ oneaudit leaks stats -i pwned.json --cache .cache
 ```
 
 #### 2.5 Export Results
+
+✍️ Goal: make the best use of the results.
+
+✅ Supported APIs: N/A
 
 We can generate an HTML report using:
 
@@ -319,9 +345,13 @@ oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft -s 2
 
 #### 3.1 Find Subdomains From A Domain
 
+✍️ Goal: increase the number of domains found using passive subdomain enumeration.
+
+✅ Supported APIs: Virus Total, crt.sh, subfinder, White Intel, etc.
+
 There are multiple tools and APIs that can be used to find subdomains. Some of them are leveraged by this tool to provide the most comprehensive result.
 
-For instance, if we find a certificate such as `*.hp.example.com` with `hp.example.com` not being associated to a host, multiple tools would not dig into it and miss a few subdomains.
+For instance, if we find a certificate such as `*.wildcard.example.com` with `wildcard.example.com` not being associated to a host, multiple tools would not dig into it and miss a few subdomains.
 
 Moreover, a few domains are hard to find due to DNS servers being hardened and websites not being associated to them -or multiple domains being associated to the same host-. We are leveraging info-stealers to find some of them.
 
@@ -349,14 +379,20 @@ The expected format **without any comments** is:
   "proxynova": "",
   "spycloud": "",
   "haveibeenpwned": "",
+  "subfinder": "subfinder",
+  "crtsh": "",
+  "certspotter": "",
+  "webarchive": "",
   // These APIs are paid, an API key is required
   "enzoic": "your_api_key:your_api_secret",
-  "hashmob": "your_api_key",
-  "rocketreach": "your_api_key",
+  "hackcheck": "your_api_key",
   "leakcheck_pro": "your_api_key",
   "snusbase": "your_api_key",
-  "hackcheck": "your_api_key",
+  "hashmob": "your_api_key",
+  "rocketreach": "your_api_key",
+  "rocketreach_session": "your_session_key",
   "nubela": "your_api_key",
+  "virustotal": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
 }
@@ -428,6 +464,18 @@ $ oneaudit leaks stats -i  $out/pwned.json $cache_opt
 ```
 
 ## 6. Developer Notes
+
+WIP
+
+* Test only one email per domain with verifying emails
+* Add proxy support
+* email verification documentation
+* subdomains
+  * use crt.sh then virustotal with the output
+  * add option to only keep some range(s) of IPs
+  * [internetdb](https://internetdb.shodan.io/), leakix
+* Fix issues with rocketreach randomness in search
+* Scan leaks from a list of emails (e.g. nxc output, etc.)
 
 #### Leak And Breaches Dates
 
