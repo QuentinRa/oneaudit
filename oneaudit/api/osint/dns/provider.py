@@ -16,3 +16,9 @@ class OneAuditDNSAPIProvider(OneAuditBaseProvider):
 
     def find_asn_data_for_ip(self, ip_address):
         yield True, None
+
+class OneAuditDNSAPIBulkProvider(OneAuditDNSAPIProvider):
+    """
+    Utilities for APIs that handle bulk queries
+    """
+    pass

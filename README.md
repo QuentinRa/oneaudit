@@ -383,6 +383,7 @@ The expected format **without any comments** is:
   "crtsh": "",
   "certspotter": "",
   "webarchive": "",
+  "ipwhois": "",
   // These APIs are paid, an API key is required
   "enzoic": "your_api_key:your_api_secret",
   "hackcheck": "your_api_key",

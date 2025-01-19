@@ -1,7 +1,5 @@
 from oneaudit.api.leaks import PasswordHashDataFormat
 from oneaudit.api.provider import OneAuditBaseProvider
-from oneaudit.api.utils.caching import get_cached_result, set_cached_result
-from oneaudit.utils.io import compute_checksum
 
 
 class OneAuditLeaksAPIProvider(OneAuditBaseProvider):
@@ -31,17 +29,4 @@ class OneAuditLeaksAPIBulkProvider(OneAuditLeaksAPIProvider):
     """
     Utilities for APIs that handle bulk queries
     """
-
-    def _cache_indexed_data_if_required(self, key_format, indexed_data):
-        key_formatter = f'{self.api_name}_{key_format}'
-        for key, extracted_data in indexed_data.items():
-            # Compute checksum
-            cached_data = get_cached_result(self.api_name, key_formatter.format(key=key), True)
-            cached_data_checksum = cached_data['checksum_sha256'] if cached_data and 'checksum_sha256' in cached_data else None
-            extracted_data_checksum = compute_checksum(extracted_data)
-            # Update database if data changed
-            if extracted_data_checksum != cached_data_checksum:
-                set_cached_result(self.api_name, key_formatter.format(key=key), {'checksum_sha256': extracted_data_checksum, **self._generate_cached_from_extracted(extracted_data)})
-
-    def _generate_cached_from_extracted(self, extracted_data):
-        return { "result": extracted_data }
+    pass

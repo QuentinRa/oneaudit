@@ -9,6 +9,7 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
     def __init__(self, api_keys):
         from oneaudit.api.osint.dns import virustotal, subfinder, crtsh
         from oneaudit.api.osint.dns import whiteintel, certspotter, webarchive
+        from oneaudit.api.osint.dns import ipwhois
         super().__init__([
             # FREE
             subfinder.SubFinderAPI(api_keys),
@@ -16,6 +17,7 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
             certspotter.CertSpotterAPI(api_keys),
             webarchive.WebArchiveAPI(api_keys),
             # FREEMIUM
+            ipwhois.IPWhoisAPI(api_keys),
             virustotal.VirusTotalAPI(api_keys),
             whiteintel.WhiteIntelAPI(api_keys),
             # PAID
@@ -76,7 +78,9 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
                         capability=DNSCapability.ASN_INVESTIGATION,
                         method_name='find_asn_data_for_ip',
                         args=(result.ip_address,)):
-                    print(api_result)
+                    asn = api_result
+                    if asn is not None:
+                        break
 
             final_results.append(
                 DomainInformation(
