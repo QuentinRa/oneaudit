@@ -15,8 +15,13 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
     api_keys = args_parse_api_config(args)
+    return compute_result(args, api_keys)
+
+def compute_result(args, api_keys):
     manager = OneAuditDNSAPIManager(api_keys)
-    save_to_json(args.output_file, {
+    result = {
         'version': 1.0,
         'domains': manager.dump_subdomains(args.company_domain)
-    })
+    }
+    save_to_json(args.output_file, result)
+    return result
