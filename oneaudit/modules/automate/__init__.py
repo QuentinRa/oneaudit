@@ -36,7 +36,7 @@ def run(args):
         workbook=workbook,
         title="Subdomains",
         columns=["Domain", "IP", "ASN", "ASN Range", "ASN Name"],
-        rows=[[d.domain_name, d.ip_address, d.asn, d.asn_range, d.asn_name] for d in data['domains']],
+        rows=[[d.domain_name, d.ip_address, d.asn['asn_id'] if d.asn else "", d.asn['asn_range'] if d.asn else "", d.asn['asn_name'] if d.asn else ""] for d in data['domains']],
         sizes=(50, 25, 10, 20, 15),
         validation_rules=[
             None,
@@ -48,9 +48,9 @@ def run(args):
         formatting_rules=[
             None,
             [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
-            None,
-            None,
-            None,
+            [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
+            [FormulaRule(formula=['ISBLANK(D2)'], fill=bad_fill)],
+            [FormulaRule(formula=['ISBLANK(E2)'], fill=bad_fill)],
         ]
     )
 
