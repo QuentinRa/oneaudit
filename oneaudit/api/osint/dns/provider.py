@@ -13,3 +13,6 @@ class OneAuditDNSAPIProvider(OneAuditBaseProvider):
 
     def dump_wildcard_domains_from_domain(self, domain):
         yield True, {'wildcard': []}
+
+    def find_asn_data_for_ip(self, ip_address):
+        yield True, None

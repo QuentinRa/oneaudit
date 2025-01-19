@@ -25,8 +25,9 @@ def run(args):
         makedirs(output_folder, exist_ok=True)
 
     workbook = create_workbook()
-    green_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
-    red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+    good_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+    neutral_fill = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
+    bad_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
     # Subdomains
     args.output_file = f'{output_folder}/subdomains.json'
@@ -34,30 +35,37 @@ def run(args):
     workbook_add_sheet_with_table(
         workbook=workbook,
         title="Subdomains",
-        columns=["Domain", "IP", "Inspected", "Ports"],
-        rows=[[d.domain_name, d.ip_address, False, "Not checked"] for d in data['domains']],
-        sizes=(50, 25, 15, 15),
+        columns=["Domain", "IP", "ASN", "ASN Range", "ASN Name"],
+        rows=[[d.domain_name, d.ip_address, d.asn, d.asn_range, d.asn_name] for d in data['domains']],
+        sizes=(50, 25, 10, 20, 15),
         validation_rules=[
             None,
             None,
-            DataValidation(
-                type="list",
-                formula1='"TRUE,FALSE"',
-                showDropDown=False
-            ),
-            None
+            None,
+            None,
+            None,
         ],
         formatting_rules=[
             None,
-            [FormulaRule(formula=['ISBLANK(B2)'], fill=red_fill)],
-            [
-                FormulaRule(formula=['C2=TRUE'], fill=green_fill),
-                FormulaRule(formula=['C2=FALSE'], fill=red_fill)
-            ],
-            None
+            [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
+            None,
+            None,
+            None,
         ]
     )
 
+    # Open Ports
+
+    # DataValidation(
+    #                 type="list",
+    #                 formula1='"TRUE,FALSE"',
+    #                 showDropDown=False
+    #             ),
+    # [
+    #                 FormulaRule(formula=['C2=TRUE'], fill=green_fill),
+    #                 FormulaRule(formula=['C2=FALSE'], fill=red_fill)
+    #             ],
+    # ws.merge_cells(start_row=1, start_column=1, end_row=len(ports_status), end_column=1)
 
     # Save
     args.output_file = f'{output_folder}/report.xlsx'

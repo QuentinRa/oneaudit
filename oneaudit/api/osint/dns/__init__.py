@@ -5,12 +5,19 @@ from enum import Enum
 class DNSCapability(Enum):
     SUBDOMAINS_ENUMERATION = 0
     FETCH_WILDCARD_DOMAINS = 1
+    ASN_INVESTIGATION = 2
 
+@dataclass(frozen=True)
+class ASNInformation:
+    asn_id: int
+    asn_range: str
+    asn_name: str
 
 @dataclass(frozen=True)
 class DomainInformation:
     domain_name: str
     ip_address: str|None
+    asn: ASNInformation|None = None
 
     def __lt__(self, other):
         if not isinstance(other, DomainInformation):
