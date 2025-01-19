@@ -21,7 +21,7 @@ def compute_result(args, api_keys):
     manager = OneAuditPortScanningAPIManager(api_keys)
     result = {
         'version': 1.0,
-        'domains': manager.scan_ports(args.target_ips)
+        'hosts': manager.scan_ports(args.target_ips)
     }
     save_to_json(args.output_file, result)
     return result

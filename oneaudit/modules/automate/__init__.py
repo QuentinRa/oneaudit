@@ -1,9 +1,9 @@
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import PatternFill
-from openpyxl.worksheet.datavalidation import DataValidation
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
+from oneaudit.modules.osint.ports.scan import compute_result as port_scan
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
@@ -12,6 +12,7 @@ from os import makedirs
 def define_args(parent_parser):
     automate_module = parent_parser.add_parser('automate', help='Automated Module')
     automate_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
+    automate_module.add_argument('-s', '--scope', help='IPs to scan, comma-separated, such as <found>,127.0.0.1/24,127.0.0.1.', required=True)
     automate_module.add_argument('-o', '--output', dest='output_folder', required=True)
     args_api_config(automate_module)
     args_verbose_config(automate_module)
@@ -30,7 +31,8 @@ def run(args):
     bad_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
     # Subdomains
-    args.output_file = f'{output_folder}/subdomains.json'
+    subdomain_output_file = f'{output_folder}/subdomains.json'
+    args.output_file = subdomain_output_file
     data = dump_subdomains(args, api_keys)
     workbook_add_sheet_with_table(
         workbook=workbook,
@@ -55,6 +57,27 @@ def run(args):
     )
 
     # Open Ports
+    port_scanning_output_file = f'{output_folder}/hosts.json'
+    args.output_file = port_scanning_output_file
+    args.target_ips = (args.scope  if "<found>" not in args.scope else args.scope.replace("<found>", ",".join(
+        set([d.ip_address for d in data['domains'] if d.ip_address])
+    ))).split(',')
+    data = port_scan(args, api_keys)
+    workbook_add_sheet_with_table(
+        workbook=workbook,
+        title="Hosts",
+        columns=["IP", "Port"],
+        rows=[[ip_address, port] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [''])],
+        sizes=(25, 10),
+        validation_rules=[
+            None,
+            None,
+        ],
+        formatting_rules=[
+            None,
+            [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
+        ]
+    )
 
     # DataValidation(
     #                 type="list",

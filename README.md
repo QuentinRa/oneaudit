@@ -22,7 +22,7 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
   * [2.5 Export Results](#25-export-results)
 * [3. Passive Domain Recon](#3-passive-domain-recon)
   * [3.1 Find Subdomains From A Domain](#31-find-subdomains-from-a-domain)
-  * [3.2 Find Open Ports For An IP Range](#32-find-open-ports-from-a-domain)
+  * [3.2 Find Open Ports For An IP Range](#32-find-open-ports-for-an-ip-range)
 * [4. API Configuration](#4-api-configuration)
 * [5. Cheatsheet](#5-cheatsheet)
 * [6. Developer Notes](#6-developer-notes)
@@ -370,6 +370,18 @@ This module will expand CIDR ranges and investigate each IP for known open ports
 
 ```ps
 oneaudit osint ports scan 172.17.0.0/24 127.0.0.1 192.168.0.1/32
+```
+```json!
+{
+  "version": 1.0,
+  "hosts": {
+    "127.0.0.1": {
+      "ports": [
+        1337
+      ],
+      "details": []
+    }
+}
 ```
 
 ## 4. API Configuration
