@@ -4,7 +4,7 @@ from oneaudit.api.osint.dns import DNSCapability, DomainInformation
 
 class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
     """
-    APIs related to emails
+    APIs related to DNS records and IPs
     """
     def __init__(self, api_keys):
         from oneaudit.api.osint.dns import virustotal, subfinder, crtsh
@@ -25,7 +25,6 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
 
     def dump_subdomains(self, domain):
         """
-        Indicates for each email if the email is verified or not.
         """
         _, extra = self._call_all_providers_dict(
             heading="Investigate wildcard subdomains",

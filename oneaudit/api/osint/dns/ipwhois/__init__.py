@@ -1,10 +1,11 @@
 from oneaudit.api.osint.dns import DNSCapability, ASNInformation
 from oneaudit.api.osint.dns.provider import OneAuditDNSAPIBulkProvider
 from ipaddress import ip_network, ip_address as ip_address_object
-
 from oneaudit.api.utils.caching import get_cached_result
 
-
+# https://ipwhois.io/documentation
+# https://api.bgpview.io/asn/199575
+# https://api.bgpview.io/asn/199575/prefixes
 class IPWhoisAPI(OneAuditDNSAPIBulkProvider):
     def get_request_rate(self):
         return 1
