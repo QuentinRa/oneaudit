@@ -1,7 +1,7 @@
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import PatternFill
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
-from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
+from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
 from oneaudit.modules.osint.ports.scan import compute_result as port_scan
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
@@ -12,7 +12,7 @@ from os import makedirs
 def define_args(parent_parser):
     automate_module = parent_parser.add_parser('automate', help='Automated Module')
     automate_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
-    automate_module.add_argument('-s', '--scope', help='IPs to scan, comma-separated, such as <found>,127.0.0.1/24,127.0.0.1.', required=True)
+    automate_module.add_argument('-s', '--scope', help='IPs to scan, comma-separated, such as <found>,127.0.0.1/24,127.0.0.1.')
     automate_module.add_argument('-o', '--output', dest='output_folder', required=True)
     args_api_config(automate_module)
     args_verbose_config(automate_module)
@@ -20,6 +20,7 @@ def define_args(parent_parser):
 def run(args):
     args_parse_parse_verbose(args)
     api_keys = args_parse_api_config(args)
+    logger = get_project_logger()
     output_folder = f'{args.output_folder}/{args.company_domain}'
 
     if not file_exists(output_folder):
@@ -57,27 +58,30 @@ def run(args):
     )
 
     # Open Ports
-    port_scanning_output_file = f'{output_folder}/hosts.json'
-    args.output_file = port_scanning_output_file
-    args.target_ips = (args.scope  if "<found>" not in args.scope else args.scope.replace("<found>", ",".join(
-        set([d.ip_address for d in data['domains'] if d.ip_address])
-    ))).split(',')
-    data = port_scan(args, api_keys)
-    workbook_add_sheet_with_table(
-        workbook=workbook,
-        title="Hosts",
-        columns=["IP", "Port"],
-        rows=[[ip_address, port] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [''])],
-        sizes=(25, 10),
-        validation_rules=[
-            None,
-            None,
-        ],
-        formatting_rules=[
-            None,
-            [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
-        ]
-    )
+    if args.scope:
+        port_scanning_output_file = f'{output_folder}/hosts.json'
+        args.output_file = port_scanning_output_file
+        args.target_ips = (args.scope  if "<found>" not in args.scope else args.scope.replace("<found>", ",".join(
+            set([d.ip_address for d in data['domains'] if d.ip_address])
+        ))).split(',')
+        data = port_scan(args, api_keys)
+        workbook_add_sheet_with_table(
+            workbook=workbook,
+            title="Hosts",
+            columns=["IP", "Port"],
+            rows=[[ip_address, port] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [''])],
+            sizes=(25, 10),
+            validation_rules=[
+                None,
+                None,
+            ],
+            formatting_rules=[
+                None,
+                [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
+            ]
+        )
+    else:
+        logger.warning("Please use --scope to enable port scanning. To scan all IPs found during enumeration, use: -s '<found>'.")
 
     # DataValidation(
     #                 type="list",
