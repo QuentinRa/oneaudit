@@ -22,6 +22,7 @@ This tool is intended for legitimate open-source intelligence (OSINT) purposes, 
   * [2.5 Export Results](#25-export-results)
 * [3. Passive Domain Recon](#3-passive-domain-recon)
   * [3.1 Find Subdomains From A Domain](#31-find-subdomains-from-a-domain)
+  * [3.2 Find Open Ports For An IP Range](#32-find-open-ports-from-a-domain)
 * [4. API Configuration](#4-api-configuration)
 * [5. Cheatsheet](#5-cheatsheet)
 * [6. Developer Notes](#6-developer-notes)
@@ -345,7 +346,7 @@ oneaudit leaks export wordlist -i pwned.json -o wordlists/ -c microsoft -s 2
 
 #### 3.1 Find Subdomains From A Domain
 
-✍️ Goal: increase the number of domains found using passive subdomain enumeration.
+✍️ Goal: increase the number of domains found using passive subdomain enumeration. It also identify the ASN and the IP range for each domain.
 
 ✅ Supported APIs: Virus Total, crt.sh, subfinder, White Intel, etc.
 
@@ -357,6 +358,18 @@ Moreover, a few domains are hard to find due to DNS servers being hardened and w
 
 ```ps
 oneaudit osint subdomains dump -d example.com -v -o domains.json
+```
+
+#### 3.2 Find Open Ports For An IP Range
+
+✍️ Goal: Identify open ports passively for interesting IP range(s) found in [3.1](#31-find-subdomains-from-a-domain)
+
+✅ Supported APIs: InternetDB
+
+This module will expand CIDR ranges and investigate each IP for known open ports.
+
+```ps
+oneaudit osint ports scan 172.17.0.0/24 127.0.0.1 192.168.0.1/32
 ```
 
 ## 4. API Configuration
@@ -384,6 +397,7 @@ The expected format **without any comments** is:
   "certspotter": "",
   "webarchive": "",
   "ipwhois": "",
+  "internetdb": "",
   // These APIs are paid, an API key is required
   "enzoic": "your_api_key:your_api_secret",
   "hackcheck": "your_api_key",
