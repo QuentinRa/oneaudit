@@ -38,7 +38,7 @@ def run(args):
     workbook_add_sheet_with_table(
         workbook=workbook,
         title="Subdomains",
-        columns=["Domain", "IP", "ASN", "ASN Range", "ASN Name"],
+        columns=["Domain", "IP", "ASN", "ASN Name", "ASN Range"],
         rows=[[d.domain_name, d.ip_address, d.asn['asn_id'] if d.asn else "", d.asn['asn_range'] if d.asn else "", d.asn['asn_name'] if d.asn else ""] for d in data['domains']],
         sizes=(50, 25, 10, 20, 15),
         validation_rules=[

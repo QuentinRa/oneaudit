@@ -8,7 +8,7 @@ from oneaudit.api.utils.caching import get_cached_result
 # https://api.bgpview.io/asn/199575/prefixes
 class IPWhoisAPI(OneAuditDNSAPIBulkProvider):
     def get_request_rate(self):
-        return 1
+        return 2
 
     def _init_capabilities(self, api_key, api_keys):
         return [DNSCapability.ASN_INVESTIGATION] if api_key is not None else []
@@ -28,17 +28,22 @@ class IPWhoisAPI(OneAuditDNSAPIBulkProvider):
         cached = True
         entry_key = f'{self.api_name}_parsed_ip_{ip_address}'
         result = get_cached_result(self.api_name, entry_key, do_not_expire=True)
-        if True:
+        if not result:
             # Get the ASN Number
             self.request_args['url'] = self.api_endpoint.format(ip_address=ip_address)
             cached, result = self.fetch_results_using_cache(f"ip_{ip_address}", default=[])
             # Get the associated IP ranges
             if 'connection' in result and 'asn' in result['connection']:
                 asn_id, asn_name = result['connection']['asn'], result['connection']['isp']
+                # The provider doesn't have the ASN
+                if asn_id == 0:
+                    return True, None
                 self.request_args['url'] = self.api_external_endpoint.format(asn_id=asn_id)
-                cached, result = self.fetch_results_using_cache(f"asn_{asn_id}", default=[])
+                cached, asn_result = self.fetch_results_using_cache(f"asn_{asn_id}", default=[])
                 # Keep the results clean and tidy
-                all_owned_ip_addresses_ranges = result['data']['ipv4_prefixes']
+                if 'data' not in asn_result:
+                    print(asn_result, result, asn_id, asn_name, ip_address)
+                all_owned_ip_addresses_ranges = asn_result['data']['ipv4_prefixes'] if 'ipv4_prefixes' in asn_result['data'] else []
                 should_cache_everything = len(all_owned_ip_addresses_ranges) < 10
 
                 indexed_data = {}
@@ -68,5 +73,5 @@ class IPWhoisAPI(OneAuditDNSAPIBulkProvider):
                 self._cache_indexed_data_if_required("parsed_ip_{key}", indexed_data)
                 result = get_cached_result(self.api_name, entry_key, do_not_expire=True)
 
-        yield cached, result['result'] if result else None
+        yield cached, result['result'] if result and 'result' in result else None
 

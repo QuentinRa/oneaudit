@@ -23,11 +23,14 @@ class VirusTotalAPI(OneAuditDNSAPIProvider):
         )
         self.api_endpoint = 'https://www.virustotal.com/api/v3/domains/{domain}/{type}?limit=100'
         self.request_args['headers']['x-apikey'] = self.api_key
+        self.allowed_status_codes = [200, 400]
 
     def dump_subdomains_from_domain(self, domain):
         # Check subdomains
         self.request_args['url'] = self.api_endpoint.format(domain=domain, type="subdomains")
         cached, data = self.fetch_results_using_cache(key=f"subdomains_{domain}", default={'data': []})
+        if 'error' in data:
+            data['data'] = []
         yield cached, {
             'subdomains':
                 [DomainInformation(entry['id'], record['value'])

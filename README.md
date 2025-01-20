@@ -498,9 +498,9 @@ WIP
 * Add proxy support
 * email verification documentation
 * subdomains
-  * use crt.sh then virustotal with the output
   * add option to only keep some range(s) of IPs
-  * [internetdb](https://internetdb.shodan.io/), leakix
+  * leakix
+  * cache webarchive parsed output, as it may takes time
 * Fix issues with rocketreach randomness in search
 * Scan leaks from a list of emails (e.g. nxc output, etc.)
 

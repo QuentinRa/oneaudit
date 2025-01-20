@@ -8,7 +8,7 @@ class InternetDBAPI(OneAuditPortScanningAPIProvider):
         return [PortScanningAPICapability.PORT_SCANNING] if api_key is not None else []
 
     def get_request_rate(self):
-        return 1
+        return 1.75
 
     def __init__(self, api_keys):
         super().__init__(

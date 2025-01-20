@@ -21,9 +21,11 @@ class OneAuditPortScanningAPIManager(OneAuditBaseAPIManager):
 
         final_result = {}
         for ip_range in target_ips:
-            for target_ip in ip_range:
-                target_ip = str(target_ip)
-                if target_ip in final_result:
+            for _target_ip in ip_range:
+                target_ip = str(_target_ip)
+                # Technically, we don't 'mind' scanning private IP addresses, but the results are meaningless
+                # As providers will likely respond with 404 or junk data
+                if target_ip in final_result or _target_ip.is_private or _target_ip.is_link_local:
                     continue
                 _, result = self._call_all_providers_dict(
                     heading="Scanning ports",
