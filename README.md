@@ -500,7 +500,6 @@ WIP
 * subdomains
   * add option to only keep some range(s) of IPs
   * leakix
-  * cache webarchive parsed output, as it may takes time
 * Fix issues with rocketreach randomness in search
 * Scan leaks from a list of emails (e.g. nxc output, etc.)
 

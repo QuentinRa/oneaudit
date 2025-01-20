@@ -13,7 +13,7 @@ from json import loads
 # - https://api.hackertarget.com/hostsearch/?q={domain}
 # - https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns
 # - https://crt.sh/?q={domain}&output=json
-# - Leakix
+# - https://leakix.net/domain/{domain}
 # - https://api.subdomain.center/?domain={domain}
 # - https://certificatedetails.com/{domain}
 # - digitorus

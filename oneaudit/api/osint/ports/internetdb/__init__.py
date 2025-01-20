@@ -24,4 +24,8 @@ class InternetDBAPI(OneAuditPortScanningAPIProvider):
     def find_open_ports_by_ip(self, ip_address):
         self.request_args['url'] = self.api_endpoint.format(ip_address=ip_address)
         cached, result = self.fetch_results_using_cache(f"ip_{ip_address}", default={})
-        yield cached, { 'ports': result['ports'] if 'ports' in result else []}
+        yield cached, {
+            'ports': result['ports'] if 'ports' in result else [],
+            'details': (result['cpes'] if 'cpe' in result else []) +
+                       (result['vulns'] if 'vulns' in result else [])
+        }
