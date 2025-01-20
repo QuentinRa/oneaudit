@@ -50,6 +50,10 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
 
         cleaned_results = {}
         for result in results['subdomains']:
+            domain_name = result.domain_name.split("@")[-1]
+            if domain_name != result.domain_name:
+                result = DomainInformation(domain_name, result.ip_address, result.asn)
+
             # Add the domain, since we only have this one
             if result.domain_name not in cleaned_results:
                 cleaned_results[result.domain_name] = [result]

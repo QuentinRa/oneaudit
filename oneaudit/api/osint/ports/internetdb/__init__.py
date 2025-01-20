@@ -26,6 +26,6 @@ class InternetDBAPI(OneAuditPortScanningAPIProvider):
         cached, result = self.fetch_results_using_cache(f"ip_{ip_address}", default={})
         yield cached, {
             'ports': result['ports'] if 'ports' in result else [],
-            'details': (result['cpes'] if 'cpe' in result else []) +
-                       (result['vulns'] if 'vulns' in result else [])
+            'stack': result['cpes'] if 'cpes' in result else [],
+            'vulns': result['vulns'] if 'vulns' in result else [],
         }

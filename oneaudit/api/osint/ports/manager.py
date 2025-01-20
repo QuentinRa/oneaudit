@@ -32,12 +32,13 @@ class OneAuditPortScanningAPIManager(OneAuditBaseAPIManager):
                     capability=PortScanningAPICapability.PORT_SCANNING,
                     method_name='find_open_ports_by_ip',
                     stop_when_modified=False,
-                    result={'ports': [], 'details': [], 'domains': resolved_domains[target_ip] if target_ip in resolved_domains else []},
+                    result={'ports': [], 'stack': [], 'vulns': [], 'domains': resolved_domains[target_ip] if target_ip in resolved_domains else []},
                     args=(target_ip,)
                 )
                 final_result[target_ip] = {
                     'ports': sorted([e for e in set(result['ports']) if e]),
-                    'details': result['details'],
+                    'stack': sorted([e for e in set(result['stack']) if e]),
+                    'vulns': list(reversed(sorted([e for e in set(result['vulns']) if e]))),
                     'domains': sorted([e for e in set(result['domains']) if e]),
                 }
         return final_result

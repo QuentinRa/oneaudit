@@ -70,10 +70,14 @@ def run(args):
         workbook_add_sheet_with_table(
             workbook=workbook,
             title="Hosts",
-            columns=["IP", "Port", "Domains", "Details"],
-            rows=[[ip_address, port, '\n'.join(host['domains']), '\n'.join(host['details'])] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [None])],
-            sizes=(25, 10, 50, 50),
+            columns=["IP", "Port", "Domains", "Stack", "Vulnerabilities"],
+            rows=[
+                [ip_address, port, '\n'.join(host['domains']), '\n'.join(host['stack']), '\n'.join(host['vulns'])]
+                for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [None])
+            ],
+            sizes=(25, 10, 50, 50, 25),
             validation_rules=[
+                None,
                 None,
                 None,
                 None,
@@ -82,6 +86,7 @@ def run(args):
             formatting_rules=[
                 None,
                 [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
+                None,
                 None,
                 None,
             ],
