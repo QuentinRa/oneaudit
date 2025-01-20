@@ -54,7 +54,8 @@ def run(args):
             [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
             [FormulaRule(formula=['ISBLANK(D2)'], fill=bad_fill)],
             [FormulaRule(formula=['ISBLANK(E2)'], fill=bad_fill)],
-        ]
+        ],
+        autowrap=False
     )
 
     # Open Ports
@@ -64,21 +65,25 @@ def run(args):
         args.target_ips = (args.scope  if "<found>" not in args.scope else args.scope.replace("<found>", ",".join(
             set([d.ip_address for d in data['domains'] if d.ip_address])
         ))).split(',')
+        args.domains_file = subdomain_output_file
         data = port_scan(args, api_keys)
         workbook_add_sheet_with_table(
             workbook=workbook,
             title="Hosts",
-            columns=["IP", "Port"],
-            rows=[[ip_address, port] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [''])],
-            sizes=(25, 10),
+            columns=["IP", "Port", "Domains"],
+            rows=[[ip_address, port, '\n'.join(host['domains'])] for ip_address, host in data['hosts'].items() for port in (host['ports'] if host['ports'] else [None])],
+            sizes=(25, 10, 50),
             validation_rules=[
+                None,
                 None,
                 None,
             ],
             formatting_rules=[
                 None,
-                [FormulaRule(formula=['ISBLANK(C2)'], fill=bad_fill)],
-            ]
+                [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
+                None,
+            ],
+            autowrap=True,
         )
     else:
         logger.warning("Please use --scope to enable port scanning. To scan all IPs found during enumeration, use: -s '<found>'.")

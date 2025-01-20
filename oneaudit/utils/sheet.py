@@ -1,3 +1,4 @@
+from openpyxl.styles import Alignment
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.table import TableStyleInfo, Table
 from openpyxl.utils import get_column_letter
@@ -16,7 +17,7 @@ def create_workbook():
     wb.remove(wb.active)
     return wb
 
-def workbook_add_sheet_with_table(workbook, title, columns, rows, sizes, validation_rules, formatting_rules):
+def workbook_add_sheet_with_table(workbook, title, columns, rows, sizes, validation_rules, formatting_rules, autowrap):
     global generic_table_style
     worksheet = workbook.create_sheet(title=title)
 
@@ -53,3 +54,8 @@ def workbook_add_sheet_with_table(workbook, title, columns, rows, sizes, validat
         col = get_column_letter(index + 1)
         col_range = f"{col}2:{col}{len(rows)+1}"
         [worksheet.conditional_formatting.add(col_range, formatting_rule) for formatting_rule in col_formatting_rules]
+
+    if autowrap:
+        for row in worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+            for cell in row:
+                cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
