@@ -34,7 +34,7 @@ class VirusTotalAPI(OneAuditDNSAPIProvider):
         yield cached, {
             'subdomains':
                 [DomainInformation(entry['id'], record['value'])
-                 for entry in data['data']
+                 for entry in data['data'] if 'attributes' in entry
                  for record in entry['attributes']['last_dns_records']
                  if record['type'] in ['A']]
         }

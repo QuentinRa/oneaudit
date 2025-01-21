@@ -23,7 +23,7 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
             # PAID
         ])
 
-    def dump_subdomains(self, domain):
+    def dump_subdomains(self, base_domain):
         """
         """
         _, extra = self._call_all_providers_dict(
@@ -34,11 +34,13 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
             result={
                 'wildcard': []
             },
-            args=(domain,)
+            args=(base_domain,)
         )
 
         results = { 'subdomains': [], }
-        for domain in set([domain] + extra['wildcard']):
+        for domain in set([base_domain] + extra['wildcard']):
+            if not domain.endswith(base_domain) or "@" in domain:
+                continue
             _, results = self._call_all_providers_dict(
                 heading="Investigate subdomains",
                 capability=DNSCapability.SUBDOMAINS_ENUMERATION,
@@ -51,6 +53,9 @@ class OneAuditDNSAPIManager(OneAuditBaseAPIManager):
         cleaned_results = {}
         for result in results['subdomains']:
             domain_name = result.domain_name.split("@")[-1]
+            if not domain_name.endswith(base_domain):
+                continue
+
             if domain_name != result.domain_name:
                 result = DomainInformation(domain_name, result.ip_address, result.asn)
 
