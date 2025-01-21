@@ -1,7 +1,7 @@
 from ipaddress import ip_network
 from oneaudit.api.manager import OneAuditBaseAPIManager
 from oneaudit.api.osint.hosts import HostScanningAPICapability
-from oneaudit.api.osint.hosts import internetdb
+from oneaudit.api.osint.hosts import internetdb, leakix
 
 
 class OneAuditHostScanningAPIManager(OneAuditBaseAPIManager):
@@ -13,6 +13,7 @@ class OneAuditHostScanningAPIManager(OneAuditBaseAPIManager):
             # FREE
             internetdb.InternetDBAPI(api_keys),
             # FREEMIUM
+            leakix.LeakIXAPI(api_keys),
             # PAID
         ])
 

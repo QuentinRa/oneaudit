@@ -500,10 +500,10 @@ WIP
 * email verification documentation
 * subdomains
   * Add automate documentation && remove cheatsheet
-  * Add LeaksIX for Hosts
   * Add Whois for Registrar
   * Add ASN for Registrar
   * Make subfinder use API keys from the global config (leakix)
+  * Guess the protocol given the port (+LeakIX if applicable)
 * Fix issues with rocketreach randomness in search
 * Scan leaks from a list of emails (e.g. nxc output, etc.)
 
