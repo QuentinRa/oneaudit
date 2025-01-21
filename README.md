@@ -369,7 +369,7 @@ oneaudit osint subdomains dump -d example.com -v -o domains.json
 This module will expand CIDR ranges and investigate each IP for known open ports.
 
 ```ps
-oneaudit osint ports scan 172.17.0.0/24 127.0.0.1 192.168.0.1/32
+oneaudit osint hosts scan 172.17.0.0/24 127.0.0.1 192.168.0.1/32
 ```
 ```json!
 {
@@ -419,6 +419,7 @@ The expected format **without any comments** is:
   "rocketreach": "your_api_key",
   "rocketreach_session": "your_session_key",
   "nubela": "your_api_key",
+  "leakix": "your_api_key",
   "virustotal": "your_api_key",
   // This API is disabled (leading underscore)
   "_whiteintel": "your_api_key",
@@ -498,8 +499,11 @@ WIP
 * Add proxy support
 * email verification documentation
 * subdomains
-  * add option to only keep some range(s) of IPs
-  * leakix
+  * Add automate documentation && remove cheatsheet
+  * Add LeaksIX for Hosts
+  * Add Whois for Registrar
+  * Add ASN for Registrar
+  * Make subfinder use API keys from the global config (leakix)
 * Fix issues with rocketreach randomness in search
 * Scan leaks from a list of emails (e.g. nxc output, etc.)
 

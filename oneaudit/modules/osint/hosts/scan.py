@@ -1,5 +1,5 @@
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
-from oneaudit.api.osint.ports.manager import OneAuditPortScanningAPIManager
+from oneaudit.api.osint.hosts.manager import OneAuditHostScanningAPIManager
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose
 from oneaudit.utils.io import save_to_json
 from json import load
@@ -20,7 +20,7 @@ def run(args):
     return compute_result(args, api_keys)
 
 def compute_result(args, api_keys):
-    manager = OneAuditPortScanningAPIManager(api_keys)
+    manager = OneAuditHostScanningAPIManager(api_keys)
 
     # Map IPs to Domain(s)
     resolve_domains = {}
@@ -36,7 +36,7 @@ def compute_result(args, api_keys):
 
     result = {
         'version': 1.0,
-        'hosts': manager.scan_ports(args.target_ips, resolve_domains)
+        'hosts': manager.scan_hosts(args.target_ips, resolve_domains)
     }
     save_to_json(args.output_file, result)
     return result

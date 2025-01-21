@@ -1,11 +1,11 @@
-from oneaudit.api.osint.ports import PortScanningAPICapability
-from oneaudit.api.osint.ports.provider import OneAuditPortScanningAPIProvider
+from oneaudit.api.osint.hosts import HostScanningAPICapability
+from oneaudit.api.osint.hosts.provider import OneAuditPortScanningAPIProvider
 
 
 # https://internetdb.shodan.io/
 class InternetDBAPI(OneAuditPortScanningAPIProvider):
     def _init_capabilities(self, api_key, api_keys):
-        return [PortScanningAPICapability.PORT_SCANNING] if api_key is not None else []
+        return [HostScanningAPICapability.HOST_SCANNING] if api_key is not None else []
 
     def get_request_rate(self):
         return 1.75
@@ -21,7 +21,7 @@ class InternetDBAPI(OneAuditPortScanningAPIProvider):
         self.api_endpoint = 'https://internetdb.shodan.io/{ip_address}'
         self.allowed_status_codes =[200, 404]
 
-    def find_open_ports_by_ip(self, ip_address):
+    def investigate_host_by_ip(self, ip_address):
         self.request_args['url'] = self.api_endpoint.format(ip_address=ip_address)
         cached, result = self.fetch_results_using_cache(f"ip_{ip_address}", default={})
         yield cached, {

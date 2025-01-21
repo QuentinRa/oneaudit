@@ -8,5 +8,5 @@ class OneAuditPortScanningAPIProvider(OneAuditBaseProvider):
     def __init__(self, api_name, request_args, api_keys):
         super().__init__(api_name, request_args, api_keys)
 
-    def find_open_ports_by_ip(self, ip_address):
+    def investigate_host_by_ip(self, ip_address):
          yield True, {}

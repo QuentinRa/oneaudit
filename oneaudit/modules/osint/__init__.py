@@ -1,4 +1,4 @@
-from oneaudit.modules.osint import emails, subdomains, ports
+from oneaudit.modules.osint import emails, subdomains, hosts
 from oneaudit.utils import args_call_target
 
 
@@ -8,7 +8,7 @@ def define_args(parent_parser):
     # Add Social Networks
     submodule_parser = osint_module.add_subparsers(dest='element', help="The element we want to process.", required=True)
     emails.define_args(submodule_parser)
-    ports.define_args(submodule_parser)
+    hosts.define_args(submodule_parser)
     subdomains.define_args(submodule_parser)
 
 

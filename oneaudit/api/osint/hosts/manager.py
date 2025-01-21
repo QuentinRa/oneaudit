@@ -1,9 +1,10 @@
-from ipaddress import ip_address, ip_network
+from ipaddress import ip_network
 from oneaudit.api.manager import OneAuditBaseAPIManager
-from oneaudit.api.osint.ports import PortScanningAPICapability
-from oneaudit.api.osint.ports import internetdb
+from oneaudit.api.osint.hosts import HostScanningAPICapability
+from oneaudit.api.osint.hosts import internetdb
 
-class OneAuditPortScanningAPIManager(OneAuditBaseAPIManager):
+
+class OneAuditHostScanningAPIManager(OneAuditBaseAPIManager):
     """
     APIs related to emails
     """
@@ -15,7 +16,7 @@ class OneAuditPortScanningAPIManager(OneAuditBaseAPIManager):
             # PAID
         ])
 
-    def scan_ports(self, base_target_ips, resolved_domains):
+    def scan_hosts(self, base_target_ips, resolved_domains):
         target_ips = [ip_network(ip if '/' in ip else f'{ip}/32')  for ip in base_target_ips]
         resolved_domains = {} if not resolved_domains else resolved_domains
 
@@ -28,9 +29,9 @@ class OneAuditPortScanningAPIManager(OneAuditBaseAPIManager):
                 if target_ip in final_result or _target_ip.is_private or _target_ip.is_link_local:
                     continue
                 _, result = self._call_all_providers_dict(
-                    heading="Scanning ports",
-                    capability=PortScanningAPICapability.PORT_SCANNING,
-                    method_name='find_open_ports_by_ip',
+                    heading="Scanning hosts",
+                    capability=HostScanningAPICapability.HOST_SCANNING,
+                    method_name='investigate_host_by_ip',
                     stop_when_modified=False,
                     result={'ports': [], 'stack': [], 'vulns': [], 'domains': resolved_domains[target_ip] if target_ip in resolved_domains else []},
                     args=(target_ip,)

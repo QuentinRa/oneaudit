@@ -3,7 +3,7 @@ from openpyxl.styles import PatternFill
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
-from oneaudit.modules.osint.ports.scan import compute_result as port_scan
+from oneaudit.modules.osint.hosts.scan import compute_result as port_scan
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
