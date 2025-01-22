@@ -122,7 +122,12 @@ def clean_credentials(credentials, logger=None):
 
     return credentials
 
+
 def run(args):
+    args_parse_parse_verbose(args)
+    return compute_result(args, None)
+
+def compute_result(args, _):
     args_parse_parse_verbose(args)
 
     with open(args.input_file, 'r') as file_data:
@@ -132,3 +137,5 @@ def run(args):
     data['credentials'] = clean_credentials(credentials)
 
     save_to_json(args.output_file, data)
+
+    return data

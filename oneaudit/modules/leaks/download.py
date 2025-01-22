@@ -26,10 +26,11 @@ def define_args(parent_parser):
 def run(args):
     if args.input_file and not args.output_file:
         raise args.download_parser.error("You must use -o/--output when using -i/--input.")
-
     args_parse_parse_verbose(args)
     api_keys = args_parse_api_config(args)
+    return compute_result(args, api_keys)
 
+def compute_result(args, api_keys):
     # Load Credentials
     if args.input_file:
         with open(args.input_file, 'r') as file_data:
@@ -52,3 +53,4 @@ def run(args):
         save_to_json(args.output_file, result)
     else:
         print(to_json_string(result))
+    return result

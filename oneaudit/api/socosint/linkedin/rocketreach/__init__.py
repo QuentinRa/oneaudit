@@ -105,7 +105,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         if ids_checked is None:
             ids_checked = []
         ids_to_check = [value for value in ids if value not in ids_checked]
-        if not ids_to_check:
+        if not ids_to_check and target_profile_list_id != "auto":
             return
 
         self.logger.warning(f"You have to manually fetch {len(ids_to_check)} records.")
