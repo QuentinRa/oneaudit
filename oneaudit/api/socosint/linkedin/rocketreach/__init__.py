@@ -92,11 +92,11 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                 page += 1
                 total = (pagination['total'] // 100) + 1
 
-            self._add_to_profile_list(target_profile_list_id, ids)
+            self._add_to_profile_list(company_domain, target_profile_list_id, ids)
         except Exception as e:
             self.logger.error(f"Error received: {e}")
 
-    def _add_to_profile_list(self, target_profile_list_id, ids):
+    def _add_to_profile_list(self, company_domain, target_profile_list_id, ids):
         """
         Add profiles (from their IDs) to the target_profile_list.
         Use a long delay between requests.
@@ -114,10 +114,41 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
         if not target_profile_list_id:
             return
         if not self.session_id:
-            raise Exception(f"{self.api_name} API v2 is not supported to automatically lookup records.")
+            self.logger.error(f"{self.api_name} API v2 is not supported to automatically lookup records. Please use rocketreach_session for API v1.")
+            return
+
+        csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
+
+        cached_key = f"{self.api_name}_profile_id_{company_domain}"
+        if target_profile_list_id == 'auto':
+            target_profile_list_data = get_cached_result(self.api_name, cached_key)
+            if not target_profile_list_data:
+                # Try to find the profile, if it exists
+                target_profile_list_data = self.determine_profile_list_id(company_domain)
+                if not target_profile_list_data:
+                    # Create a new profile list
+                    response = post(
+                        url=f'https://rocketreach.co/v1/profileList/',
+                        headers={
+                            'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
+                            'User-Agent': self.request_args["headers"]['User-Agent'],
+                            "X-CSRFToken": csrf_token,
+                            'referer': 'https://rocketreach.co/my-lists/'
+                        },
+                        json={
+                            "name": company_domain,
+                        }
+                    )
+                    response = response.json()
+                    set_cached_result(self.api_name, cached_key, response)
+                    target_profile_list_data = get_cached_result(self.api_name, cached_key)
+            target_profile_list_id = target_profile_list_data['id']
+
+        # Save it, to avoid searching for it when they use 'auto'
+        self.logger.debug(f"Adding profiles to profile with ID={target_profile_list_id}.")
+        set_cached_result(self.api_name, cached_key, { "id": target_profile_list_id })
 
         kill_switch = 0
-        csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
         i = 0
         while i < len(ids_to_check):
             self.logger.info(f'Fetching batch from {i} to {i + 25}')
@@ -161,6 +192,38 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
             i += 25
             kill_switch = 0
+
+    def determine_profile_list_id(self, profile_list_name):
+        csrf_token = ''.join(choice(ascii_letters + digits) for _ in range(32))
+        page = 1
+        total = -1
+        while True:
+            self.logger.debug(f"Looking for profile list id. Page={page}/{total if total != -1 else '?'}.")
+            response = get(
+                url=f'https://rocketreach.co/v1/profileList/?page={page}&limit=10',
+                headers={
+                    'Cookie': f'sessionid-20191028={self.session_id}; validation_token={csrf_token}',
+                    'User-Agent': self.request_args["headers"]['User-Agent'],
+                    "X-CSRFToken": csrf_token,
+                    'referer': 'https://rocketreach.co/my-lists/'
+                },
+            )
+            json_response = response.json()
+            records = json_response['records']
+            for record in records:
+                if record['name'] == profile_list_name:
+                    return record
+
+            if json_response['num_pages'] == json_response['current']:
+                break
+
+            if len(records) != 10:
+                self.logger.warning(f"Unexpected record length when fetching profiles: {records}.")
+
+            sleep(2)
+            page += 1
+            total = json_response['num_pages']
+        return None
 
     def export_profiles_from_profile_list(self, target_profile_list_id):
         if not self.session_id:

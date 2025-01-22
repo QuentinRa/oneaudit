@@ -1,9 +1,11 @@
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import PatternFill
+from openpyxl.worksheet.datavalidation import DataValidation
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
 from oneaudit.modules.osint.hosts.scan import compute_result as port_scan
+from oneaudit.modules.socosint.linkedin.scrap import compute_result as find_employees
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
@@ -33,6 +35,7 @@ def run(args):
 
     # Subdomains
     subdomain_output_file = f'{output_folder}/subdomains.json'
+    args.company_domain = args.company_domain
     args.output_file = subdomain_output_file
     data = dump_subdomains(args, api_keys)
     workbook_add_sheet_with_table(
@@ -61,10 +64,10 @@ def run(args):
     # Open Ports
     if args.scope:
         port_scanning_output_file = f'{output_folder}/hosts.json'
-        args.output_file = port_scanning_output_file
         args.target_ips = (args.scope  if "<found>" not in args.scope else args.scope.replace("<found>", ",".join(
             set([d.ip_address for d in data['domains'] if d.ip_address])
         ))).split(',')
+        args.output_file = port_scanning_output_file
         args.domains_file = subdomain_output_file
         data = port_scan(args, api_keys)
         workbook_add_sheet_with_table(
@@ -95,15 +98,43 @@ def run(args):
     else:
         logger.warning("Please use --scope to enable port scanning. To scan all IPs found during enumeration, use: -s '<found>'.")
 
-    # DataValidation(
-    #                 type="list",
-    #                 formula1='"TRUE,FALSE"',
-    #                 showDropDown=False
-    #             ),
-    # [
-    #                 FormulaRule(formula=['C2=TRUE'], fill=green_fill),
-    #                 FormulaRule(formula=['C2=FALSE'], fill=red_fill)
-    #             ],
+    # Employees
+    osint_search_output_file = f'{output_folder}/osint.1.json'
+    args.company_domain = args.company_domain
+    args.company_profile = None
+    args.target_profile_list_id = 'auto'
+    args.output_file = osint_search_output_file
+    results = find_employees(args, api_keys)
+    workbook_add_sheet_with_table(
+        workbook=workbook,
+        title="Employees",
+        columns=["Login", "Employed", "Verified", "Contacts", "Websites"],
+        # todo: use the socosint module
+        rows=[
+            ["a@b.c", True, False, "", "LinkedIn"] for i in [1]
+        ],
+        sizes=(30, 15, 15, 50),
+        validation_rules=[
+            None,
+            DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
+            DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
+            None,
+        ],
+        formatting_rules=[
+            None,
+            [
+                FormulaRule(formula=['B2=TRUE'], fill=good_fill),
+                FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
+            ],
+            [
+                FormulaRule(formula=['C2=TRUE'], fill=good_fill),
+                FormulaRule(formula=['C2=FALSE'], fill=bad_fill),
+            ],
+            None,
+        ],
+        autowrap=True,
+    )
+
     # ws.merge_cells(start_row=1, start_column=1, end_row=len(ports_status), end_column=1)
 
     # Save
