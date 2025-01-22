@@ -38,6 +38,9 @@ def define_args(parent_parser):
 
 def run(args):
     args_parse_parse_verbose(args)
+    return compute_result(args, None)
+
+def compute_result(args, _):
     args.domain_aliases = [args.domain] + args.domain_aliases
     email_regex = re.compile(r'\b[A-Za-z0-9.-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
     targets, found = [], {}
@@ -139,7 +142,7 @@ def run(args):
     for email_format_id, verified_count_per_format in verified_count.items():
         logger.info(f"     Format: {email_format_id:20} -> Result: {len(verified_count_per_format):5}")
 
-    save_to_json(args.output_file, {
+    result = {
         'version': 1.3,
         'credentials': [
             LeakTarget(
@@ -153,4 +156,6 @@ def run(args):
                 }
             ) for c in found.values() if "login" in c
         ]
-    })
+    }
+    save_to_json(args.output_file, result)
+    return result

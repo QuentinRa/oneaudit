@@ -15,14 +15,19 @@ def define_args(parent_parser):
 
 def run(args):
     args_parse_parse_verbose(args)
-    args.filters = [f.lower() for f in args.filters if f]
+    return compute_result(args, None)
+
+def compute_result(args, _):
     provider = OneAuditLinkedInAPIManager({args.api_name: "sb0"})
+    args.filters = [f.lower() for f in args.filters if f]
     try:
-        with open(args.input_file, 'r', encoding='utf-8') as input_file:
-            save_to_json(args.output_file, {
-                "version": 1.0,
-                "entries": provider.parse_records_from_export(args.api_name, args.filters, input_file),
-            })
+       with open(args.input_file, 'r', encoding='utf-8') as input_file:
+           result = {
+               "version": 1.0,
+               "entries": provider.parse_records_from_export(args.api_name, args.filters, input_file),
+           }
+           save_to_json(args.output_file, result)
+           return result
     except (FileNotFoundError, JSONDecodeError) as e:
         get_project_logger().error(f"[+] Failed to parse results: '{e}'.")
-        return
+        return None

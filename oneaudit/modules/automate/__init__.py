@@ -2,11 +2,14 @@ from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import PatternFill
 from openpyxl.worksheet.datavalidation import DataValidation
 from oneaudit.api.utils.caching import args_api_config, args_parse_api_config, get_cached_result
+from oneaudit.modules.leaks.parse import email_formats
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
 from oneaudit.modules.osint.hosts.scan import compute_result as port_scan
 from oneaudit.modules.socosint.linkedin.scrap import compute_result as find_employees_raw
-from oneaudit.modules.socosint.linkedin.export import compute_result as find_employees_contacts
+from oneaudit.modules.socosint.linkedin.export import compute_result as find_employees_export
+from oneaudit.modules.socosint.linkedin.parse import compute_result as find_employees_parse
+from oneaudit.modules.leaks.parse import compute_result as generate_targets
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
@@ -16,6 +19,9 @@ def define_args(parent_parser):
     automate_module = parent_parser.add_parser('automate', help='Automated Module')
     automate_module.add_argument('-d', '--domain', dest='company_domain', help='For example, "example.com".', required=True)
     automate_module.add_argument('-s', '--scope', help='IPs to scan, comma-separated, such as <found>,127.0.0.1/24,127.0.0.1.')
+    automate_module.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys())
+    automate_module.add_argument('--alias', dest='domain_aliases', default=[], action='append', help='Alternative domain names that should be investigated.')
+    automate_module.add_argument('--restrict', dest='only_from_the_target_domain', action='store_true', help='Only keep emails ending with the provided domain/aliases.')
     automate_module.add_argument('-o', '--output', dest='output_folder', required=True)
     args_api_config(automate_module)
     args_verbose_config(automate_module)
@@ -101,6 +107,8 @@ def run(args):
 
     # Employees
     osint_search_output_file = f'{output_folder}/osint.1.json'
+    osint_export_output_file = f'{output_folder}/osint.2.json'
+    osint_contacts_output_file = f'{output_folder}/osint.3.json'
     args.company_domain = args.company_domain
     args.company_profile = None
     args.target_profile_list_id = 'auto'
@@ -110,43 +118,58 @@ def run(args):
     # RocketReach Export
     profile_list_id = get_cached_result("rocketreach", f"rocketreach_profile_id_{args.company_domain}")
     if profile_list_id:
-        osint_export_output_file = f'{output_folder}/osint.2.json'
         args.file_source = 'rocketreach'
         args.profile_list_id = profile_list_id['id']
         args.output_file = osint_export_output_file
-        find_employees_contacts(args, api_keys)
+        find_employees_export(args, api_keys)
 
+        args.input_file = osint_export_output_file
+        args.api_name = 'rocketreach'
+        args.filters = ['auto']
+        args.output_file = osint_contacts_output_file
+        find_employees_parse(args, api_keys)
 
+    if args.email_format:
+        targets_output_file = f'{output_folder}/targets.json'
+        args.input_files = [osint_search_output_file, osint_contacts_output_file]
+        args.domain = args.company_domain
+        args.email_format = args.email_format
+        args.domain_aliases = args.domain_aliases
+        args.only_from_the_target_domain = args.only_from_the_target_domain
+        args.output_file = targets_output_file
+        targets = generate_targets(args, api_keys)
 
-    workbook_add_sheet_with_table(
-        workbook=workbook,
-        title="Employees",
-        columns=["Login", "Employed", "Verified", "Contacts", "Websites"],
-        # todo: use the socosint module
-        rows=[
-            ["a@b.c", True, False, "", "LinkedIn"] for i in [1]
-        ],
-        sizes=(30, 15, 15, 50),
-        validation_rules=[
-            None,
-            DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
-            DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
-            None,
-        ],
-        formatting_rules=[
-            None,
-            [
-                FormulaRule(formula=['B2=TRUE'], fill=good_fill),
-                FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
+        workbook_add_sheet_with_table(
+            workbook=workbook,
+            title="Employees",
+            columns=["Login", "Employed", "Verified", "Contacts", "Websites"],
+            rows=[
+                [target.login, target.employed, target.verified, "\n".join(target.emails).strip(), "\n".join(target.extra['links'].values()).strip()] for target in targets['credentials']
             ],
-            [
-                FormulaRule(formula=['C2=TRUE'], fill=good_fill),
-                FormulaRule(formula=['C2=FALSE'], fill=bad_fill),
+            sizes=(30, 15, 15, 50, 100),
+            validation_rules=[
+                None,
+                DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
+                DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
+                None,
             ],
-            None,
-        ],
-        autowrap=True,
-    )
+            formatting_rules=[
+                None,
+                [
+                    FormulaRule(formula=['B2=TRUE'], fill=good_fill),
+                    FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
+                ],
+                [
+                    FormulaRule(formula=['C2=TRUE'], fill=good_fill),
+                    FormulaRule(formula=['C2=FALSE'], fill=bad_fill),
+                ],
+                None,
+                None,
+            ],
+            autowrap=True,
+        )
+    else:
+        logger.warning("Please use --format to enable employee email generation and add the 'Targets' sheet.")
 
     # ws.merge_cells(start_row=1, start_column=1, end_row=len(ports_status), end_column=1)
 

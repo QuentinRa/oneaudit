@@ -306,7 +306,7 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
 
                 should_skip = True
                 for employee_filter in employee_filters:
-                    if employee_filter in entry["current_employer"].lower():
+                    if employee_filter in entry["current_employer"].lower() or employee_filter == 'auto':
                         should_skip = False
                         break
                 if should_skip:
