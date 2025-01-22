@@ -10,6 +10,8 @@ from oneaudit.modules.socosint.linkedin.scrap import compute_result as find_empl
 from oneaudit.modules.socosint.linkedin.export import compute_result as find_employees_export
 from oneaudit.modules.socosint.linkedin.parse import compute_result as find_employees_parse
 from oneaudit.modules.leaks.parse import compute_result as generate_targets
+from oneaudit.modules.leaks.download import compute_result as download_leaks
+from oneaudit.modules.leaks.clean import compute_result as clean_leaks
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
@@ -22,6 +24,7 @@ def define_args(parent_parser):
     automate_module.add_argument('-f', '--format', dest='email_format', help='Format used to generate company emails.', choices=email_formats.keys())
     automate_module.add_argument('--alias', dest='domain_aliases', default=[], action='append', help='Alternative domain names that should be investigated.')
     automate_module.add_argument('--restrict', dest='only_from_the_target_domain', action='store_true', help='Only keep emails ending with the provided domain/aliases.')
+    automate_module.add_argument('--qleaks', dest='can_download_leaks', action='store_true', help='To avoid download leaks with an incorrect email format, by default, leaks are not downloaded unless you use this switch after confirming the email format.')
     automate_module.add_argument('-o', '--output', dest='output_folder', required=True)
     args_api_config(automate_module)
     args_verbose_config(automate_module)
@@ -168,6 +171,60 @@ def run(args):
             ],
             autowrap=True,
         )
+
+        if args.can_download_leaks:
+            leaks_download_output_file = f'{output_folder}/leaks.0.json'
+            args.input_file = targets_output_file
+            args.company_domain = args.company_domain
+            args.can_use_cache_even_if_disabled = True
+            args.run_clean = False
+            args.output_file = leaks_download_output_file
+            download_leaks(args, api_keys)
+
+            leaks_output_file = f'{output_folder}/leaks.1.json'
+            args.input_file = leaks_download_output_file
+            args.output_file = leaks_output_file
+            leaks = clean_leaks(args, api_keys)
+
+            workbook_add_sheet_with_table(
+                workbook=workbook,
+                title="Leaks",
+                columns=["Login", "Verified", "Passwords", "Hashes", "InfoStealers", "Breaches"],
+                rows=[
+                    [
+                        leak['login'],
+                        leak['verified'],
+                        "\n".join(leak['passwords']).strip(),
+                        "\n".join([l["value"] for l in leak['hashes']]+leak['censored_passwords']).strip(),
+                        "\n".join([f"{b['computer_name']} ({b['operating_system']}/{b['date_compromised']})" for b in leak['info_stealers']]),
+                        "\n".join([f"{b.source} ({b.date})" for b in leak['breaches']]),
+                     ]
+                    for leak in leaks['credentials'] if leak['passwords'] or leak['censored_passwords'] or leak['hashes']
+                ],
+                sizes=(50, 15, 20, 20, 50, 100),
+                validation_rules=[
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                ],
+                formatting_rules=[
+                    None,
+                    [
+                        FormulaRule(formula=['B2=TRUE'], fill=good_fill),
+                        FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
+                    ],
+                    [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
+                    None,
+                    None,
+                    None,
+                ],
+                autowrap=True,
+            )
+        else:
+            logger.warning("Please use --qleaks to enable leak investigation and add the 'Leaks' sheet.")
     else:
         logger.warning("Please use --format to enable employee email generation and add the 'Targets' sheet.")
 
