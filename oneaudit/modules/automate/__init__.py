@@ -1,11 +1,12 @@
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import PatternFill
 from openpyxl.worksheet.datavalidation import DataValidation
-from oneaudit.api.utils.caching import args_api_config, args_parse_api_config
+from oneaudit.api.utils.caching import args_api_config, args_parse_api_config, get_cached_result
 from oneaudit.utils.logs import args_verbose_config, args_parse_parse_verbose, get_project_logger
 from oneaudit.modules.osint.subdomains.dump import compute_result as dump_subdomains
 from oneaudit.modules.osint.hosts.scan import compute_result as port_scan
-from oneaudit.modules.socosint.linkedin.scrap import compute_result as find_employees
+from oneaudit.modules.socosint.linkedin.scrap import compute_result as find_employees_raw
+from oneaudit.modules.socosint.linkedin.export import compute_result as find_employees_contacts
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
@@ -104,7 +105,19 @@ def run(args):
     args.company_profile = None
     args.target_profile_list_id = 'auto'
     args.output_file = osint_search_output_file
-    results = find_employees(args, api_keys)
+    find_employees_raw(args, api_keys)
+
+    # RocketReach Export
+    profile_list_id = get_cached_result("rocketreach", f"rocketreach_profile_id_{args.company_domain}")
+    if profile_list_id:
+        osint_export_output_file = f'{output_folder}/osint.2.json'
+        args.file_source = 'rocketreach'
+        args.profile_list_id = profile_list_id['id']
+        args.output_file = osint_export_output_file
+        find_employees_contacts(args, api_keys)
+
+
+
     workbook_add_sheet_with_table(
         workbook=workbook,
         title="Employees",

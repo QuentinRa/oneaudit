@@ -27,4 +27,3 @@ def compute_result(args, api_keys):
     }
     save_to_json(args.output_file, result)
     return result
-
