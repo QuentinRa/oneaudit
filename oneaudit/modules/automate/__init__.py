@@ -15,6 +15,7 @@ from oneaudit.modules.leaks.clean import compute_result as clean_leaks
 from oneaudit.utils.sheet import create_workbook, workbook_add_sheet_with_table
 from os.path import exists as file_exists
 from os import makedirs
+from json import dump as json_dump
 
 
 def define_args(parent_parser):
@@ -132,8 +133,8 @@ def run(args):
         args.output_file = osint_contacts_output_file
         find_employees_parse(args, api_keys)
 
+    targets_output_file = f'{output_folder}/targets.json'
     if args.email_format:
-        targets_output_file = f'{output_folder}/targets.json'
         args.input_files = [osint_search_output_file, osint_contacts_output_file]
         args.domain = args.company_domain
         args.email_format = args.email_format
@@ -185,62 +186,74 @@ def run(args):
             ],
             autowrap=True,
         )
-
-        if args.can_download_leaks:
-            leaks_download_output_file = f'{output_folder}/leaks.0.json'
-            args.input_file = targets_output_file
-            args.company_domain = args.company_domain
-            args.can_use_cache_even_if_disabled = True
-            args.run_clean = False
-            args.output_file = leaks_download_output_file
-            download_leaks(args, api_keys)
-
-            leaks_output_file = f'{output_folder}/leaks.1.json'
-            args.input_file = leaks_download_output_file
-            args.output_file = leaks_output_file
-            leaks = clean_leaks(args, api_keys)
-
-            workbook_add_sheet_with_table(
-                workbook=workbook,
-                title="Leaks",
-                columns=["Login", "Verified", "Passwords", "Hashes", "InfoStealers", "Breaches"],
-                rows=[
-                    [
-                        leak['login'],
-                        leak['verified'],
-                        "\n".join(leak['passwords']).strip(),
-                        "\n".join([l["value"] for l in leak['hashes']]+leak['censored_passwords']).strip(),
-                        "\n".join([f"{b['computer_name']} ({b['operating_system']}/{b['date_compromised']})" for b in leak['info_stealers']]),
-                        "\n".join([f"{b.source} ({b.date})" for b in leak['breaches']]),
-                     ]
-                    for leak in leaks['credentials'] if leak['passwords'] or leak['censored_passwords'] or leak['hashes']
-                ],
-                sizes=(50, 15, 20, 20, 50, 100),
-                validation_rules=[
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ],
-                formatting_rules=[
-                    None,
-                    [
-                        FormulaRule(formula=['B2=TRUE'], fill=good_fill),
-                        FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
-                    ],
-                    [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
-                    None,
-                    None,
-                    None,
-                ],
-                autowrap=True,
-            )
-        else:
-            logger.warning("Please use --qleaks to enable leak investigation and add the 'Leaks' sheet.")
     else:
         logger.warning("Please use --format to enable employee email generation and add the 'Targets' sheet.")
+
+    if args.can_download_leaks:
+        if not file_exists(targets_output_file):
+            logger.warning("No target file, only some API will be able to work...")
+            targets_output_file = f"{targets_output_file}.fake"
+            with open(targets_output_file, 'w') as output_file:
+                json_dump({"credentials": []}, output_file)
+
+        leaks_download_output_file = f'{output_folder}/leaks.0.json'
+        args.input_file = targets_output_file
+        args.company_domain = args.company_domain
+        args.can_use_cache_even_if_disabled = True
+        args.run_clean = False
+        args.output_file = leaks_download_output_file
+        download_leaks(args, api_keys)
+
+        leaks_output_file = f'{output_folder}/leaks.1.json'
+        args.input_file = leaks_download_output_file
+        args.output_file = leaks_output_file
+        leaks = clean_leaks(args, api_keys)
+
+        workbook_add_sheet_with_table(
+            workbook=workbook,
+            title="Leaks",
+            columns=["Login", "Employed", "Verified", "Passwords", "Hashes", "InfoStealers", "Breaches"],
+            rows=[
+                [
+                    leak['login'],
+                    leak['employed'],
+                    leak['verified'],
+                    "\n".join(leak['passwords']).strip(),
+                    "\n".join([l["value"] for l in leak['hashes']]+leak['censored_passwords']).strip(),
+                    "\n".join([f"{b['computer_name']} ({b['operating_system']}/{b['date_compromised']})" for b in leak['info_stealers']]),
+                    "\n".join([f"{b.source} ({b.date})" for b in leak['breaches']]),
+                ]
+                for leak in leaks['credentials'] if leak['passwords'] or leak['censored_passwords'] or leak['hashes']
+            ],
+            sizes=(50, 15, 15, 20, 20, 50, 100),
+            validation_rules=[
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ],
+            formatting_rules=[
+                None,
+                [
+                    FormulaRule(formula=['B2=TRUE'], fill=good_fill),
+                    FormulaRule(formula=['B2=FALSE'], fill=bad_fill),
+                ],
+                [
+                    FormulaRule(formula=['C2=TRUE'], fill=good_fill),
+                    FormulaRule(formula=['C2=FALSE'], fill=bad_fill),
+                ],
+                [FormulaRule(formula=['ISBLANK(B2)'], fill=bad_fill)],
+                None,
+                None,
+                None,
+            ],
+            autowrap=True,
+        )
+    else:
+        logger.warning("Please use --qleaks to enable leak investigation and add the 'Leaks' sheet.")
 
     # ws.merge_cells(start_row=1, start_column=1, end_row=len(ports_status), end_column=1)
 
