@@ -52,6 +52,8 @@ class NubelaProxycurlAPI(OneAuditLinkedInAPIProvider):
                     targets.append(UserProfileData(
                         employee['profile']["first_name"],
                         employee['profile']["last_name"],
+                        employee['profile']["occupation"],
+                        employee['profile']["company"],
                         [],
                         {
                             SocialNetworkEnum.LINKEDIN.name: employee['profile_url']

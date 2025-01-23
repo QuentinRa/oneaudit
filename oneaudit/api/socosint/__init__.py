@@ -55,6 +55,8 @@ class UserProfileRawData:
 class UserProfileData:
     first_name: str
     last_name: str
+    current_title: str
+    current_company: str
     emails: list[VerifiableEmail]
     links: Dict[SocialNetworkEnum, str] = field(default_factory=dict)
 
@@ -62,6 +64,8 @@ class UserProfileData:
         return {
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "current_title": self.current_title,
+            "current_company": self.current_company,
             "emails": self.emails,
             "links": {k: v for k, v in self.links.items() if k},
         }

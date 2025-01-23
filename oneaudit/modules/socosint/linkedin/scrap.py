@@ -22,7 +22,7 @@ def run(args):
 def compute_result(args, api_keys):
     provider = OneAuditLinkedInAPIManager(api_keys)
     result = {
-        "version": 1.2,
+        "version": 1.3,
         "entries": provider.search_employees_from_company_domain(args.company_domain, args.company_profile, args.target_profile_list_id),
     }
     save_to_json(args.output_file, result)

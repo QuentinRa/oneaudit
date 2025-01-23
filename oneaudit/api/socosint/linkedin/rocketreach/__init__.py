@@ -317,6 +317,8 @@ class RocketReachAPI(OneAuditLinkedInAPIProvider):
                 targets.append(UserProfileData(
                     entry["first_name"],
                     entry["last_name"],
+                    entry["current_title"],
+                    entry["current_employer"],
                     list(set(emails)),
                     {SocialNetworkEnum.get(k): str(v) for k, v in (entry['links'] if entry['links'] else {}).items()}
                 ))

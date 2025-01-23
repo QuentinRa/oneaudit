@@ -55,6 +55,8 @@ class ApolloAPI(OneAuditLinkedInAPIProvider):
                     targets.append(UserProfileData(
                         employee["first_name"],
                         employee["last_name"],
+                        employee["title"],
+                        employee["organization_name"],
                         emails,
                         {
                             enum_entry.name: employee[attribute_name]
