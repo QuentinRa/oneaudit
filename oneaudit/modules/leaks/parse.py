@@ -74,6 +74,10 @@ def compute_result(args, _):
             target['emails'] = []
         if 'birth_year' not in target:
             target['birth_year'] = None
+        if 'current_title' not in target:
+            target['current_title'] = None
+        if 'current_company' not in target:
+            target['current_company'] = None
 
         # Generate email using all formats
         candidates = {}
@@ -127,11 +131,15 @@ def compute_result(args, _):
                 "verified": verified,
                 "emails": emails,
                 "links": target['links'],
-                "birth_year": target['birth_year']
+                "birth_year": target['birth_year'],
+                "current_title": target['current_title'],
+                "current_company": target['current_company']
             }
         else:
             found[computed_email]["verified"] = verified or found[computed_email]["verified"]
             found[computed_email]["birth_year"] = target['birth_year'] if target['birth_year'] else found[computed_email]["birth_year"]
+            found[computed_email]["current_title"] = target['current_title'] if target['current_title'] else found[computed_email]["current_title"]
+            found[computed_email]["current_company"] = target['current_company'] if target['current_company'] else found[computed_email]["current_company"]
             found[computed_email]["emails"].extend(emails)
             for k, v in target['links'].items():
                 if k in found[computed_email]['links']:
@@ -143,7 +151,7 @@ def compute_result(args, _):
         logger.info(f"     Format: {email_format_id:20} -> Result: {len(verified_count_per_format):5}")
 
     result = {
-        'version': 1.3,
+        'version': 1.4,
         'credentials': [
             LeakTarget(
                 c["login"],
@@ -153,6 +161,8 @@ def compute_result(args, _):
                 {
                     "links": c["links"],
                     "birth_year": c["birth_year"],
+                    "current_title": c["current_title"],
+                    "current_company": c["current_company"],
                 }
             ) for c in found.values() if "login" in c
         ]

@@ -82,11 +82,13 @@ oneaudit socosint linkedin parse socosint linkedin parse  -f "LinkedIn" -s rocke
 
 ```json
 {
-  "version": 1.0,
+  "version": 1.3,
   "entries": [
     {
       "first_name": "John",
       "last_name": "Doe",
+      "current_title": "CEO",
+      "current_company": "Example",
       "links": {
         "LINKEDIN": "https://www.linkedin.com/in/john_doe"
       },
@@ -130,7 +132,7 @@ oneaudit leaks parse [...] --alias dev.example.com
 
 ```json
 {
-  "version": 1.3,
+  "version": 1.4,
   "credentials": [
     {
       "login": "johndoe@example.com",
@@ -144,7 +146,9 @@ oneaudit leaks parse [...] --alias dev.example.com
         "links": {
           "LINKEDIN": "https://www.linkedin.com/in/john_doe"
         },
-        "birth_year": 1337
+        "birth_year": 1337,
+        "current_title": "CEO",
+        "current_company": "Example"
       }
     }
   ]
@@ -500,8 +504,6 @@ WIP
 * email verification documentation
 * subdomains
   * Add automate documentation && remove cheatsheet
-  * Add Whois for Registrar
-  * Add ASN for Registrar
   * Make subfinder use API keys from the global config (leakix)
   * Guess the protocol given the port (+LeakIX if applicable)
 * Fix issues with rocketreach randomness in search

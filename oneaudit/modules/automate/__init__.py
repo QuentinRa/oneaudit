@@ -145,15 +145,27 @@ def run(args):
         workbook_add_sheet_with_table(
             workbook=workbook,
             title="Employees",
-            columns=["Login", "Employed", "Verified", "Contacts", "Websites"],
+            columns=["Login", "Employed", "Verified", "Contacts", "Websites", "Title", "Company"],
             rows=[
-                [target.login, target.employed, target.verified, "\n".join(target.emails).strip(), "\n".join(target.extra['links'].values()).strip()] for target in targets['credentials']
+                [
+                    target.login,
+                    target.employed,
+                    target.verified,
+                    "\n".join(target.emails).strip(),
+                    "\n".join(target.extra['links'].values()).strip(),
+                    target.extra['current_title'],
+                    target.extra['current_company'],
+                ]
+                for target in targets['credentials']
             ],
-            sizes=(30, 15, 15, 50, 100),
+            sizes=(50, 15, 15, 50, 100, 50, 25),
             validation_rules=[
                 None,
                 DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
                 DataValidation(type="list", formula1='"TRUE,FALSE"', showDropDown=False),
+                None,
+                None,
+                None,
                 None,
             ],
             formatting_rules=[
@@ -166,6 +178,8 @@ def run(args):
                     FormulaRule(formula=['C2=TRUE'], fill=good_fill),
                     FormulaRule(formula=['C2=FALSE'], fill=bad_fill),
                 ],
+                None,
+                None,
                 None,
                 None,
             ],
